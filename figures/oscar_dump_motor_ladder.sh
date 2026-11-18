@@ -1,8 +1,9 @@
 # Run on Oscar; prints data/motor_ladder.csv for fig_motor_ladder.py (indy, best per-axis test loss per session).
-cd /users/$USER/spike_bmi_speck_delay/main/sbatch_scripts && source ./snn_config.sh >/dev/null 2>&1; activate_env >/dev/null 2>&1
+source "$(cd "$(dirname "$0")" && pwd)/../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
+cd "$SNNBCI_MOTOR/main/sbatch_scripts" && source ./snn_config.sh >/dev/null 2>&1; activate_env >/dev/null 2>&1
 python3 - <<'PY'
 import glob, os, torch
-B = "/users/$USER/scratch/$USER/data/snn_checkpoints/bmi/indy"
+B = os.environ["SNNBCI_OSCAR_MOTOR_DATA"] + "/snn_checkpoints/bmi/indy"
 COLS = [("start", "per_session_binarized"), ("filters", "per_session_ladder_filters_binarized"),
         ("soft", "per_session_ladder_filters_soft_binarized"), ("lsnn_neurons", "per_session_lsnn_ladder_soft_binarized"),
         ("recurrence", "per_session_lsnn_ladder_rec_binarized"), ("width", "per_session_lsnn_ladder_width_binarized"),
