@@ -6,7 +6,8 @@
 #    (sqrt(MSE) of the velocity, physical units, per axis, on each session's own test split), next to the current
 #    Speck SNN's on the same sessions, with the number of sessions the variant has the lower loss
 # 3. errors: the last error line of each speck variant's newest failed log
-DATA_ROOT="${DATA_ROOT:-/users/$USER/scratch/$USER/data}"
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
+DATA_ROOT="${DATA_ROOT:-$SNNBCI_OSCAR_MOTOR_DATA}"
 LOGS="$(cd "$(dirname "$0")" && pwd)/snn_logs"
 echo "######## queue (tasks by job and state)"
 squeue -u "$USER" -h -o "%j %T" | sort | uniq -c

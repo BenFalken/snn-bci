@@ -13,6 +13,7 @@
 # quantized vs chip) and every session's layer activity. Finished sessions are skipped on a rerun, so an
 # interrupted run resumes. SPECK_WAIT_TIME (default 0.003 s) is the chip's time per step before its
 # output is read; VENV=/path activates a Python virtualenv.
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 MODE="${1:-chip}"; shift || true
@@ -49,18 +50,18 @@ case "$MODE" in
 esac
 cd "$HERE/main/sbatch_scripts"
 for SUBJ in "${SUBJECTS[@]}"; do
-    CKPTS="$HERE/data/snn_checkpoints/bmi/$SUBJ/$CKPT_DIR"
+    CKPTS="$SNNBCI_MOTOR_DATA/snn_checkpoints/bmi/$SUBJ/$CKPT_DIR"
     [ -d "$CKPTS" ] || { echo "No checkpoints for $SUBJ under $CKPTS" >&2; exit 1; }
     echo; echo "################ $SUBJ: $(ls "$CKPTS" | wc -l | tr -d ' ') sessions ($MODE) ################"
     # 3 ms per step on the chip: the delay bank's ~4x input events need it (at 1 ms the chip's RMSE was 1.2 higher)
-    DATA_ROOT="$HERE/data" bash run_inference.sbatch --local bmi "$SUBJ" \
+    DATA_ROOT="$SNNBCI_MOTOR_DATA" bash run_inference.sbatch --local bmi "$SUBJ" \
         DECODERS="$DECODERS" SNN_CHECKPOINT_ROOT="$CKPTS" SPECK_CHECKPOINT_ROOT="$CKPTS" \
-        RESULTS_DIR="$HERE/results/$MODE/$SUBJ" SNN_LABEL="Speck SNN (PyTorch)" \
+        RESULTS_DIR="$SNNBCI_MOTOR_RESULTS/$MODE/$SUBJ" SNN_LABEL="Speck SNN (PyTorch)" \
         SPECK_WAIT_TIME="${SPECK_WAIT_TIME:-0.003}"
 done
 echo
 echo "Summary (RMSE, the deck's per-axis measure; chip time per step, power, energy per sample):"
-python3 - "$HERE/results/$MODE" "${SUBJECTS[@]}" <<'EOF'
+python3 - "$SNNBCI_MOTOR_RESULTS/$MODE" "${SUBJECTS[@]}" <<'EOF'
 import json, os, sys
 import numpy as np
 root, subjects = sys.argv[1], sys.argv[2:]
@@ -81,4 +82,4 @@ for subj in subjects:
                      f"{sp['energy_j'] * 1e6:.2f} uJ/sample")
     print(line)
 EOF
-echo "Results: $HERE/results/$MODE"
+echo "Results: $SNNBCI_MOTOR_RESULTS/$MODE"

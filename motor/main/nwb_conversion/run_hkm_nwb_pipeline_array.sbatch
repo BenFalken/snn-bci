@@ -22,6 +22,7 @@
 #   sbatch --array=0-$((N-1)) run_hkm_nwb_pipeline_array.sbatch
 #   sbatch --export=ALL,SUBJECT=nitschke --array=0-$((N_NITSCHKE-1)) run_hkm_nwb_pipeline_array.sbatch
 
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 
 deactivate 2>/dev/null || true
@@ -30,7 +31,7 @@ export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 export OPENBLAS_NUM_THREADS=$SLURM_CPUS_PER_TASK
 export MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-DATA_ROOT="${DATA_ROOT:-/users/$USER/scratch/$USER/data}"
+DATA_ROOT="${DATA_ROOT:-$SNNBCI_OSCAR_MOTOR_DATA}"
 RAW_DATA_DIR="${DATA_ROOT}/raw/hkm"
 OUTPUT_ROOT="${DATA_ROOT}/hkm_intermediate"     # per-trial intermediates, deleted after each session
 DATASET_ROOT="${DATA_ROOT}/dataset"

@@ -10,23 +10,24 @@
 #   w3   3 ms (as run_final.sh)      w10  10 ms      w20  20 ms      w40  40 ms
 #   s2   3 ms + 2 ms quiet (<= 50 ms per step)       s5   3 ms + 5 ms quiet (<= 50 ms per step)
 # Results: results/wait_sweep/<tag>/; a summary table at the end (RMSE and ms per step).
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 SESSION="${SESSION:-20090916}"
-C="$HERE/data/snn_checkpoints/hkm/jenkins"
+C="$SNNBCI_MOTOR_DATA/snn_checkpoints/hkm/jenkins"
 S=$(ls "$C/per_session_delay2_binarized" | grep "$SESSION")
 [ -n "$S" ] || { echo "no session matching $SESSION"; exit 1; }
-ONE="$HERE/results/wait_sweep/_lsnn_one"; rm -rf "$ONE"; mkdir -p "$ONE"
+ONE="$SNNBCI_MOTOR_RESULTS/wait_sweep/_lsnn_one"; rm -rf "$ONE"; mkdir -p "$ONE"
 cp -r "$C/lsnn_loso_finetuned_binarized/$S" "$ONE/$S"          # sessions = those with an 'snn' checkpoint
 cd "$HERE/main/sbatch_scripts"
 for cfg in "w3 0.003 0" "w10 0.010 0" "w20 0.020 0" "w40 0.040 0" "s2 0.003 0.002" "s5 0.003 0.005"; do
     set -- $cfg
     echo; echo "################ $S: $1 (wait $2 s, settle $3 s) ################"
-    SPECK_SETTLE_S=$3 DATA_ROOT="$HERE/data" bash run_inference.sbatch --local hkm jenkins \
+    SPECK_SETTLE_S=$3 DATA_ROOT="$SNNBCI_MOTOR_DATA" bash run_inference.sbatch --local hkm jenkins \
         DECODERS=speck SNN_CHECKPOINT_ROOT="$ONE" SPECK_CHECKPOINT_ROOT="$C/per_session_delay2_binarized" \
-        RESULTS_DIR="$HERE/results/wait_sweep/$1" SNN_LABEL="LSNN" SPECK_WAIT_TIME="$2"
+        RESULTS_DIR="$SNNBCI_MOTOR_RESULTS/wait_sweep/$1" SNN_LABEL="LSNN" SPECK_WAIT_TIME="$2"
 done
-python3 - "$HERE/results/wait_sweep" <<'EOF'
+python3 - "$SNNBCI_MOTOR_RESULTS/wait_sweep" <<'EOF'
 import glob, json, os, sys
 print("\ntag   RMSE    ms/step   (PyTorch delay2 on this session: see speck_diagnosis.json 'pytorch')")
 for tag in ["w3", "w10", "w20", "w40", "s2", "s5"]:

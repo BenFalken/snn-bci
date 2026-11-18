@@ -33,13 +33,14 @@
 # Re-submitting skips a finished run and resumes an interrupted one (for hkm,
 # where an epoch over a pool takes hours, expect to re-submit).
 
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 
 if [ -z "${EXPERIMENT:-}" ] || [ -z "${SUBJECT:-}" ]; then
     echo "ERROR: set EXPERIMENT and SUBJECT, e.g. sbatch --export=ALL,EXPERIMENT=bmi,SUBJECT=indy --array=0-N $0" >&2
     exit 1
 fi
-DATA_ROOT="${DATA_ROOT:-/users/$USER/scratch/$USER/data}"
+DATA_ROOT="${DATA_ROOT:-$SNNBCI_OSCAR_MOTOR_DATA}"
 source ./snn_config.sh
 select_model "${MODEL:-lsnn}_pretrain"   # default the LSNN; MODEL=pooled: the earlier SNN (hard reset here, soft in fine-tuning)
 

@@ -4,8 +4,9 @@
 # and state, held tasks, and the newest error of each job type.
 #   bash motor_progress.sh                 # SUBJECTS="indy loco" by default
 # Install as a command:  cp motor_progress.sh ~/motor_progress.sh   (then: bash ~/motor_progress.sh)
-cd "${SCRIPTS_DIR:-/users/$USER/spike_bmi_lsnn/main/sbatch_scripts}" || exit 1
-DATA_ROOT="${DATA_ROOT:-/users/$USER/scratch/$USER/data}"
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
+cd "${SCRIPTS_DIR:-$SNNBCI_MOTOR/main/sbatch_scripts}" || exit 1
+DATA_ROOT="${DATA_ROOT:-$SNNBCI_OSCAR_MOTOR_DATA}"
 SUBJECTS="${SUBJECTS:-indy loco}"
 
 count() { find "$@" 2>/dev/null | wc -l | tr -d ' '; }   # files matching a find expression

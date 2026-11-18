@@ -9,7 +9,7 @@
 #
 # One ssh connection is shared by every step (ControlMaster), so there is one password + Duo prompt.
 #
-# What it copies (Oscar: /users/$USER/scratch/$USER/data/...):
+# What it copies (Oscar: $SNNBCI_OSCAR_MOTOR_DATA/...):
 #   1. dataset/hkm/jenkins/mua/<session>_binning.h5      test rows only, written on Oscar first by
 #                                                         inference/export_test_split.py (keeps trial_id for hkm)
 #   2. snn_datasets/hkm/jenkins/mua/<session>/**         everything except train/*.pkl (train/ is kept, empty:
@@ -21,15 +21,16 @@
 #
 # Then:  bash run_final.sh jenkins      (devkit plugged in; Speck at layer 1 threshold x2, 3 ms per step)
 
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
 SUBJ="${SUBJ:-jenkins}"     # SUBJ=jenkins_m1: the M1 array alone (make_hkm_array_subset.py), same layout
 REMOTE="$USER@ssh.ccv.brown.edu"
-REMOTE_ROOT="/users/$USER/scratch/$USER/data"
-REMOTE_CODE="/users/$USER/spike_bmi_speck_delay/main"
-EXPORT_DIR="/users/$USER/scratch/$USER/laptop_export/dataset/hkm/$SUBJ/mua"
-LOCAL_ROOT="$HERE/data"
+REMOTE_ROOT="$SNNBCI_OSCAR_MOTOR_DATA"
+REMOTE_CODE="$SNNBCI_OSCAR_HOME/spike_bmi_speck_delay/main"
+EXPORT_DIR="$SNNBCI_OSCAR_HOME/scratch/$USER/laptop_export/dataset/hkm/$SUBJ/mua"
+LOCAL_ROOT="$SNNBCI_MOTOR_DATA"
 
 CTL="$HOME/.ssh/cm-jenkins-%r@%h:%p"
 SSH=(ssh -o ControlMaster=auto -o ControlPath="$CTL" -o ControlPersist=15m)

@@ -24,6 +24,7 @@
 #   N=$(source bmi_sessions.sh; DATA_ROOT=$DATA_ROOT bmi_sessions indy | wc -l)
 #   sbatch --export=ALL,SUBJECT=indy --array=0-$((N-1)) run_bmi_subject_pipeline_array.sbatch
 
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 
 deactivate 2>/dev/null || true
@@ -36,7 +37,7 @@ export MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 export TF_NUM_INTRAOP_THREADS=$SLURM_CPUS_PER_TASK
 export TF_NUM_INTEROP_THREADS=1
 
-DATA_ROOT="${DATA_ROOT:-/users/$USER/scratch/$USER/data}"
+DATA_ROOT="${DATA_ROOT:-$SNNBCI_OSCAR_MOTOR_DATA}"
 export BMI_DATA_ROOT="$DATA_ROOT"
 RAW_DATA_DIR="${DATA_ROOT}/raw/bmi"
 

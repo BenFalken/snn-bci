@@ -5,7 +5,8 @@
 #    output, so a log can lag its checkpoints by a few epochs -- section 2 is the up-to-date one)
 # 2. per session, the best test loss of both networks from their checkpoints: sqrt(MSE) of the velocity
 #    in physical units, averaged over x and y (per-axis RMSE), on that session's own test split
-DATA_ROOT="${DATA_ROOT:-/users/$USER/scratch/$USER/data}"
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
+DATA_ROOT="${DATA_ROOT:-$SNNBCI_OSCAR_MOTOR_DATA}"
 LOGS="$(cd "$(dirname "$0")" && pwd)/snn_logs"
 for job in "$@"; do
     echo "######## job $job"

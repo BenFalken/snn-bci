@@ -6,9 +6,10 @@
 #   RAW_DIR=~/Downloads ROOT=~/Downloads/spike_bmi_lsnn_data bash run_sessions_local.sh indy_20160411_01 indy_20160921_01 ...
 # LSNN_NAME / LSNN_ARGS pick the LSNN variant (default lsnn_out2: --lsnn-out-stages 2).
 # Summary over sessions: $ROOT/lsnn_vs_snn/sessions_summary_$LSNN_NAME.md
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
-RAW_DIR="${RAW_DIR:-$HOME/Downloads}"
-ROOT="${ROOT:-$HOME/Downloads/spike_bmi_lsnn_data}"
+RAW_DIR="${RAW_DIR:-$SNNBCI_WORKSPACE}"
+ROOT="${ROOT:-$SNNBCI_MOTOR_LSNN_DATA}"
 DEVICE="${DEVICE:-cpu}"
 LSNN_NAME="${LSNN_NAME:-lsnn_out2}"                       # the LSNN variant: its directory name and train_snn flags
 LSNN_ARGS="${LSNN_ARGS:---lsnn-out-stages 2}"

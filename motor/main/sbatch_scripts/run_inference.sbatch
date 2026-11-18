@@ -74,6 +74,7 @@
 #   predictions (no evaluation, no chip, any checkpoints):
 #       bash run_inference.sbatch --figures bmi indy FIGURE_DECODERS=snn,speck
 
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 
 # Settings this script reads from the environment (see the examples above).
@@ -125,7 +126,7 @@ if [ -z "${DATA_ROOT:-}" ] && [ "${RUN:-}" != "--submit" ] && [ -z "${SLURM_JOB_
         && [ -d "$LOCAL_DATA_ROOT" ]; then
     DATA_ROOT="$LOCAL_DATA_ROOT"
 fi
-DATA_ROOT="${DATA_ROOT:-/users/$USER/scratch/$USER/data}"
+DATA_ROOT="${DATA_ROOT:-$SNNBCI_OSCAR_MOTOR_DATA}"
 
 # --------------------------------------------------------------------------
 # No subject: run this script once per subject of the experiment

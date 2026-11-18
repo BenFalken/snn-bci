@@ -48,9 +48,10 @@
 #       checkpoint_bmi_iaf_hard_epoch<N>.pth
 # Summarize with plot_snn_sweep_heatmap.py --checkpoint-root <.../sweep tag>.
 
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 
-DATA_ROOT="${DATA_ROOT:-/users/$USER/scratch/$USER/data}"
+DATA_ROOT="${DATA_ROOT:-$SNNBCI_OSCAR_MOTOR_DATA}"
 CONFIG_YAML="../configs/iaf_hard_reset.yaml"
 TRAIN_SCRIPT="../snn_training/train_snn.py"
 # File prefix train_snn.py uses for an IAF / hard-reset model.

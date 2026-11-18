@@ -44,6 +44,8 @@ Usage:
     python single_subject_pipeline.py --raw_stem indy_20160407_02
     python single_subject_pipeline.py --raw_stem SESSION --nwb_dataset_filepath SESSION_binning.h5
 """
+import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[3]))
+from paths import OSCAR_MOTOR_DATA  # noqa: E402  (the repository's paths.yaml)
 
 import json
 import os
@@ -64,7 +66,7 @@ from bmi.utils import customize_plot
 # Keep log output in order when stdout is redirected to a file (e.g. under SLURM).
 sys.stdout.reconfigure(line_buffering=True)
 
-BMI_DATA_ROOT = os.environ.get("BMI_DATA_ROOT", "/users/$USER/scratch/$USER/data")
+BMI_DATA_ROOT = os.environ.get("BMI_DATA_ROOT", str(OSCAR_MOTOR_DATA))
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PYTHON = sys.executable
 

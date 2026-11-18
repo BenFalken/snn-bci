@@ -11,12 +11,13 @@
 #                                                a second time, so about twice as long
 # Only the named session runs on the chip (its own Speck checkpoint folder). Results: results/wait_factor/
 # <session>_w<ms>/; finished ones are skipped; a table at the end, with the 3 ms results alongside.
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 SESSIONS=("$@"); [ ${#SESSIONS[@]} -eq 0 ] && SESSIONS=(20090912 20090916 20090918 20090923)
 WAITS="${WAITS:-10}"
-C="$HERE/data/snn_checkpoints/hkm/jenkins"
-R="$HERE/results/wait_factor"
+C="$SNNBCI_MOTOR_DATA/snn_checkpoints/hkm/jenkins"
+R="$SNNBCI_MOTOR_RESULTS/wait_factor"
 bash "$HERE/run_speck.sh" check
 cd "$HERE/main/sbatch_scripts"
 for SESS in "${SESSIONS[@]}"; do
@@ -31,13 +32,13 @@ for SESS in "${SESSIONS[@]}"; do
         T="$R/${SESS}_w$W"
         [ -f "$T/sessions/$S.json" ] && { echo "skip $SESS w$W (done)"; continue; }
         echo; echo "################ $SESS: layer 1 x$F, wait $W ms ($(date +%H:%M)) ################"
-        SPIKE_DENSITY="${DIAG:-0}" SPECK_H1_SCALE=$F DATA_ROOT="$HERE/data" bash run_inference.sbatch --local hkm jenkins \
+        SPIKE_DENSITY="${DIAG:-0}" SPECK_H1_SCALE=$F DATA_ROOT="$SNNBCI_MOTOR_DATA" bash run_inference.sbatch --local hkm jenkins \
             DECODERS=speck SNN_CHECKPOINT_ROOT="$ONE" SPECK_CHECKPOINT_ROOT="$SP" \
             RESULTS_DIR="$T" SNN_LABEL="LSNN" SPECK_WAIT_TIME=$(python3 -c "print($W/1000)")
         [ -f "$T/sessions/$S.json" ] || echo "WARNING: $SESS w$W wrote no sessions/$S.json (see the errors above)"
     done
 done
-python3 - "$R" "$HERE/results/final_v2/jenkins/sessions" <<'PY'
+python3 - "$R" "$SNNBCI_MOTOR_RESULTS/final_v2/jenkins/sessions" <<'PY'
 import glob, json, os, sys
 def row(f):
     d = json.load(open(f))

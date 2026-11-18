@@ -16,12 +16,11 @@ import numpy as np
 import pandas as pd
 import torch
 import matplotlib.pyplot as plt
+import sys as _s; _s.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from paths import OSCAR_MOTOR_DATA  # noqa: E402  (the repository's paths.yaml)
 
 
-DEFAULT_ROOT = Path(
-    "/users/$USER/scratch/$USER/data/snn_checkpoints/"
-    "bmi/indy/no_tau_syn_sweep"
-)
+DEFAULT_ROOT = OSCAR_MOTOR_DATA / "snn_checkpoints/bmi/indy/no_tau_syn_sweep"
 
 # Loss keys commonly stored in training checkpoints.
 LOSS_KEYS = (

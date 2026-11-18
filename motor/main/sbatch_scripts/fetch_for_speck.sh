@@ -18,10 +18,11 @@
 #   dataset/bmi/<subject>/mua/<session>_binning.h5                    test rows only (export_test_split.py,
 #                                                                     run on Oscar first when missing)
 #   results/model_cache/bmi/<subject>/<session>/                      unless ANN=0
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 REMOTE="${REMOTE:-$USER@ssh.ccv.brown.edu}"
-REMOTE_ROOT="${REMOTE_ROOT:-/users/$USER/scratch/$USER/data}"
-REMOTE_CODE="${REMOTE_CODE:-/users/$USER/spike_bmi_speck_delay/main}"
+REMOTE_ROOT="${REMOTE_ROOT:-$SNNBCI_OSCAR_MOTOR_DATA}"
+REMOTE_CODE="${REMOTE_CODE:-$SNNBCI_OSCAR_HOME/spike_bmi_speck_delay/main}"
 DATA_ROOT="${DATA_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)/data}"
 CKPT_DIR="${CKPT_DIR:-speckdelay_loso_finetuned_binarized}"
 SUBJECTS=("$@"); [ ${#SUBJECTS[@]} -eq 0 ] && SUBJECTS=(indy loco)

@@ -7,12 +7,13 @@
 #   bash jenkins_m1_final.sh                 (devkit plugged in; results/final/jenkins_m1/, then the summary)
 #   bash jenkins_m1_final.sh 20090916        one session
 # Finished sessions are skipped on a rerun.
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 SESSIONS=("$@"); [ ${#SESSIONS[@]} -eq 0 ] && SESSIONS=(20090912 20090916 20090918 20090923)
-C="$HERE/data/snn_checkpoints/hkm/jenkins_m1"
-OUT="$HERE/results/final/jenkins_m1"
-for d in "$C/lsnn_loso_finetuned_binarized" "$C/per_session_delay_binarized" "$HERE/data/results/model_cache/hkm/jenkins_m1"; do
+C="$SNNBCI_MOTOR_DATA/snn_checkpoints/hkm/jenkins_m1"
+OUT="$SNNBCI_MOTOR_RESULTS/final/jenkins_m1"
+for d in "$C/lsnn_loso_finetuned_binarized" "$C/per_session_delay_binarized" "$SNNBCI_MOTOR_DATA/results/model_cache/hkm/jenkins_m1"; do
     [ -d "$d" ] || { echo "Missing $d: run SUBJ=jenkins_m1 bash fetch_jenkins.sh first" >&2; exit 1; }
 done
 bash "$HERE/run_speck.sh" check
@@ -21,10 +22,10 @@ for SESS in "${SESSIONS[@]}"; do
     F=$(awk -v s="$SESS" '$1 == "jenkins_m1" && $2 ~ s {print $3}' "$HERE/speck_l1_factors.txt")
     [ -n "$F" ] || { echo "no jenkins_m1 factor for $SESS in speck_l1_factors.txt" >&2; exit 1; }
     S=$(ls "$C/per_session_delay_binarized" | grep "$SESS")
-    ONE="$HERE/results/final/_lsnn_m1_$SESS"; rm -rf "$ONE"; mkdir -p "$ONE"
+    ONE="$SNNBCI_MOTOR_RESULTS/final/_lsnn_m1_$SESS"; rm -rf "$ONE"; mkdir -p "$ONE"
     cp -r "$C/lsnn_loso_finetuned_binarized/$S" "$ONE/$S"           # sessions = those with an 'snn' checkpoint
     echo; echo "################ $S: every decoder, Speck layer 1 threshold x$F ################"
-    SPECK_H1_SCALE=$F DATA_ROOT="$HERE/data" bash run_inference.sbatch --local hkm jenkins_m1 \
+    SPECK_H1_SCALE=$F DATA_ROOT="$SNNBCI_MOTOR_DATA" bash run_inference.sbatch --local hkm jenkins_m1 \
         DECODERS=kf,wf,lstm,qrnn,snn,speck \
         SNN_CHECKPOINT_ROOT="$ONE" SPECK_CHECKPOINT_ROOT="$C/per_session_delay_binarized" \
         RESULTS_DIR="$OUT" SNN_LABEL="LSNN" SPECK_WAIT_TIME="${SPECK_WAIT_TIME:-0.003}"

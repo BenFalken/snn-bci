@@ -5,18 +5,19 @@
 # (Jenkins fires ~300 to 900 output spikes per step, against indy's ~8).
 #
 #   bash jenkins_chip_final.sh          (devkit plugged in; results/final/jenkins_l1/, then the summary)
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
-C="$HERE/data/snn_checkpoints/hkm/jenkins"
-OUT="$HERE/results/final/jenkins_l1"
+C="$SNNBCI_MOTOR_DATA/snn_checkpoints/hkm/jenkins"
+OUT="$SNNBCI_MOTOR_RESULTS/final/jenkins_l1"
 cd "$HERE/main/sbatch_scripts"
 for cfg in "20090912 2" "20090916 4" "20090918 3" "20090923 3"; do
     set -- $cfg
     S=$(ls "$C/per_session_delay2_binarized" | grep "$1")
-    ONE="$HERE/results/final/_lsnn_one_$1"; rm -rf "$ONE"; mkdir -p "$ONE"
+    ONE="$SNNBCI_MOTOR_RESULTS/final/_lsnn_one_$1"; rm -rf "$ONE"; mkdir -p "$ONE"
     cp -r "$C/lsnn_loso_finetuned_binarized/$S" "$ONE/$S"           # sessions = those with an 'snn' checkpoint
     echo; echo "################ $S: layer 1 threshold x$2 ################"
-    SPECK_H1_SCALE=$2 DATA_ROOT="$HERE/data" bash run_inference.sbatch --local hkm jenkins \
+    SPECK_H1_SCALE=$2 DATA_ROOT="$SNNBCI_MOTOR_DATA" bash run_inference.sbatch --local hkm jenkins \
         DECODERS=speck SNN_CHECKPOINT_ROOT="$ONE" SPECK_CHECKPOINT_ROOT="$C/per_session_delay2_binarized" \
         RESULTS_DIR="$OUT" SNN_LABEL="LSNN" SPECK_WAIT_TIME=0.003
 done

@@ -16,6 +16,8 @@ mean, with the number of sessions each model wins), loso_comparison.png.
     python snn_training/compare_loso.py --data-root $DATA_ROOT --experiment bmi --subject indy \\
         --out-dir lsnn_vs_snn_loso/indy --device cpu
 """
+import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[3]))
+from paths import OSCAR_MOTOR_DATA  # noqa: E402  (the repository's paths.yaml)
 
 import argparse
 import json
@@ -36,7 +38,7 @@ METRICS = [("rmse", "velocity error (RMS)", "{:.1f}", -1), ("r2_mean", "R² (mea
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--data-root", default=os.environ.get("DATA_ROOT", "/users/$USER/scratch/$USER/data"))
+    p.add_argument("--data-root", default=os.environ.get("DATA_ROOT", str(OSCAR_MOTOR_DATA)))
     p.add_argument("--experiment", default="bmi")
     p.add_argument("--subject", default="indy")
     p.add_argument("--out-dir", required=True)

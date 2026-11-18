@@ -14,6 +14,8 @@ For every session whose LSNN fine-tuning has finished (a final_model_*.pth):
 Prints a table and the means over the sessions both models have; --out writes JSON.
     python snn_training/audit_loso.py --data-root $DATA_ROOT --subject indy [--out audit_indy.json]
 """
+import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[3]))
+from paths import OSCAR_MOTOR_DATA  # noqa: E402  (the repository's paths.yaml)
 
 import argparse
 import glob
@@ -60,7 +62,7 @@ def provenance(base, session, ckpt_args):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--data-root", default=os.environ.get("DATA_ROOT", "/users/$USER/scratch/$USER/data"))
+    p.add_argument("--data-root", default=os.environ.get("DATA_ROOT", str(OSCAR_MOTOR_DATA)))
     p.add_argument("--experiment", default="bmi")
     p.add_argument("--subject", default="indy")
     p.add_argument("--out", default=None)

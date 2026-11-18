@@ -2,8 +2,9 @@
 # compare_speck_delays.py over several sessions on a laptop (datasets as built by run_sessions_local.sh), then a
 # summary over sessions: $ROOT/lsnn_vs_snn/speck_delays_summary.md
 #   ROOT=~/Downloads/spike_bmi_lsnn_data bash run_speck_delays_local.sh indy_20160411_01 indy_20160921_01 ...
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
-ROOT="${ROOT:-$HOME/Downloads/spike_bmi_lsnn_data}"
+ROOT="${ROOT:-$SNNBCI_MOTOR_LSNN_DATA}"
 DEVICE="${DEVICE:-cpu}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 for S in "$@"; do

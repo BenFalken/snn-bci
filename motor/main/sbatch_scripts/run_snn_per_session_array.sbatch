@@ -20,13 +20,14 @@
 # These are the 'speck' checkpoints of run_inference.sbatch.
 # Re-submitting skips finished sessions and resumes interrupted ones.
 
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 
 if [ -z "${EXPERIMENT:-}" ] || [ -z "${SUBJECT:-}" ]; then
     echo "ERROR: set EXPERIMENT and SUBJECT, e.g. sbatch --export=ALL,EXPERIMENT=bmi,SUBJECT=indy --array=0-N $0" >&2
     exit 1
 fi
-DATA_ROOT="${DATA_ROOT:-/users/$USER/scratch/$USER/data}"
+DATA_ROOT="${DATA_ROOT:-$SNNBCI_OSCAR_MOTOR_DATA}"
 source ./snn_config.sh
 select_model "${SPECK_MODEL:-per_session}"     # SPECK_MODEL=speck_delay: the input delay bank version
 array_session

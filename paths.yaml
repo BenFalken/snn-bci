@@ -12,12 +12,19 @@ auditory_data: ~/Documents/GitHub/AuditoryDecoding/pipeline_data
 # trained networks of the shared library (the audio Speck SNNs)
 snn_runs: ~/Documents/GitHub/snn-decoders/runs
 
+# motor: the laptop layout (data/dataset, data/snn_datasets, data/snn_checkpoints, data/results/model_cache) and where
+# the final laptop runs write; the trained LSNN data of the motor LSNN branch
+motor_data: ~/Downloads/speck_per_session/data
+motor_results: ~/Downloads/speck_per_session/results
+motor_lsnn_data: ~/Downloads/spike_bmi_lsnn_data
+
 # raw recordings (only the data-preparation scripts read these)
 raw_auditory: ~/Dropbox/SNN_Main/data/Auditory_cortex
 
 # Oscar (only the cluster job scripts use these)
 oscar_home: /users/$USER
 oscar_scratch: /users/$USER/scratch/speechBCI_dryad
+oscar_motor_data: /users/$USER/scratch/$USER/data
 
 # tools installed outside the repository: the offline speech synthesizer (Piper) the speech video voices phonemes with
 tts_env: ~/Downloads/paper_figures/.tts-venv
