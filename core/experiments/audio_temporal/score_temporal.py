@@ -17,6 +17,8 @@ Runs: snn-decoders run folders (best.pt; test predictions computed once and cach
     python experiments/audio_temporal/score_temporal.py --out runs/audio_temporal_scores.json [--jobs 4]
 """
 
+import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[3]))
+from paths import AUDITORY_DATA, FIGURES  # noqa: E402  (the repository's paths.yaml)
 import argparse
 import csv
 import json
@@ -29,8 +31,8 @@ import numpy as np
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
-sys.path.insert(0, str(Path.home() / 'Downloads/paper_figures'))
-WORDS = Path.home() / 'Documents/GitHub/AuditoryDecoding/pipeline_data/Neil/aSTG/ALLWORDS_VERIFIED_DAYNORM'
+sys.path.insert(0, str(FIGURES))
+WORDS = AUDITORY_DATA / 'Neil/aSTG/ALLWORDS_VERIFIED_DAYNORM'
 PIPE = WORDS / 'pipeline'
 LAGS = np.arange(-6, 7)
 

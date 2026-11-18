@@ -1,12 +1,13 @@
 #!/bin/bash
-# Builds ~/Downloads/speck_deploy.zip: the FINAL Speck SNNs, run end to end on a Speck2f devkit with their final
+# Builds $SNNBCI_WORKSPACE/speck_deploy.zip: the FINAL Speck SNNs, run end to end on a Speck2f devkit with their final
 # readouts applied live (no post-processing step). Run ON THE MAC (it gathers checkpoints, readouts and data):
 #   bash experiments/chip/make_deploy_bundle.sh
 # On the Speck laptop (conda env "speck": torch, sinabs, samna, numpy, pyyaml), devkit plugged in:
 #   unzip speck_deploy.zip && cd speck_deploy && bash run.sh check && bash run.sh all
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
-DL="$HOME/Downloads"
+DL="$SNNBCI_WORKSPACE"
 SB="$DL/speechBCI-main/SNNDecoder"
 T="$(mktemp -d)/speck_deploy"
 mkdir -p "$T"/{code,models,data,results}
@@ -28,10 +29,10 @@ rsync -a --include='*/' --include='test.npz' --exclude='*' "$DL/speech_rebuild/d
 
 # ---- audio: P5 on the expanded cohorts, monkeys N (Neil) and G (Gomez), 3 seeds each, each with its refitted
 # readout; per network only what the run reads (the per-frame chip input, the test targets, the split lengths)
-AD="$HOME/Documents/GitHub/AuditoryDecoding/pipeline_data"
+AD="$SNNBCI_AUDITORY_DATA"
 for m in Neil Gomez; do for s in s11 s1337 s99; do
   D="$T/models/audio/${m}_P5_$s"; P="$AD/$m/aSTG/ALLWORDS_NOVEL_DAYNORM/pipeline"; mkdir -p "$D/pipeline"
-  cp "$REPO/runs/audio_novel_$m/P5_centre_ema1_deriv_$s/best.pt" "$D/model.pt"
+  cp "$SNNBCI_SNN_RUNS/audio_novel_$m/P5_centre_ema1_deriv_$s/best.pt" "$D/model.pt"
   cp "$DL/final_results/audio_novel/${m}_P5_$s/refit/readout_event.npz" "$D/readout_refit.npz"
   cp "$P/features_counts_daynorm.npy" "$P/window_targets_test.npy" "$D/pipeline/"
   python3 -c "

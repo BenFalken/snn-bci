@@ -1,9 +1,10 @@
 #!/bin/bash
 # Devkit bundle for the chosen two-network audio variant (summary.json), both monkeys x 3 seeds, readouts refitted and
-# applied live; ~/Downloads/speck_audio_two(.zip).
+# applied live; $SNNBCI_WORKSPACE/speck_audio_two(.zip).
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
-SD=$(cd "$(dirname "$0")/../.." && pwd); AD=$HOME/Documents/GitHub/AuditoryDecoding/pipeline_data
-OUT=$HOME/Downloads/final_results/audio_two; B=$HOME/Downloads/speck_audio_two
+SD=$(cd "$(dirname "$0")/../.." && pwd); AD=$SNNBCI_AUDITORY_DATA
+OUT=$SNNBCI_WORKSPACE/final_results/audio_two; B=$SNNBCI_WORKSPACE/speck_audio_two
 V=$(python3 -c "import json; print(json.load(open('$OUT/summary.json'))['chosen'])")
 [ "$V" != None ] || { echo "no variant to bundle"; exit 1; }
 rm -rf $B; mkdir -p $B/code/experiments $B/data $B/results
@@ -13,7 +14,7 @@ for m in Neil Gomez; do for s in s11 s1337 s99; do
   r=${V}_$s; N=$OUT/${m}_$r; D=$B/data/${m}_$r; P=$AD/$m/aSTG/ALLWORDS_NOVEL_DAYNORM/pipeline
   [ -f $N/refit/readout_event.npz ] || continue
   mkdir -p $D/pipeline
-  cp $SD/runs/audio_two_$m/$r/best.pt $D/model.pt; cp $N/refit/readout_event.npz $D/readout_refit.npz
+  cp $SNNBCI_SNN_RUNS/audio_two_$m/$r/best.pt $D/model.pt; cp $N/refit/readout_event.npz $D/readout_refit.npz
   cp $P/features_counts_daynorm.npy $P/window_targets_test.npy $D/pipeline/
   python3 -c "
 import numpy as np, json
@@ -48,5 +49,5 @@ done
 echo "Done: send back the results/ folder."
 EOS
 chmod +x $B/run.sh
-cd $HOME/Downloads && rm -f speck_audio_two.zip && zip -qr speck_audio_two.zip speck_audio_two && du -h speck_audio_two.zip
+cd $SNNBCI_WORKSPACE && rm -f speck_audio_two.zip && zip -qr speck_audio_two.zip speck_audio_two && du -h speck_audio_two.zip
 echo "bundle: variant $V, networks:$LINES"

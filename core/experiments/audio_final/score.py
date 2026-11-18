@@ -6,6 +6,8 @@ validation r the runs were chosen on.
     python experiments/audio_final/score.py runs/audio_final --out runs/audio_final_scores.json [--jobs 4]
 """
 
+import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[3]))
+from paths import AUDITORY_DATA, FIGURES  # noqa: E402  (the repository's paths.yaml)
 import argparse
 import csv
 import json
@@ -18,9 +20,9 @@ import numpy as np
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, REPO)
-sys.path.insert(0, str(Path.home() / 'Downloads/paper_figures'))
+sys.path.insert(0, str(FIGURES))
 
-WORDS = Path.home() / 'Documents/GitHub/AuditoryDecoding/pipeline_data/Neil/aSTG/ALLWORDS_VERIFIED_DAYNORM'
+WORDS = AUDITORY_DATA / 'Neil/aSTG/ALLWORDS_VERIFIED_DAYNORM'
 PIPE = WORDS / 'pipeline'
 
 

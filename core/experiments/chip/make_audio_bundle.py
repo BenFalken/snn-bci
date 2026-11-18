@@ -7,6 +7,8 @@ folder to the laptop, plug in the devkit, and run `bash run.sh`.
     python experiments/chip/make_audio_bundle.py --out ~/Downloads/speck_laptop_batch1
 """
 
+import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[3]))
+from paths import AUDITORY_DATA, SNN_RUNS  # noqa: E402  (the repository's paths.yaml)
 import argparse
 import json
 import os
@@ -20,10 +22,10 @@ sys.path.insert(0, REPO)
 from snndec.convert import load  # noqa: E402
 from snndec.evaluate import recording_file  # noqa: E402
 
-AUDIO = os.path.expanduser('~/Documents/GitHub/AuditoryDecoding/pipeline_data/Neil/aSTG')
-SETS = {d: f'{REPO}/runs/speck_audio_binB/{d}_r13_binB_s1337/model.pt'
+AUDIO = str(AUDITORY_DATA / 'Neil/aSTG')
+SETS = {d: f'{SNN_RUNS}/speck_audio_binB/{d}_r13_binB_s1337/model.pt'
         for d in ('07_19_11', '07_20_10', '07_31_13', '08_03_10', '08_06_13')}
-SETS['ALLWORDS_VERIFIED_DAYNORM'] = f'{REPO}/runs/audio_speck_words_s1337/best.pt'
+SETS['ALLWORDS_VERIFIED_DAYNORM'] = f'{SNN_RUNS}/audio_speck_words_s1337/best.pt'
 
 RUN_SH = '''#!/bin/bash
 # On the Speck laptop. Two parts, results in results/ (send that folder back):

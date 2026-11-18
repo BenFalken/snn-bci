@@ -16,12 +16,13 @@
 #
 # ENV_SCRIPT (default: the speech SNNDecoder's snn_config.sh) provides activate_env (torch, sinabs, pyyaml).
 # Finished runs (result.json present) are skipped, so a resubmitted array only redoes what is missing.
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 : "${PLAN:?set PLAN}" "${ROOT:?set ROOT}"
-ENV_SCRIPT="${ENV_SCRIPT:-/users/$USER/speechBCI-main/SNNDecoder/scripts/snn_config.sh}"
+ENV_SCRIPT="${ENV_SCRIPT:-$SNNBCI_ROOT/speech/SNNDecoder/scripts/snn_config.sh}"
 REPO="${SLURM_SUBMIT_DIR:-$(pwd)}"
 # snn_config.sh requires BASE_DIR (the speech data root) and exits a batch job without it
-export BASE_DIR="${BASE_DIR:-/users/$USER/scratch/speechBCI_dryad}"
+export BASE_DIR="${BASE_DIR:-$SNNBCI_OSCAR_SCRATCH}"
 cd "$(dirname "$ENV_SCRIPT")" && source "$ENV_SCRIPT" && activate_env && cd "$REPO"
 PACK=${PACK:-1}
 task=${SLURM_ARRAY_TASK_ID:-0}

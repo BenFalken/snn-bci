@@ -10,12 +10,13 @@
 # Submit from the repo root:
 #   mkdir -p experiments/audio_final/logs
 #   L=experiments/audio_final/runs_lsnn.txt; N=$(grep -cv '^#' $L)
-#   sbatch --export=ALL,RUNS=$L,ROOT=/users/$USER/scratch/audio_final,DATA=/users/$USER/scratch/audio_pipeline/ALLWORDS_VERIFIED_DAYNORM/pipeline --array=0-$((N - 1)) experiments/audio_final/run_array.sbatch
+#   sbatch --export=ALL,RUNS=$L,ROOT=$SNNBCI_OSCAR_HOME/scratch/audio_final,DATA=$SNNBCI_OSCAR_HOME/scratch/audio_pipeline/ALLWORDS_VERIFIED_DAYNORM/pipeline --array=0-$((N - 1)) experiments/audio_final/run_array.sbatch
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 : "${RUNS:?set RUNS}" "${ROOT:?set ROOT}" "${DATA:?set DATA}"
-ENV_SCRIPT="${ENV_SCRIPT:-/users/$USER/speechBCI-main/SNNDecoder/scripts/snn_config.sh}"
+ENV_SCRIPT="${ENV_SCRIPT:-$SNNBCI_ROOT/speech/SNNDecoder/scripts/snn_config.sh}"
 REPO="${SLURM_SUBMIT_DIR:-$(pwd)}"
-export BASE_DIR="${BASE_DIR:-/users/$USER/scratch/speechBCI_dryad}"
+export BASE_DIR="${BASE_DIR:-$SNNBCI_OSCAR_SCRATCH}"
 cd "$(dirname "$ENV_SCRIPT")" && source "$ENV_SCRIPT" && activate_env && cd "$REPO"
 export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-2}
 line=$(grep -v '^[[:space:]]*\(#\|$\)' "$RUNS" | sed -n "$(( ${SLURM_ARRAY_TASK_ID:-0} + 1 ))p")

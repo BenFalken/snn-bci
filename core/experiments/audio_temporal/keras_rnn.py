@@ -14,6 +14,8 @@ pipeline's defaults.
 Writes <out>/predict_test.npy (aligned with window_targets_test.npy), history.json and done.
 """
 
+import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[3]))
+from paths import AUDITORY_DATA  # noqa: E402  (the repository's paths.yaml)
 import argparse
 import json
 import os
@@ -21,7 +23,7 @@ from pathlib import Path
 
 import numpy as np
 
-PIPE = Path.home() / 'Documents/GitHub/AuditoryDecoding/pipeline_data/Neil/aSTG/ALLWORDS_VERIFIED_DAYNORM/pipeline'
+PIPE = AUDITORY_DATA / 'Neil/aSTG/ALLWORDS_VERIFIED_DAYNORM/pipeline'
 
 
 def main():

@@ -7,6 +7,8 @@ during training (run_two.sh), with every variant's chip-model test scores alongs
 
     python experiments/audio_final/summarize_two.py
 """
+import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[3]))
+from paths import WORKSPACE, AUDITORY_DATA, FIGURES  # noqa: E402  (the repository's paths.yaml)
 import csv
 import glob
 import json
@@ -16,10 +18,10 @@ import sys
 import numpy as np
 
 HOME = os.path.expanduser('~')
-AD = f'{HOME}/Documents/GitHub/AuditoryDecoding/pipeline_data'
-OUT = f'{HOME}/Downloads/final_results/audio_two'
-P5 = f'{HOME}/Downloads/final_results/audio_novel'
-sys.path.insert(0, f'{HOME}/Downloads/paper_figures')
+AD = str(AUDITORY_DATA)
+OUT = f'{WORKSPACE}/final_results/audio_two'
+P5 = f'{WORKSPACE}/final_results/audio_novel'
+sys.path.insert(0, str(FIGURES))
 from collect_fidelity import fisher_mean_r  # noqa: E402
 
 SAMPLES_BEFORE = 8
