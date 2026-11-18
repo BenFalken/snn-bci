@@ -1,0 +1,8 @@
+# Efficiency list for the LSNN round (scripts/efficiency.py)
+GRU 2x1024 out80, same input, 36 ep | gru | $BASE_DIR/derived/snns/controls/gru_1024_out80_c36.json
+Native C_base (all ALIF) | snn | $BASE_DIR/derived/snns/native36/*_N_out80/final_model_*.pth
+Native C_iaf (all IAF)   | snn | $BASE_DIR/derived/snns/combo36_light/*_C_iaf/final_model_*.pth
+Native L_f25_1s   | snn | $BASE_DIR/derived/snns/lsnn36/*_L_f25_1s/final_model_*.pth
+Native L_f40_1s   | snn | $BASE_DIR/derived/snns/lsnn36/*_L_f40_1s/final_model_*.pth
+Native L_f40_05s  | snn | $BASE_DIR/derived/snns/lsnn36/*_L_f40_05s/final_model_*.pth
+Native L_f40_2s   | snn | $BASE_DIR/derived/snns/lsnn36/*_L_f40_2s/final_model_*.pth

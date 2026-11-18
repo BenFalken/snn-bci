@@ -1,0 +1,52 @@
+# The pooled SNN of the pretrain -> fine-tune pipeline (spike_bmi_main's
+# "pooled" configuration), for phoneme decoding: 512 -> 256 -> 128 hidden
+# spiking layers + a 128-wide last spiking layer read out by a 2-stage EMA and
+# a linear layer, IAF neurons with threshold 1.0, multi-spike, and trained
+# synaptic time constants. The reset type is set per stage on the command
+# line: pretraining --reset-type hard, fine-tuning --reset-type soft.
+#
+# Time constants are the velocity decoder's in PHYSICAL time: there, tau_syn
+# 2, 4, 8, 16 and EMA decay 0.8 were in 4 ms steps (8-64 ms; EMA ~18 ms); at
+# this data's 20 ms bins the same time constants are tau_syn 0.4, 0.8, 1.6,
+# 3.2 and decay 0.8^5 = 0.33. Copying the step counts unchanged (40-320 ms)
+# did not learn a phoneme-rate synthetic task at all (PER 100%), while these
+# reached ~2% PER, with norm_syn (unit-gain synaptic stage, see model.py).
+#
+# Flattened into train.py's arguments; flags given explicitly win.
+
+model:
+  neuron_type: iaf
+  spike_fn: multi
+  min_vmem: -1.0
+  weight_init: kaiming
+  hidden_dims: [512, 256, 128]
+  readout_width: 128
+  spike_thresholds: [1.0, 1.0, 1.0, 1.0]
+  tau_syn: [0.4, 0.8, 1.6, 3.2]
+  norm_syn: true
+  temporal_decay_stages: 2
+  temporal_decay_init: 0.33
+  input_dropout: 0.2
+  use_exodus: false        # CUDA kernels; forces soft reset, so leave off for hard-reset pretraining
+
+data:
+  batch_size: 64
+  white_noise_sd: 1.0      # the RNN's augmentation (speech_release_baseline.yaml)
+  constant_offset_sd: 0.2
+  smooth_sd: 0.0           # RNN-style input smoothing is non-causal; off for real-time decoding
+
+training:
+  epochs: 50
+  lr: 0.001
+  weight_decay: 0.001
+  grad_clip: 1.0
+  selection_metric: per
+  patience: 10
+  scheduler_patience: 10
+  min_lr: 1.0e-6
+  lr_factor: 0.1
+  checkpoint_interval: 10
+
+device: cuda
+seed: 42
+log_interval: 50

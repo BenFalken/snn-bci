@@ -1,0 +1,5 @@
+# Are the synaptic filters still needed now that delayed input synapses supply memory? The current SNN (R_readall, 36
+# epochs: 0.264) with the per-neuron synaptic filters (trained time constants, 20 ms-1.3 s) switched off, so each
+# arriving spike is a single-step current. Earlier ablation (raw counts, no delays, 20 ms outputs): 0.718 -> 0.883
+# without them. 36 epochs, seed 42; two per GPU (PACK=2).
+S_nofilter | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 36 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --syn-delay-in 30 --syn-delay-in-mult 4 --seed 42 --readout-all true --tau-syn-range 0 0

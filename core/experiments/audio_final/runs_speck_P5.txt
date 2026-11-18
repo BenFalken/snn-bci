@@ -1,0 +1,3 @@
+P5_centre_ema1_deriv_s1337 | audio_speck | model.input.n_delays=0 model.input.delays=[0,4,6,7,8,9,10,12,16] model.readout.stages=1 train.deriv_weight=1.0 train.seed=1337
+P5_centre_ema1_deriv_s11 | audio_speck | model.input.n_delays=0 model.input.delays=[0,4,6,7,8,9,10,12,16] model.readout.stages=1 train.deriv_weight=1.0 train.seed=11
+P5_centre_ema1_deriv_s99 | audio_speck | model.input.n_delays=0 model.input.delays=[0,4,6,7,8,9,10,12,16] model.readout.stages=1 train.deriv_weight=1.0 train.seed=99

@@ -1,0 +1,22 @@
+# Runs still to do for the final comparison (Model A, DelayNet vs Model B, LSNN) and its ladder; 2026-10-24.
+# progress_report.sh lists each as "not started" until a log for it appears.
+# Dropped 2026-10-24 when the sweep was wrapped up: ladder96's L3_delays/L4_readall/L5_out80 (old order, replaced by
+# fork96.txt), E_events96, P_eps_lr1e3, P_noise05, P_tbptt200 (recipe), QRNN_full96, EFF_ladder96 (replaced by
+# EFF_fork96). The LSNN variants Q_adapt2s, Q_adaptrange, Q_frac50 (lsnn96.txt) were stopped at epoch ~33-56 on 2026-10-23 (lsnn96b answered their question); checkpoints kept, resumable.
+# name          | how to submit (from SNNDecoder/scripts)                                                     | why
+R_readall_s44   | seeds96.txt                                                                                 | Model A, seed 3
+Q_lsnn_s44      | seeds96.txt                                                                                 | Model B, seed 3
+Q_w1152_s43     | seeds96.txt                                                                                 | Model B 2x1152, seed 2
+Q_w1152_s44     | seeds96.txt                                                                                 | Model B 2x1152, seed 3
+S2_rec          | fork96.txt                                                                                  | ladder: + recurrence
+S3_out80        | fork96.txt                                                                                  | ladder: + 80 ms outputs
+S4_readall      | fork96.txt                                                                                  | ladder: + both-layer readout
+A_noro_s43      | noreadout96.txt                                                                             | Model A without both-layer readout
+B_noro_s42      | noreadout96.txt                                                                             | Model B without both-layer readout
+B_noro_s43      | noreadout96b.txt                                                                            | final LSNN (last layer), seed 2
+B_noro_s44      | noreadout96b.txt                                                                            | final LSNN (last layer), seed 3
+A_noro_s44      | noreadout96b.txt                                                                            | DelayNet (last layer), seed 3
+B_nofilt        | filters96.txt                                                                               | final LSNN without synaptic filters
+B_fixfilt       | filters96.txt                                                                               | final LSNN, fixed filter time constants
+R1_rec          | ladder_final.txt                                                                            | final ladder: + recurrence (funnel)
+T4_tau          | ladder_final.txt                                                                            | final ladder: + trained tau (fork root)

@@ -1,0 +1,37 @@
+# Audio LSNN (AuditoryDecoding lsnn, LSNN_PARAMS): 2 x 256 recurrent layers on the normalized window features, one
+# step per 40 ms frame; each window read from rest, its last step the prediction (as the Keras RNNs).
+experiment: audio
+data: {input: windows}
+model:
+  kind: lsnn
+  step_ms: 40
+  n_channels: 96                          # the dataset's channels (set to match the pipeline's features)
+  n_outputs: 128
+  input: {dropout: 0.2}
+  layers:
+    hidden: [256, 256]
+    recurrent: true
+    reset: soft
+    tau_syn_ms: [20, 1300]
+    adaptive_fraction: 0.9
+    tau_adapt_ms: 500
+    adapt_scale: 1.8
+    max_spikes: 3
+    min_vmem: -1
+    max_vmem: 50
+    rec_init_scale: 0.5
+    surrogate: lsnn
+    layer_dropout: 0.2
+  readout: {type: leaky, read: all, tau_ms: 40, stages: 1, init: bias, dropout: 0.2}
+train:
+  batches: windows
+  batch_size: 64
+  optimizer: adam
+  lr: 1.0e-3
+  schedule: none
+  epochs: 2048
+  patience: 10
+  min_delta: 1.0e-4
+  grad_clip: 10.0
+  augment: {white_noise_sd: 1.0, constant_offset_sd: 0.2}
+  select_on: valid

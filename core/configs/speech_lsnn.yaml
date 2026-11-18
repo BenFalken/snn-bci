@@ -1,0 +1,47 @@
+# Speech LSNN, the final model (SNNDecoder C_lsnn_nodelay96, "Model B", PER 0.2465 over 3 seeds): 2 x 1,024 recurrent
+# layers, 90% adaptive, on the 256 block-normalized features (snnData) at 20 ms steps, one output per 80 ms, read
+# from both layers. The paper RNN's recipe: Adam (eps 0.1, L2 1e-5), lr 0.02 to 0 linearly, CTC.
+experiment: speech
+data:
+  sessions: ['t12.2022.04.28', 't12.2022.05.05', 't12.2022.05.17', 't12.2022.05.19', 't12.2022.05.24', 't12.2022.05.26', 't12.2022.06.02', 't12.2022.06.07', 't12.2022.06.14', 't12.2022.06.16', 't12.2022.06.21', 't12.2022.06.28', 't12.2022.07.05', 't12.2022.07.14', 't12.2022.07.21', 't12.2022.07.27', 't12.2022.08.02', 't12.2022.08.11', 't12.2022.08.13']
+model:
+  kind: lsnn
+  step_ms: 20
+  n_channels: 256
+  n_outputs: 41
+  n_days: 19
+  out_every: 4
+  input: {dropout: 0.2}
+  layers:
+    hidden: [1024, 1024]
+    recurrent: true
+    reset: soft
+    tau_syn_ms: [20, 1280]
+    adaptive_fraction: 0.9
+    tau_adapt_ms: 500
+    adapt_scale: 1.8
+    max_spikes: 3
+    min_vmem: -1
+    max_vmem: 50
+    rec_init_scale: 0.5
+    adapt_seed: 5
+    surrogate: single_exponential
+    layer_dropout: 0.2
+  readout: {type: leaky, read: all, tau_ms: 40, stages: 1, init: zero}
+train:
+  batches: trials
+  batch_size: 64
+  optimizer: adam
+  eps: 0.1
+  weight_decay: 1.0e-5
+  lr: 0.02
+  tau_lr_mult: 0.1
+  schedule: linear
+  epochs: 96
+  patience: null
+  grad_clip: 10.0
+  tbptt: 100
+  augment: {white_noise_sd: 1.0, constant_offset_sd: 0.2}
+  spike_rate: {weight: 30.0, targets: [0.4], form: layer_relu, per: output}
+  select_on: test
+  seed: 42

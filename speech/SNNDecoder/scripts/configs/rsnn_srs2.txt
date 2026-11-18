@@ -1,0 +1,15 @@
+# Combining the two wins of rsnn_srs, on SR_strong's training (single-exponential surrogate, spike-rate penalty
+# weight 30, paper recipe, 19 sessions, 96 epochs). Results so far (final test PER, spikes per neuron per 80 ms):
+#   SR_strong 2 x 1280, target 0.3: 0.270, 0.30 | seed 43: 0.268 | 2 x 2048, target 0.3: 0.256, 0.30
+#   2 x 1280, target 0.2: 0.260, 0.19 | 3 x 1024: 0.314 (depth still hurts)
+# Reference of the same size as 2 x 2048 (29.4M): GRU 2 x 896 with the same input stacking (29.3M), run separately.
+#
+#   W2048_t02    2 x 2048, target 0.2
+#   W2048_t015   2 x 2048, target 0.15
+#   W1280_t015   2 x 1280, target 0.15
+#   W1280_t01    2 x 1280, target 0.1: how low can firing go?
+# Ordered for PACK=2: the two 2 x 2048 runs share one GPU.
+W2048_t02  | --config ../snnDecoder/configs/speech_rsnn.yaml --recipe rnn --grad-clip 10 --weight-decay 1e-5 --rec-init orthogonal --epochs 96 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --lr 0.02 --surrogate-grad single_exponential --spike-rate-weight 30 --hidden-dims 2048 2048 --spike-rate-target 0.2
+W2048_t015 | --config ../snnDecoder/configs/speech_rsnn.yaml --recipe rnn --grad-clip 10 --weight-decay 1e-5 --rec-init orthogonal --epochs 96 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --lr 0.02 --surrogate-grad single_exponential --spike-rate-weight 30 --hidden-dims 2048 2048 --spike-rate-target 0.15
+W1280_t015 | --config ../snnDecoder/configs/speech_rsnn.yaml --recipe rnn --grad-clip 10 --weight-decay 1e-5 --rec-init orthogonal --epochs 96 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --lr 0.02 --surrogate-grad single_exponential --spike-rate-weight 30 --hidden-dims 1280 1280 --spike-rate-target 0.15
+W1280_t01  | --config ../snnDecoder/configs/speech_rsnn.yaml --recipe rnn --grad-clip 10 --weight-decay 1e-5 --rec-init orthogonal --epochs 96 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --lr 0.02 --surrogate-grad single_exponential --spike-rate-weight 30 --hidden-dims 1280 1280 --spike-rate-target 0.1

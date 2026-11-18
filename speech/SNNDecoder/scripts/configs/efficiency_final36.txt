@@ -1,0 +1,10 @@
+# Efficiency list for the final structure round (final36_light/heavy.txt) and reg96.txt
+GRU 2x1024 out80, same input, 96 ep | gru | $BASE_DIR/derived/snns/controls/gru_1024_out80_full96.json
+Current SNN, 36 ep (R_readall) | snn | $BASE_DIR/derived/snns/ref36/*_R_readall/final_model_*.pth
+Current SNN, 96 ep (R_readall96) | snn | $BASE_DIR/derived/snns/readall96/*_R_readall96/final_model_*.pth
+T_deep3 | snn | $BASE_DIR/derived/snns/final36_light/*_T_deep3/final_model_*.pth
+T_funnel2 | snn | $BASE_DIR/derived/snns/final36_light/*_T_funnel2/final_model_*.pth
+T_funnel3 | snn | $BASE_DIR/derived/snns/final36_light/*_T_funnel3/final_model_*.pth
+T_events | snn | $BASE_DIR/derived/snns/final36_light/*_T_events/final_model_*.pth
+T_deep4 | snn | $BASE_DIR/derived/snns/final36_heavy/*_T_deep4/final_model_*.pth
+T_drop96 | snn | $BASE_DIR/derived/snns/reg96/*_T_drop96/final_model_*.pth

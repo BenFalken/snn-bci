@@ -1,0 +1,34 @@
+# Audio Speck SNN (speck_snn binB): the 48 channels that best predict the spectrogram on the training frames x 10
+# delays over the 17-frame window = 480 chip inputs -> 128 -> 256 -> 256; each 40 ms frame is 10 chip steps, its
+# spike counts spread over them as single events; the host smooths the last layer's spikes and maps them linearly to
+# the 128 bands. Inputs scaled by 1 / their training SD (folds into the first layer's weights).
+experiment: audio
+data: {input: counts}
+model:
+  kind: speck
+  step_ms: 40
+  n_channels: 96
+  n_outputs: 128
+  input: {encoding: spread, substeps: 10, binarize: true, n_channels: 48, n_delays: 10, input_norm: true}
+  layers:
+    hidden: [128, 256, 256]
+    reset: hard
+    thresholds: 1.0
+    max_spikes: null
+    min_vmem: -1
+    surrogate: single_exponential
+  readout: {type: ema, read: last, decay: 0.8, stages: 2, head: linear, normalize: true}
+train:
+  batches: chunks
+  chunk_steps: 150
+  burn_in: 25
+  coverage: 4
+  batch_size: 16
+  optimizer: adam
+  lr: 1.0e-3
+  schedule: none
+  epochs: 200
+  patience: 10
+  min_delta: 1.0e-4
+  grad_clip: 10.0
+  select_on: valid

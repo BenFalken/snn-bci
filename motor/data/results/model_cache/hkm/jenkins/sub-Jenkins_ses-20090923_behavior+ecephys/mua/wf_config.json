@@ -1,0 +1,13 @@
+{
+  "reg_type": "l2",
+  "reg_alpha": 1.0,
+  "timesteps": 8,
+  "test_frac": 0.1,
+  "feature": "mua",
+  "train_duration_minutes": null,
+  "train_duration_samples": null,
+  "split_gap_samples": 0,
+  "input_dim": 192,
+  "flattened_dim": 1536,
+  "decoder": "wf"
+}

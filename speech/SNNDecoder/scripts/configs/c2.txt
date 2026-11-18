@@ -1,0 +1,7 @@
+# C2 side by side: identical except for the neuron type.
+#   widths 1024 -> 512 -> 256 + 256 readout layer, soft reset, multi-spike
+#   per-neuron tau_syn log-spaced x/3..x*3 around 1.5 / 3 / 6.5 / 14 bins (trained)
+#   readout: one leaky stage with a 1-bin time constant (decay 0.37, trained)
+#   white noise 0.3, offset 0.2, input dropout 0.2
+C2_alif | --hidden-dims 1024 512 256 --readout-width 256 --reset-type soft --tau-syn 1.5 3 6.5 14 --tau-syn-spread 3 --temporal-decay-stages 1 --temporal-decay-init 0.37 --white-noise-sd 0.3 --neuron-type alif --tau-mem 1000 --norm-input false --tau-adapt 25
+C2_iaf  | --hidden-dims 1024 512 256 --readout-width 256 --reset-type soft --tau-syn 1.5 3 6.5 14 --tau-syn-spread 3 --temporal-decay-stages 1 --temporal-decay-init 0.37 --white-noise-sd 0.3 --neuron-type iaf

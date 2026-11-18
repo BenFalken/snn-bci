@@ -1,0 +1,53 @@
+# The recurrent spiking network shaped like the paper's RNN (rsnn.py), with
+# the RNN's settings where they carry over (the cached baselineRelease: 5 GRU
+# layers of 1024, 32-bin input stacking with stride 4, input-layer dropout
+# 0.2, layer dropout 0.4, L2 1e-5, white noise 1.0 / offset 0.2, batch 64).
+# Its input smoothing (non-causal) is off here: smooth_sd 2 replicates it.
+#
+# Time constants are in model steps (80 ms with stride 4): tau_adapt 6 ~ 500 ms,
+# readout decay 0.37 ~ one step.
+#
+# Flattened into train.py's arguments; flags given explicitly win.
+
+model:
+  arch: rsnn
+  hidden_dims: [1024, 1024, 1024, 1024, 1024]
+  input_window: 32
+  input_stride: 4
+  recurrent: true
+  neuron_type: alif
+  tau_mem: 1000.0          # no effective leak: adaptive IAF
+  tau_adapt: 6.0
+  adapt_scale: 1.8
+  reset_type: soft
+  spike_fn: multi
+  min_vmem: -1.0
+  spike_thresholds: [1.0]
+  tau_syn: null            # recurrence carries the memory; a list adds synaptic filters
+  norm_syn: true
+  input_dropout: 0.2
+  layer_dropout: 0.4
+  temporal_decay_stages: 1
+  temporal_decay_init: 0.37
+
+data:
+  batch_size: 64
+  white_noise_sd: 1.0
+  constant_offset_sd: 0.2
+  smooth_sd: 0.0
+
+training:
+  epochs: 60
+  lr: 0.001
+  weight_decay: 1.0e-5
+  grad_clip: 1.0
+  selection_metric: loss
+  patience: 20
+  scheduler_patience: 10
+  min_lr: 1.0e-6
+  lr_factor: 0.1
+  checkpoint_interval: 5
+
+device: cuda
+seed: 42
+log_interval: 50

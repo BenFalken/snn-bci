@@ -1,0 +1,4 @@
+# Regularisation at full length: the current SNN overfits late (96 epochs: train loss 12.2, test loss 30.4; the GRU
+# 7.8 / 26.7), which a 36-epoch screen cannot show. Dropout between layers and on the input raised from 0.2 to 0.4,
+# 96 epochs, seed 42; compare with R_readall96 (0.2449).
+T_drop96  | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 96 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --syn-delay-in 30 --syn-delay-in-mult 4 --seed 42 --readout-all true --layer-dropout 0.4 --input-dropout 0.4

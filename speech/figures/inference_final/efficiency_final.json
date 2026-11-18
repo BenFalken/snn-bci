@@ -1,0 +1,1641 @@
+{
+ "rows": [
+  {
+   "label": "GRU 2x1024 out80, same input, 96 ep",
+   "kind": "gru",
+   "path": "/users/$USER/scratch/speechBCI_dryad/derived/snns/controls/gru_1024_out80_full96.json",
+   "family": "gru",
+   "arch": "gru",
+   "latency": {
+    "lookahead_s": 0.0,
+    "output_interval_s": 0.08,
+    "input_window_s": 0.02,
+    "layers_in_sequence": 2
+   },
+   "per": 0.21141715727502103,
+   "history_per": 0.21141715727502103,
+   "ops": {
+    "per_frame": {
+     "mac_in": 851968.0,
+     "acc_in": 0.0,
+     "mac_syn": 9437184.0,
+     "acc_syn": 0.0,
+     "mac_neuron": 6144.0,
+     "mac_readout": 41984.0,
+     "acc_readout": 0.0,
+     "elementwise": 6144.0,
+     "state_words": 2048.0,
+     "mac": 10337280.0,
+     "acc": 0.0,
+     "weight_reads": 10331136.0,
+     "state_accesses": 4096.0
+    },
+    "per_second": {
+     "mac": 516864000.0,
+     "acc": 0.0,
+     "weight_reads": 516556800.0
+    },
+    "energy": {
+     "compute_fp32": {
+      "uj_per_frame": 47.551488000000006,
+      "uw": 2377.5744000000004
+     },
+     "sram_fp32": {
+      "uj_per_frame": 99.227648,
+      "uw": 4961.3824
+     },
+     "dram_fp32": {
+      "uj_per_frame": 6659.499008,
+      "uw": 332974.9504
+     },
+     "sram_int8": {
+      "uj_per_frame": 16.035584,
+      "uw": 801.7792
+     }
+    },
+    "compute_breakdown": {
+     "input_layers": 0.08241703813769193,
+     "hidden_synapses": 0.912927191679049,
+     "neuron_updates": 0.0005943536404160475,
+     "readout": 0.004061416542842991
+    }
+   },
+   "memory": {
+    "params_total_all_sessions": 11527977,
+    "params_deployed": 10343721,
+    "weights_mb": {
+     "32": 41.374884,
+     "16": 20.687442,
+     "8": 10.343721,
+     "4": 5.1718605
+    },
+    "delay_table_mb": 0.0,
+    "state_words": 2048.0,
+    "input_buffer_words": 0,
+    "state_kb_fp32": 8.192
+   },
+   "timing": {
+    "s_per_output": 0.008559110060334206,
+    "s_per_bin": 0.0021397775150835516,
+    "real_time_factor": 0.10698887575417758,
+    "bins_timed": 500
+   },
+   "quantized": {
+    "8": {
+     "per": 0.21178511354079058
+    },
+    "6": {
+     "per": 0.2116274179983179
+    },
+    "4": {
+     "per": 0.2220353238015139
+    }
+   },
+   "beaten_by": {
+    "power_sram": [],
+    "power_compute": [],
+    "weights_mb": []
+   }
+  },
+  {
+   "label": "LSTM 2x1024, 96 ep",
+   "kind": "gru",
+   "path": "/users/$USER/scratch/speechBCI_dryad/derived/snns/controls/lstm_1024_out80_full96.json",
+   "family": "gru",
+   "arch": "gru",
+   "latency": {
+    "lookahead_s": 0.0,
+    "output_interval_s": 0.08,
+    "input_window_s": 0.08,
+    "layers_in_sequence": 2
+   },
+   "per": 0.20810555088309504,
+   "history_per": 0.20810555088309504,
+   "ops": {
+    "per_frame": {
+     "mac_in": 4456448,
+     "acc_in": 0.0,
+     "mac_syn": 50331648,
+     "acc_syn": 0.0,
+     "mac_neuron": 24576,
+     "mac_readout": 41984,
+     "acc_readout": 0.0,
+     "elementwise": 40960,
+     "state_words": 16384,
+     "mac": 54854656,
+     "acc": 0.0,
+     "weight_reads": 54830080.0,
+     "state_accesses": 32768
+    },
+    "per_second": {
+     "mac": 685683200.0,
+     "acc": 0.0,
+     "weight_reads": 685376000.0
+    },
+    "energy": {
+     "compute_fp32": {
+      "uj_per_frame": 252.3314176,
+      "uw": 3154.1427200000003
+     },
+     "sram_fp32": {
+      "uj_per_frame": 526.6456576,
+      "uw": 6583.070720000001
+     },
+     "dram_fp32": {
+      "uj_per_frame": 35343.7464576,
+      "uw": 441796.83071999997
+     },
+     "sram_int8": {
+      "uj_per_frame": 85.1578368,
+      "uw": 1064.47296
+     }
+    },
+    "compute_breakdown": {
+     "input_layers": 0.08124101625940376,
+     "hidden_synapses": 0.9175455954003248,
+     "neuron_updates": 0.0004480203102540648,
+     "readout": 0.0007653680300173608
+    }
+   },
+   "memory": {
+    "params_total_all_sessions": 14939945,
+    "params_deployed": 13755689,
+    "weights_mb": {
+     "32": 55.022756,
+     "16": 27.511378,
+     "8": 13.755689,
+     "4": 6.8778445
+    },
+    "delay_table_mb": 0.0,
+    "state_words": 16384.0,
+    "input_buffer_words": 0,
+    "state_kb_fp32": 65.536
+   },
+   "timing": {
+    "s_per_output": 0.020744181906564102,
+    "s_per_bin": 0.005144557112827897,
+    "real_time_factor": 0.2593022738320513,
+    "bins_timed": 500
+   },
+   "quantized": {
+    "8": {
+     "per": 0.20789529015979816
+    },
+    "6": {
+     "per": 0.2082632464255677
+    },
+    "4": {
+     "per": 0.21935449957947856
+    }
+   },
+   "beaten_by": {
+    "power_sram": [
+     "Paper RNN"
+    ],
+    "power_compute": [
+     "Paper RNN"
+    ],
+    "weights_mb": []
+   }
+  },
+  {
+   "label": "QRNN 2x1024, 96 ep",
+   "kind": "gru",
+   "path": "/users/$USER/scratch/speechBCI_dryad/derived/snns/controls/qrnn_1024_out80_full96.json",
+   "family": "gru",
+   "arch": "gru",
+   "latency": {
+    "lookahead_s": 0.0,
+    "output_interval_s": 0.08,
+    "input_window_s": 0.08,
+    "layers_in_sequence": 2
+   },
+   "per": 0.3166000841042893,
+   "per_note": " (epoch 49/96)",
+   "ops": {
+    "per_frame": {
+     "mac_in": 6553600,
+     "acc_in": 0.0,
+     "mac_syn": 25165824,
+     "acc_syn": 0.0,
+     "mac_neuron": 24576,
+     "mac_readout": 41984,
+     "acc_readout": 0.0,
+     "elementwise": 24576,
+     "state_words": 13312,
+     "mac": 31785984,
+     "acc": 0.0,
+     "weight_reads": 31761408.0,
+     "state_accesses": 26624
+    },
+    "per_second": {
+     "mac": 397324800.0,
+     "acc": 0.0,
+     "weight_reads": 397017600.0
+    },
+    "energy": {
+     "compute_fp32": {
+      "uj_per_frame": 146.2155264,
+      "uw": 1827.6940799999998
+     },
+     "sram_fp32": {
+      "uj_per_frame": 305.1556864,
+      "uw": 3814.4460799999997
+     },
+     "dram_fp32": {
+      "uj_per_frame": 20473.6497664,
+      "uw": 255920.62208000003
+     },
+     "sram_int8": {
+      "uj_per_frame": 49.3706752,
+      "uw": 617.1334400000001
+     }
+    },
+    "compute_breakdown": {
+     "input_layers": 0.20617892464804616,
+     "hidden_synapses": 0.7917270706484971,
+     "neuron_updates": 0.000773170967430173,
+     "readout": 0.0013208337360265457
+    }
+   },
+   "memory": {
+    "params_total_all_sessions": 9162537,
+    "params_deployed": 7978281,
+    "weights_mb": {
+     "32": 31.913124,
+     "16": 15.956562,
+     "8": 7.978281,
+     "4": 3.9891405
+    },
+    "delay_table_mb": 0.0,
+    "state_words": 13312.0,
+    "input_buffer_words": 0,
+    "state_kb_fp32": 53.248
+   },
+   "timing": {
+    "s_per_output": 0.012187920908834185,
+    "s_per_bin": 0.0030226043853908775,
+    "real_time_factor": 0.1523490113604273,
+    "bins_timed": 500
+   },
+   "beaten_by": {
+    "power_sram": [
+     "3 + 80 ms outputs (S3_out80)",
+     "4 + readout from both layers (S4_readall)",
+     "5 + trained time constants (C_nodelay96)",
+     "Model A, DelayNet (R_readall96)",
+     "Model B, LSNN, final (C_lsnn_nodelay96)"
+    ],
+    "power_compute": [
+     "3 + 80 ms outputs (S3_out80)",
+     "4 + readout from both layers (S4_readall)",
+     "5 + trained time constants (C_nodelay96)",
+     "Model A, DelayNet (R_readall96)",
+     "Model B, LSNN, final (C_lsnn_nodelay96)"
+    ],
+    "weights_mb": [
+     "3 + 80 ms outputs (S3_out80)",
+     "4 + readout from both layers (S4_readall)",
+     "5 + trained time constants (C_nodelay96)",
+     "Model A, DelayNet (R_readall96)",
+     "Model B, LSNN, final (C_lsnn_nodelay96)"
+    ]
+   }
+  },
+  {
+   "label": "Wiener filter (160 ms)",
+   "kind": "gru",
+   "path": "/users/$USER/scratch/speechBCI_dryad/derived/snns/controls/wiener_160ms.json",
+   "family": "gru",
+   "arch": "gru",
+   "latency": {
+    "lookahead_s": 0.0,
+    "output_interval_s": 0.08,
+    "input_window_s": 0.16,
+    "layers_in_sequence": 1
+   },
+   "per": 0.7647182506307821,
+   "history_per": 0.7647182506307821,
+   "ops": {
+    "per_frame": {
+     "mac_in": 0.0,
+     "acc_in": 0.0,
+     "mac_syn": 0.0,
+     "acc_syn": 0.0,
+     "mac_neuron": 0.0,
+     "mac_readout": 84009,
+     "acc_readout": 0.0,
+     "elementwise": 0.0,
+     "state_words": 0.0,
+     "mac": 84009.0,
+     "acc": 0.0,
+     "weight_reads": 84009.0,
+     "state_accesses": 0.0
+    },
+    "per_second": {
+     "mac": 1050112.5,
+     "acc": 0.0,
+     "weight_reads": 1050112.5
+    },
+    "energy": {
+     "compute_fp32": {
+      "uj_per_frame": 0.3864414,
+      "uw": 4.8305175
+     },
+     "sram_fp32": {
+      "uj_per_frame": 0.8064863999999999,
+      "uw": 10.08108
+     },
+     "dram_fp32": {
+      "uj_per_frame": 54.152201399999996,
+      "uw": 676.9025174999999
+     },
+     "sram_int8": {
+      "uj_per_frame": 0.13021395,
+      "uw": 1.627674375
+     }
+    },
+    "compute_breakdown": {
+     "input_layers": 0.0,
+     "hidden_synapses": 0.0,
+     "neuron_updates": 0.0,
+     "readout": 1.0
+    }
+   },
+   "memory": {
+    "params_total_all_sessions": 84009,
+    "params_deployed": 84009,
+    "weights_mb": {
+     "32": 0.336036,
+     "16": 0.168018,
+     "8": 0.084009,
+     "4": 0.0420045
+    },
+    "delay_table_mb": 0.0,
+    "state_words": 0.0,
+    "input_buffer_words": 2048,
+    "state_kb_fp32": 8.192
+   },
+   "timing": {
+    "s_per_output": 6.901655316112502e-05,
+    "s_per_bin": 1.7116105183959006e-05,
+    "real_time_factor": 0.0008627069145140628,
+    "bins_timed": 500
+   },
+   "quantized": {
+    "8": {
+     "per": 0.7650336417157275
+    },
+    "6": {
+     "per": 0.7647182506307821
+    },
+    "4": {
+     "per": 0.7565706476030277
+    }
+   },
+   "beaten_by": {
+    "power_sram": [
+     "Kalman filter per session"
+    ],
+    "power_compute": [
+     "Kalman filter per session"
+    ],
+    "weights_mb": [
+     "Kalman filter per session"
+    ]
+   }
+  },
+  {
+   "label": "Kalman filter per session",
+   "kind": "gru",
+   "path": "/users/$USER/scratch/speechBCI_dryad/derived/snns/controls/kalman_80ms_day.json",
+   "family": "gru",
+   "arch": "gru",
+   "latency": {
+    "lookahead_s": 0.0,
+    "output_interval_s": 0.08,
+    "input_window_s": 0.08,
+    "layers_in_sequence": 1
+   },
+   "per": 0.709524810765349,
+   "history_per": 0.709524810765349,
+   "ops": {
+    "per_frame": {
+     "mac_in": 0.0,
+     "acc_in": 1024,
+     "mac_syn": 12177,
+     "acc_syn": 0.0,
+     "mac_neuron": 0.0,
+     "mac_readout": 41,
+     "acc_readout": 0.0,
+     "elementwise": 0.0,
+     "state_words": 297,
+     "mac": 12218.0,
+     "acc": 1024.0,
+     "weight_reads": 13242.0,
+     "state_accesses": 594
+    },
+    "per_second": {
+     "mac": 152725.0,
+     "acc": 12800.0,
+     "weight_reads": 165525.0
+    },
+    "energy": {
+     "compute_fp32": {
+      "uj_per_frame": 0.0571244,
+      "uw": 0.714055
+     },
+     "sram_fp32": {
+      "uj_per_frame": 0.12630439999999998,
+      "uw": 1.5788049999999998
+     },
+     "dram_fp32": {
+      "uj_per_frame": 8.5349744,
+      "uw": 106.68718
+     },
+     "sram_int8": {
+      "uj_per_frame": 0.0232903,
+      "uw": 0.29112875
+     }
+    },
+    "compute_breakdown": {
+     "input_layers": 0.016133211027161774,
+     "hidden_synapses": 0.9805652225668892,
+     "neuron_updates": 0.0,
+     "readout": 0.0033015664059491217
+    }
+   },
+   "memory": {
+    "params_total_all_sessions": 231363,
+    "params_deployed": 12177,
+    "weights_mb": {
+     "32": 0.048708,
+     "16": 0.024354,
+     "8": 0.012177,
+     "4": 0.0060885
+    },
+    "delay_table_mb": 0.0,
+    "state_words": 297.0,
+    "input_buffer_words": 0,
+    "state_kb_fp32": 1.188
+   },
+   "timing": {
+    "s_per_output": 9.080817952992455e-05,
+    "s_per_bin": 2.2520428523421288e-05,
+    "real_time_factor": 0.001135102244124057,
+    "bins_timed": 500
+   },
+   "quantized": {
+    "8": {
+     "per": 0.709524810765349
+    },
+    "6": {
+     "per": 0.709524810765349
+    },
+    "4": {
+     "per": 0.709524810765349
+    }
+   },
+   "beaten_by": {
+    "power_sram": [],
+    "power_compute": [],
+    "weights_mb": []
+   }
+  },
+  {
+   "label": "Paper RNN",
+   "kind": "gru_spec",
+   "path": null,
+   "family": "gru",
+   "arch": "gru",
+   "latency": {
+    "lookahead_s": 0.08,
+    "output_interval_s": 0.08,
+    "input_window_s": 0.64,
+    "layers_in_sequence": 5
+   },
+   "per": 0.188,
+   "per_note": " (given)",
+   "ops": {
+    "per_frame": {
+     "mac_in": 25427968.0,
+     "acc_in": 0.0,
+     "mac_syn": 28311552.0,
+     "acc_syn": 0.0,
+     "mac_neuron": 15360.0,
+     "mac_readout": 41984.0,
+     "acc_readout": 0.0,
+     "elementwise": 15360.0,
+     "state_words": 5120.0,
+     "mac": 53796864.0,
+     "acc": 0.0,
+     "weight_reads": 53781504.0,
+     "state_accesses": 10240.0
+    },
+    "per_second": {
+     "mac": 672460800.0,
+     "acc": 0.0,
+     "weight_reads": 672268800.0
+    },
+    "energy": {
+     "compute_fp32": {
+      "uj_per_frame": 247.46557440000004,
+      "uw": 3093.3196800000005
+     },
+     "sram_fp32": {
+      "uj_per_frame": 516.4242944,
+      "uw": 6455.30368
+     },
+     "dram_fp32": {
+      "uj_per_frame": 34667.6793344,
+      "uw": 433345.99168000004
+     },
+     "sram_int8": {
+      "uj_per_frame": 83.4171392,
+      "uw": 1042.71424
+     }
+    },
+    "compute_breakdown": {
+     "input_layers": 0.47266636211359825,
+     "hidden_synapses": 0.5262677021470992,
+     "neuron_updates": 0.00028551850159890365,
+     "readout": 0.0007804172377036698
+    }
+   },
+   "memory": {
+    "params_total_all_sessions": 53615913,
+    "params_deployed": 53615913,
+    "weights_mb": {
+     "32": 214.463652,
+     "16": 107.231826,
+     "8": 53.615913,
+     "4": 26.8079565
+    },
+    "delay_table_mb": 0.0,
+    "state_words": 5120.0,
+    "input_buffer_words": 8192,
+    "state_kb_fp32": 53.248
+   },
+   "timing": {
+    "s_per_output": 0.019023286518088336,
+    "s_per_bin": 0.004489495618268847,
+    "real_time_factor": 0.2377910814761042,
+    "bins_timed": 500
+   },
+   "beaten_by": {
+    "power_sram": [],
+    "power_compute": [],
+    "weights_mb": []
+   }
+  },
+  {
+   "label": "0 original layout (L0_orig)",
+   "kind": "snn",
+   "path": "/users/$USER/scratch/speechBCI_dryad/derived/snns/ladder96/00_L0_orig/final_model_speech_iaf_soft.pth",
+   "family": "snn",
+   "arch": "native",
+   "latency": {
+    "lookahead_s": 0.0,
+    "output_interval_s": 0.02,
+    "input_window_s": 0.02,
+    "layers_in_sequence": 3
+   },
+   "per": 0.8999684608915055,
+   "spike_rates": [
+    0.2951242135460749,
+    0.3734041358540504,
+    0.39268736820209726
+   ],
+   "input_event_rate": null,
+   "ops": {
+    "per_frame": {
+     "mac_in": 131071.99510345388,
+     "acc_in": 0.0,
+     "mac_syn": 0.0,
+     "acc_syn": 50918.227641576654,
+     "mac_neuron": 896.0,
+     "mac_readout": 82.0,
+     "acc_readout": 2060.8233083246064,
+     "elementwise": 1792.0,
+     "state_words": 1833.0,
+     "mac": 132049.99510345387,
+     "acc": 52979.05094990126,
+     "weight_reads": 184133.04605335512,
+     "state_accesses": 3666.0
+    },
+    "per_second": {
+     "mac": 6602499.755172693,
+     "acc": 2648952.547495063,
+     "weight_reads": 9206652.302667756
+    },
+    "energy": {
+     "compute_fp32": {
+      "uj_per_frame": 0.655111123330799,
+      "uw": 32.755556166539954
+     },
+     "sram_fp32": {
+      "uj_per_frame": 1.5941063535975746,
+      "uw": 79.70531767987873
+     },
+     "dram_fp32": {
+      "uj_per_frame": 118.51859059747807,
+      "uw": 5925.929529873903
+     },
+     "sram_int8": {
+      "uj_per_frame": 0.29340921119272023,
+      "uw": 14.670460559636012
+     }
+    },
+    "compute_breakdown": {
+     "input_layers": 0.9203494735525002,
+     "hidden_synapses": 0.06995210926113202,
+     "neuron_updates": 0.006291451714396847,
+     "readout": 0.0034069654719709667
+    }
+   },
+   "memory": {
+    "params_total_all_sessions": 306002,
+    "params_deployed": 301394,
+    "weights_mb": {
+     "32": 1.205576,
+     "16": 0.602788,
+     "8": 0.301394,
+     "4": 0.150697
+    },
+    "delay_table_mb": 0.0,
+    "state_words": 1833.0,
+    "input_buffer_words": 0,
+    "state_kb_fp32": 7.332
+   },
+   "timing": {
+    "s_per_output": 0.000730644965544343,
+    "s_per_bin": 0.000730644965544343,
+    "real_time_factor": 0.03653224827721715,
+    "bins_timed": 500
+   },
+   "quantized": {
+    "8": {
+     "per": 0.8992325483599664,
+     "spike_rate": 0.3315226171519835
+    },
+    "6": {
+     "per": 0.9259882253994953,
+     "spike_rate": 0.33138131438756624
+    },
+    "4": {
+     "per": 0.8976555929352397,
+     "spike_rate": 0.33352414036344286
+    }
+   },
+   "beaten_by": {
+    "power_sram": [
+     "Wiener filter (160 ms)",
+     "Kalman filter per session"
+    ],
+    "power_compute": [
+     "Wiener filter (160 ms)",
+     "Kalman filter per session"
+    ],
+    "weights_mb": [
+     "Wiener filter (160 ms)",
+     "Kalman filter per session"
+    ]
+   }
+  },
+  {
+   "label": "narrow + recurrence (R1_rec)",
+   "kind": "snn",
+   "path": "/users/$USER/scratch/speechBCI_dryad/derived/snns/ladder_final/00_R1_rec/final_model_speech_iaf_soft.pth",
+   "family": "snn",
+   "arch": "native",
+   "latency": {
+    "lookahead_s": 0.0,
+    "output_interval_s": 0.02,
+    "input_window_s": 0.02,
+    "layers_in_sequence": 3
+   },
+   "per": 0.8689024390243902,
+   "spike_rates": [
+    0.38067305356015724,
+    0.38579261570122464,
+    0.2148908767160625
+   ],
+   "input_event_rate": null,
+   "ops": {
+    "per_frame": {
+     "mac_in": 131071.99510345388,
+     "acc_in": 0.0,
+     "mac_syn": 0.0,
+     "acc_syn": 191132.46484671993,
+     "mac_neuron": 896.0,
+     "mac_readout": 82.0,
+     "acc_readout": 1127.747321005896,
+     "elementwise": 1792.0,
+     "state_words": 1833.0,
+     "mac": 132049.99510345387,
+     "acc": 192260.21216772584,
+     "weight_reads": 323414.2072711797,
+     "state_accesses": 3666.0
+    },
+    "per_second": {
+     "mac": 6602499.755172693,
+     "acc": 9613010.608386291,
+     "weight_reads": 16170710.363558985
+    },
+    "energy": {
+     "compute_fp32": {
+      "uj_per_frame": 0.7804641684268411,
+      "uw": 39.023208421342055
+     },
+     "sram_fp32": {
+      "uj_per_frame": 2.41586520478274,
+      "uw": 120.79326023913698
+     },
+     "dram_fp32": {
+      "uj_per_frame": 207.78388682198184,
+      "uw": 10389.194341099092
+     },
+     "sram_int8": {
+      "uj_per_frame": 0.4814387788367834,
+      "uw": 24.071938941839168
+     }
+    },
+    "compute_breakdown": {
+     "input_layers": 0.772528966565113,
+     "hidden_synapses": 0.22040629835548,
+     "neuron_updates": 0.005280959929663125,
+     "readout": 0.0017837751497438608
+    }
+   },
+   "memory": {
+    "params_total_all_sessions": 650066,
+    "params_deployed": 645458,
+    "weights_mb": {
+     "32": 2.581832,
+     "16": 1.290916,
+     "8": 0.645458,
+     "4": 0.322729
+    },
+    "delay_table_mb": 0.0,
+    "state_words": 1833.0,
+    "input_buffer_words": 0,
+    "state_kb_fp32": 7.332
+   },
+   "timing": {
+    "s_per_output": 0.000777373431250453,
+    "s_per_bin": 0.000777373431250453,
+    "real_time_factor": 0.038868671562522654,
+    "bins_timed": 500
+   },
+   "quantized": {
+    "8": {
+     "per": 0.8700063078216989,
+     "spike_rate": 0.35842192547556545
+    },
+    "6": {
+     "per": 0.8666947014297729,
+     "spike_rate": 0.3587842469613475
+    },
+    "4": {
+     "per": 0.7870058873002523,
+     "spike_rate": 0.35770088485192525
+    }
+   },
+   "beaten_by": {
+    "power_sram": [
+     "Wiener filter (160 ms)",
+     "Kalman filter per session"
+    ],
+    "power_compute": [
+     "Wiener filter (160 ms)",
+     "Kalman filter per session"
+    ],
+    "weights_mb": [
+     "Wiener filter (160 ms)",
+     "Kalman filter per session"
+    ]
+   }
+  },
+  {
+   "label": "1 + width (L1_width)",
+   "kind": "snn",
+   "path": "/users/$USER/scratch/speechBCI_dryad/derived/snns/ladder96/01_L1_width/final_model_speech_iaf_soft.pth",
+   "family": "snn",
+   "arch": "native",
+   "latency": {
+    "lookahead_s": 0.0,
+    "output_interval_s": 0.02,
+    "input_window_s": 0.02,
+    "layers_in_sequence": 2
+   },
+   "per": 0.7225084104289319,
+   "spike_rates": [
+    0.3108633039074342,
+    0.17988076996872715
+   ],
+   "input_event_rate": null,
+   "ops": {
+    "per_frame": {
+     "mac_in": 262143.99020690777,
+     "acc_in": 0.0,
+     "mac_syn": 0.0,
+     "acc_syn": 325963.79975804174,
+     "mac_neuron": 2048.0,
+     "mac_readout": 82.0,
+     "acc_readout": 7552.11424636704,
+     "elementwise": 4096.0,
+     "state_words": 4137.0,
+     "mac": 264273.99020690774,
+     "acc": 333515.91400440875,
+     "weight_reads": 595741.9042113165,
+     "state_accesses": 8274.0
+    },
+    "per_second": {
+     "mac": 13213699.510345386,
+     "acc": 16675795.700220438,
+     "weight_reads": 29787095.210565824
+    },
+    "energy": {
+     "compute_fp32": {
+      "uj_per_frame": 1.5158246775557436,
+      "uw": 75.79123387778718
+     },
+     "sram_fp32": {
+      "uj_per_frame": 4.535904198612325,
+      "uw": 226.79520993061627
+     },
+     "dram_fp32": {
+      "uj_per_frame": 382.83201337279826,
+      "uw": 19141.600668639912
+     },
+     "sram_int8": {
+      "uj_per_frame": 0.8986811687266587,
+      "uw": 44.93405843633293
+     }
+    },
+    "compute_breakdown": {
+     "input_layers": 0.7955157168282946,
+     "hidden_synapses": 0.19353651126414595,
+     "neuron_updates": 0.006214966769897805,
+     "readout": 0.004732805137661782
+    }
+   },
+   "memory": {
+    "params_total_all_sessions": 1359698,
+    "params_deployed": 1355090,
+    "weights_mb": {
+     "32": 5.42036,
+     "16": 2.71018,
+     "8": 1.35509,
+     "4": 0.677545
+    },
+    "delay_table_mb": 0.0,
+    "state_words": 4137.0,
+    "input_buffer_words": 0,
+    "state_kb_fp32": 16.548
+   },
+   "timing": {
+    "s_per_output": 0.0007754982132464648,
+    "s_per_bin": 0.0007754982132464648,
+    "real_time_factor": 0.03877491066232324,
+    "bins_timed": 500
+   },
+   "quantized": {
+    "8": {
+     "per": 0.7203006728343145,
+     "spike_rate": 0.2453849183338653
+    },
+    "6": {
+     "per": 0.727975189234651,
+     "spike_rate": 0.2455160297891652
+    },
+    "4": {
+     "per": 0.7137300252312868,
+     "spike_rate": 0.24593752017314838
+    }
+   },
+   "beaten_by": {
+    "power_sram": [
+     "Kalman filter per session",
+     "3 + 80 ms outputs (S3_out80)",
+     "4 + readout from both layers (S4_readall)",
+     "5 + trained time constants (C_nodelay96)",
+     "Model B, LSNN, final (C_lsnn_nodelay96)"
+    ],
+    "power_compute": [
+     "Kalman filter per session",
+     "3 + 80 ms outputs (S3_out80)",
+     "4 + readout from both layers (S4_readall)",
+     "5 + trained time constants (C_nodelay96)",
+     "Model B, LSNN, final (C_lsnn_nodelay96)"
+    ],
+    "weights_mb": [
+     "Kalman filter per session"
+    ]
+   }
+  },
+  {
+   "label": "2 + recurrence (S2_rec)",
+   "kind": "snn",
+   "path": "/users/$USER/scratch/speechBCI_dryad/derived/snns/fork96/00_S2_rec/final_model_speech_iaf_soft.pth",
+   "family": "snn",
+   "arch": "native",
+   "latency": {
+    "lookahead_s": 0.0,
+    "output_interval_s": 0.02,
+    "input_window_s": 0.02,
+    "layers_in_sequence": 2
+   },
+   "per": 0.3406223717409588,
+   "spike_rates": [
+    0.3268008429462121,
+    0.3994453682376618
+   ],
+   "input_event_rate": null,
+   "ops": {
+    "per_frame": {
+     "mac_in": 262143.99020690777,
+     "acc_in": 0.0,
+     "mac_syn": 0.0,
+     "acc_syn": 1104199.867831509,
+     "mac_neuron": 2048.0,
+     "mac_readout": 82.0,
+     "acc_readout": 16770.314340089993,
+     "elementwise": 4096.0,
+     "state_words": 4137.0,
+     "mac": 264273.99020690774,
+     "acc": 1120970.182171599,
+     "weight_reads": 1383196.1723785067,
+     "state_accesses": 8274.0
+    },
+    "per_second": {
+     "mac": 13213699.510345386,
+     "acc": 56048509.10857995,
+     "weight_reads": 69159808.61892533
+    },
+    "energy": {
+     "compute_fp32": {
+      "uj_per_frame": 2.2245335189062145,
+      "uw": 111.22667594531073
+     },
+     "sram_fp32": {
+      "uj_per_frame": 9.181884380798747,
+      "uw": 459.09421903993734
+     },
+     "dram_fp32": {
+      "uj_per_frame": 887.5114538411505,
+      "uw": 44375.572692057525
+     },
+     "sram_int8": {
+      "uj_per_frame": 1.9617444307523655,
+      "uw": 98.08722153761828
+     }
+    },
+    "compute_breakdown": {
+     "input_layers": 0.5420742572333497,
+     "hidden_synapses": 0.4467363034102501,
+     "neuron_updates": 0.004234955292843658,
+     "readout": 0.006954484063556708
+    }
+   },
+   "memory": {
+    "params_total_all_sessions": 3456850,
+    "params_deployed": 3452242,
+    "weights_mb": {
+     "32": 13.808968,
+     "16": 6.904484,
+     "8": 3.452242,
+     "4": 1.726121
+    },
+    "delay_table_mb": 0.0,
+    "state_words": 4137.0,
+    "input_buffer_words": 0,
+    "state_kb_fp32": 16.548
+   },
+   "timing": {
+    "s_per_output": 0.0012614422738552093,
+    "s_per_bin": 0.0012614422738552093,
+    "real_time_factor": 0.06307211369276046,
+    "bins_timed": 500
+   },
+   "quantized": {
+    "8": {
+     "per": 0.34435449957947856,
+     "spike_rate": 0.36310988097244734
+    },
+    "6": {
+     "per": 0.3417788057190917,
+     "spike_rate": 0.3632439997211623
+    },
+    "4": {
+     "per": 0.40953532380151386,
+     "spike_rate": 0.36252662715494055
+    }
+   },
+   "beaten_by": {
+    "power_sram": [
+     "3 + 80 ms outputs (S3_out80)",
+     "4 + readout from both layers (S4_readall)",
+     "5 + trained time constants (C_nodelay96)",
+     "Model B, LSNN, final (C_lsnn_nodelay96)"
+    ],
+    "power_compute": [
+     "3 + 80 ms outputs (S3_out80)",
+     "4 + readout from both layers (S4_readall)",
+     "5 + trained time constants (C_nodelay96)",
+     "Model B, LSNN, final (C_lsnn_nodelay96)"
+    ],
+    "weights_mb": [
+     "3 + 80 ms outputs (S3_out80)"
+    ]
+   }
+  },
+  {
+   "label": "3 + 80 ms outputs (S3_out80)",
+   "kind": "snn",
+   "path": "/users/$USER/scratch/speechBCI_dryad/derived/snns/fork96/01_S3_out80/final_model_speech_iaf_soft.pth",
+   "family": "snn",
+   "arch": "native",
+   "latency": {
+    "lookahead_s": 0.0,
+    "output_interval_s": 0.08,
+    "input_window_s": 0.02,
+    "layers_in_sequence": 2
+   },
+   "per": 0.26345668629100083,
+   "spike_rates": [
+    0.3489611050812559,
+    0.3924454189651527
+   ],
+   "input_event_rate": null,
+   "ops": {
+    "per_frame": {
+     "mac_in": 1053710.3088780825,
+     "acc_in": 0.0,
+     "mac_syn": 0.0,
+     "acc_syn": 1143333.32708017,
+     "mac_neuron": 8192.0,
+     "mac_readout": 328.0,
+     "acc_readout": 16476.428469832972,
+     "elementwise": 16384.0,
+     "state_words": 16548.0,
+     "mac": 1062230.3088780825,
+     "acc": 1159809.755550003,
+     "weight_reads": 2213848.0644280855,
+     "state_accesses": 33096.0
+    },
+    "per_second": {
+     "mac": 13277878.860976031,
+     "acc": 14497621.944375036,
+     "weight_reads": 27673100.805351067
+    },
+    "energy": {
+     "compute_fp32": {
+      "uj_per_frame": 5.930088200834183,
+      "uw": 74.12610251042729
+     },
+     "sram_fp32": {
+      "uj_per_frame": 17.16480852297461,
+      "uw": 214.56010653718263
+     },
+     "dram_fp32": {
+      "uj_per_frame": 1422.958329434809,
+      "uw": 17786.979117935112
+     },
+     "sram_int8": {
+      "uj_per_frame": 3.3674401487535315,
+      "uw": 42.09300185941915
+     }
+    },
+    "compute_breakdown": {
+     "input_layers": 0.8173685207847913,
+     "hidden_synapses": 0.17352187008405776,
+     "neuron_updates": 0.006354576647729982,
+     "readout": 0.002755032483420984
+    }
+   },
+   "memory": {
+    "params_total_all_sessions": 3456850,
+    "params_deployed": 3452242,
+    "weights_mb": {
+     "32": 13.808968,
+     "16": 6.904484,
+     "8": 3.452242,
+     "4": 1.726121
+    },
+    "delay_table_mb": 0.0,
+    "state_words": 4137.0,
+    "input_buffer_words": 0,
+    "state_kb_fp32": 16.548
+   },
+   "timing": {
+    "s_per_output": 0.00520336972699771,
+    "s_per_bin": 0.001290435692295432,
+    "real_time_factor": 0.06504212158747137,
+    "bins_timed": 500
+   },
+   "quantized": {
+    "8": {
+     "per": 0.26513877207737596,
+     "spike_rate": 0.37074458484296613
+    },
+    "6": {
+     "per": 0.26624264087468463,
+     "spike_rate": 0.3704461933527303
+    },
+    "4": {
+     "per": 0.283851976450799,
+     "spike_rate": 0.3710230798131259
+    }
+   },
+   "beaten_by": {
+    "power_sram": [],
+    "power_compute": [],
+    "weights_mb": []
+   }
+  },
+  {
+   "label": "4 + readout from both layers (S4_readall)",
+   "kind": "snn",
+   "path": "/users/$USER/scratch/speechBCI_dryad/derived/snns/fork96/02_S4_readall/final_model_speech_iaf_soft.pth",
+   "family": "snn",
+   "arch": "native",
+   "latency": {
+    "lookahead_s": 0.0,
+    "output_interval_s": 0.08,
+    "input_window_s": 0.02,
+    "layers_in_sequence": 2
+   },
+   "per": 0.2641925988225399,
+   "spike_rates": [
+    0.3578545680007496,
+    0.3882127909546966
+   ],
+   "input_event_rate": null,
+   "ops": {
+    "per_frame": {
+     "mac_in": 1053710.3088780825,
+     "acc_in": 0.0,
+     "mac_syn": 0.0,
+     "acc_syn": 1157546.03848002,
+     "mac_neuron": 8192.0,
+     "mac_readout": 328.0,
+     "acc_readout": 31322.891998385454,
+     "elementwise": 16384.0,
+     "state_words": 16548.0,
+     "mac": 1062230.3088780825,
+     "acc": 1188868.9304784054,
+     "weight_reads": 2242907.239356488,
+     "state_accesses": 33096.0
+    },
+    "per_second": {
+     "mac": 13277878.860976031,
+     "acc": 14860861.630980069,
+     "weight_reads": 28036340.4919561
+    },
+    "energy": {
+     "compute_fp32": {
+      "uj_per_frame": 5.956241458269745,
+      "uw": 74.45301822837182
+     },
+     "sram_fp32": {
+      "uj_per_frame": 17.336257655052183,
+      "uw": 216.7032206881523
+     },
+     "dram_fp32": {
+      "uj_per_frame": 1441.5823546464221,
+      "uw": 18019.779433080275
+     },
+     "sram_int8": {
+      "uj_per_frame": 3.4066700349068753,
+      "uw": 42.58337543633594
+     }
+    },
+    "compute_breakdown": {
+     "input_layers": 0.813779537783753,
+     "hidden_synapses": 0.17490752212296184,
+     "neuron_updates": 0.006326674340523926,
+     "readout": 0.0049862657527612085
+    }
+   },
+   "memory": {
+    "params_total_all_sessions": 3498834,
+    "params_deployed": 3494226,
+    "weights_mb": {
+     "32": 13.976904,
+     "16": 6.988452,
+     "8": 3.494226,
+     "4": 1.747113
+    },
+    "delay_table_mb": 0.0,
+    "state_words": 4137.0,
+    "input_buffer_words": 0,
+    "state_kb_fp32": 16.548
+   },
+   "timing": {
+    "s_per_output": 0.005359413703122447,
+    "s_per_bin": 0.0013291345983743668,
+    "real_time_factor": 0.06699267128903058,
+    "bins_timed": 500
+   },
+   "quantized": {
+    "8": {
+     "per": 0.2638772077375946,
+     "spike_rate": 0.3730681511372701
+    },
+    "6": {
+     "per": 0.26429772918418837,
+     "spike_rate": 0.37280829507695523
+    },
+    "4": {
+     "per": 0.3208578637510513,
+     "spike_rate": 0.37383695455004134
+    }
+   },
+   "beaten_by": {
+    "power_sram": [
+     "3 + 80 ms outputs (S3_out80)",
+     "5 + trained time constants (C_nodelay96)"
+    ],
+    "power_compute": [
+     "3 + 80 ms outputs (S3_out80)",
+     "5 + trained time constants (C_nodelay96)"
+    ],
+    "weights_mb": [
+     "3 + 80 ms outputs (S3_out80)",
+     "5 + trained time constants (C_nodelay96)",
+     "Model B, LSNN, final (C_lsnn_nodelay96)"
+    ]
+   }
+  },
+  {
+   "label": "5 + trained time constants (C_nodelay96)",
+   "kind": "snn",
+   "path": "/users/$USER/scratch/speechBCI_dryad/derived/snns/nodelay96/00_C_nodelay96/final_model_speech_iaf_soft.pth",
+   "family": "snn",
+   "arch": "native",
+   "latency": {
+    "lookahead_s": 0.0,
+    "output_interval_s": 0.08,
+    "input_window_s": 0.02,
+    "layers_in_sequence": 2
+   },
+   "per": 0.26256307821698904,
+   "spike_rates": [
+    0.35731272569411077,
+    0.3844655254122859
+   ],
+   "input_event_rate": null,
+   "ops": {
+    "per_frame": {
+     "mac_in": 1053710.3088780825,
+     "acc_in": 0.0,
+     "mac_syn": 0.0,
+     "acc_syn": 1152480.420089569,
+     "mac_neuron": 8192.0,
+     "mac_readout": 328.0,
+     "acc_readout": 31142.818094450955,
+     "elementwise": 16384.0,
+     "state_words": 16548.0,
+     "mac": 1062230.3088780825,
+     "acc": 1183623.23818402,
+     "weight_reads": 2237661.5470621027,
+     "state_accesses": 33096.0
+    },
+    "per_second": {
+     "mac": 13277878.860976031,
+     "acc": 14795290.477300249,
+     "weight_reads": 27970769.338276282
+    },
+    "energy": {
+     "compute_fp32": {
+      "uj_per_frame": 5.9515203352047985,
+      "uw": 74.39400419005999
+     },
+     "sram_fp32": {
+      "uj_per_frame": 17.305308070515313,
+      "uw": 216.31635088144142
+     },
+     "dram_fp32": {
+      "uj_per_frame": 1438.2203904549506,
+      "uw": 17977.754880686884
+     },
+     "sram_int8": {
+      "uj_per_frame": 3.3995883503094553,
+      "uw": 42.49485437886819
+     }
+    },
+    "compute_breakdown": {
+     "input_layers": 0.8144250792805847,
+     "hidden_synapses": 0.1742802375966207,
+     "neuron_updates": 0.006331693059518595,
+     "readout": 0.004962990063275898
+    }
+   },
+   "memory": {
+    "params_total_all_sessions": 3498834,
+    "params_deployed": 3494226,
+    "weights_mb": {
+     "32": 13.976904,
+     "16": 6.988452,
+     "8": 3.494226,
+     "4": 1.747113
+    },
+    "delay_table_mb": 0.0,
+    "state_words": 4137.0,
+    "input_buffer_words": 0,
+    "state_kb_fp32": 16.548
+   },
+   "timing": {
+    "s_per_output": 0.0053761981037114895,
+    "s_per_bin": 0.0013332971297204494,
+    "real_time_factor": 0.06720247629639362,
+    "bins_timed": 500
+   },
+   "quantized": {
+    "8": {
+     "per": 0.26109125315391085,
+     "spike_rate": 0.37088645078516924
+    },
+    "6": {
+     "per": 0.2638772077375946,
+     "spike_rate": 0.3710158814023248
+    },
+    "4": {
+     "per": 0.2871110176619008,
+     "spike_rate": 0.37128981518910853
+    }
+   },
+   "beaten_by": {
+    "power_sram": [],
+    "power_compute": [],
+    "weights_mb": [
+     "Model B, LSNN, final (C_lsnn_nodelay96)"
+    ]
+   }
+  },
+  {
+   "label": "Model A, DelayNet (R_readall96)",
+   "kind": "snn",
+   "path": "/users/$USER/scratch/speechBCI_dryad/derived/snns/readall96/00_R_readall96/final_model_speech_iaf_soft.pth",
+   "family": "snn",
+   "arch": "native",
+   "latency": {
+    "lookahead_s": 0.0,
+    "output_interval_s": 0.08,
+    "input_window_s": 0.02,
+    "layers_in_sequence": 2
+   },
+   "per": 0.24479604709840203,
+   "spike_rates": [
+    0.3533099775717416,
+    0.3899790012877929
+   ],
+   "input_event_rate": null,
+   "ops": {
+    "per_frame": {
+     "mac_in": 4214841.23551233,
+     "acc_in": 0.0,
+     "mac_syn": 0.0,
+     "acc_syn": 1149867.3473388818,
+     "mac_neuron": 8192.0,
+     "mac_readout": 328.0,
+     "acc_readout": 31206.244488438697,
+     "elementwise": 16384.0,
+     "state_words": 16548.0,
+     "mac": 4223361.23551233,
+     "acc": 1181073.5918273204,
+     "weight_reads": 5396242.827339651,
+     "state_accesses": 33096.0
+    },
+    "per_second": {
+     "mac": 52792015.443904124,
+     "acc": 14763419.897841506,
+     "weight_reads": 67453035.34174564
+    },
+    "energy": {
+     "compute_fp32": {
+      "uj_per_frame": 20.49042791600131,
+      "uw": 256.13034895001636
+     },
+     "sram_fp32": {
+      "uj_per_frame": 47.63712205269957,
+      "uw": 595.4640256587446
+     },
+     "dram_fp32": {
+      "uj_per_frame": 3474.251317413378,
+      "uw": 43428.14146766722
+     },
+     "sram_int8": {
+      "uj_per_frame": 8.295899264010995,
+      "uw": 103.69874080013743
+     }
+    },
+    "compute_breakdown": {
+     "input_layers": 0.9462110680575931,
+     "hidden_synapses": 0.05050556371235364,
+     "neuron_updates": 0.0018390635937169755,
+     "readout": 0.0014443046363362701
+    }
+   },
+   "memory": {
+    "params_total_all_sessions": 4285266,
+    "params_deployed": 4280658,
+    "weights_mb": {
+     "32": 17.122632,
+     "16": 8.561316,
+     "8": 4.280658,
+     "4": 2.140329
+    },
+    "delay_table_mb": 0.65536,
+    "state_words": 4137.0,
+    "input_buffer_words": 7680,
+    "state_kb_fp32": 47.268
+   },
+   "timing": {
+    "s_per_output": 0.02290070629979093,
+    "s_per_bin": 0.005679375162348151,
+    "real_time_factor": 0.2862588287473866,
+    "bins_timed": 500
+   },
+   "quantized": {
+    "8": {
+     "per": 0.2437973086627418,
+     "spike_rate": 0.3716447052882398
+    },
+    "6": {
+     "per": 0.24579478553406223,
+     "spike_rate": 0.3718555427049897
+    },
+    "4": {
+     "per": 0.27107863751051303,
+     "spike_rate": 0.37235605280671574
+    }
+   },
+   "beaten_by": {
+    "power_sram": [],
+    "power_compute": [],
+    "weights_mb": []
+   }
+  },
+  {
+   "label": "Model B, LSNN, final (C_lsnn_nodelay96)",
+   "kind": "snn",
+   "path": "/users/$USER/scratch/speechBCI_dryad/derived/snns/nodelay96/01_C_lsnn_nodelay96/final_model_speech_iaf_soft.pth",
+   "family": "snn",
+   "arch": "native",
+   "latency": {
+    "lookahead_s": 0.0,
+    "output_interval_s": 0.08,
+    "input_window_s": 0.02,
+    "layers_in_sequence": 2
+   },
+   "per": 0.24921152228763668,
+   "spike_rates": [
+    0.3640990345157322,
+    0.3977317929572626
+   ],
+   "input_event_rate": null,
+   "ops": {
+    "per_frame": {
+     "mac_in": 1053710.3088780825,
+     "acc_in": 0.0,
+     "mac_syn": 0.0,
+     "acc_syn": 1180623.0309646914,
+     "mac_neuron": 22944.0,
+     "mac_readout": 328.0,
+     "acc_readout": 31984.705460626214,
+     "elementwise": 16384.0,
+     "state_words": 23924.0,
+     "mac": 1076982.3088780825,
+     "acc": 1212607.7364253176,
+     "weight_reads": 2266646.0453034,
+     "state_accesses": 47848.0
+    },
+    "per_second": {
+     "mac": 13462278.860976031,
+     "acc": 15157596.70531647,
+     "weight_reads": 28333075.566292502
+    },
+    "energy": {
+     "compute_fp32": {
+      "uj_per_frame": 6.045465583621965,
+      "uw": 75.56831979527456
+     },
+     "sram_fp32": {
+      "uj_per_frame": 17.617935810138967,
+      "uw": 220.2241976267371
+     },
+     "dram_fp32": {
+      "uj_per_frame": 1456.938174577798,
+      "uw": 18211.727182222476
+     },
+     "sram_int8": {
+      "uj_per_frame": 3.5169030229352067,
+      "uw": 43.961287786690086
+     }
+    },
+    "compute_breakdown": {
+     "input_layers": 0.8017690868955705,
+     "hidden_synapses": 0.17576160399405003,
+     "neuron_updates": 0.017458109477279885,
+     "readout": 0.005011199633099755
+    }
+   },
+   "memory": {
+    "params_total_all_sessions": 3498834,
+    "params_deployed": 3494226,
+    "weights_mb": {
+     "32": 13.976904,
+     "16": 6.988452,
+     "8": 3.494226,
+     "4": 1.747113
+    },
+    "delay_table_mb": 0.0,
+    "state_words": 5981.0,
+    "input_buffer_words": 0,
+    "state_kb_fp32": 23.924
+   },
+   "timing": {
+    "s_per_output": 0.005468621189075131,
+    "s_per_bin": 0.0013562180548906326,
+    "real_time_factor": 0.06835776486343914,
+    "bins_timed": 500
+   },
+   "quantized": {
+    "8": {
+     "per": 0.25,
+     "spike_rate": 0.3809136868687172
+    },
+    "6": {
+     "per": 0.25136669470142975,
+     "spike_rate": 0.38113925897250467
+    },
+    "4": {
+     "per": 0.2888456686291001,
+     "spike_rate": 0.38221002023288386
+    }
+   },
+   "beaten_by": {
+    "power_sram": [],
+    "power_compute": [],
+    "weights_mb": []
+   }
+  }
+ ],
+ "pareto": {
+  "PER vs power (fp32 + on-chip memory)": [
+   "GRU 2x1024 out80, same input, 96 ep",
+   "Kalman filter per session",
+   "Paper RNN",
+   "3 + 80 ms outputs (S3_out80)",
+   "5 + trained time constants (C_nodelay96)",
+   "Model A, DelayNet (R_readall96)",
+   "Model B, LSNN, final (C_lsnn_nodelay96)"
+  ],
+  "PER vs power (compute only)": [
+   "GRU 2x1024 out80, same input, 96 ep",
+   "Kalman filter per session",
+   "Paper RNN",
+   "3 + 80 ms outputs (S3_out80)",
+   "5 + trained time constants (C_nodelay96)",
+   "Model A, DelayNet (R_readall96)",
+   "Model B, LSNN, final (C_lsnn_nodelay96)"
+  ],
+  "PER vs weight memory": [
+   "GRU 2x1024 out80, same input, 96 ep",
+   "LSTM 2x1024, 96 ep",
+   "Kalman filter per session",
+   "Paper RNN",
+   "3 + 80 ms outputs (S3_out80)",
+   "Model A, DelayNet (R_readall96)",
+   "Model B, LSNN, final (C_lsnn_nodelay96)"
+  ]
+ },
+ "scenarios": {
+  "compute_fp32": {
+   "mac_pj": 4.6000000000000005,
+   "acc_pj": 0.9,
+   "weight_word_pj": 0.0,
+   "state_word_pj": 0.0
+  },
+  "sram_fp32": {
+   "mac_pj": 4.6000000000000005,
+   "acc_pj": 0.9,
+   "weight_word_pj": 5.0,
+   "state_word_pj": 5.0
+  },
+  "dram_fp32": {
+   "mac_pj": 4.6000000000000005,
+   "acc_pj": 0.9,
+   "weight_word_pj": 640.0,
+   "state_word_pj": 5.0
+  },
+  "sram_int8": {
+   "mac_pj": 0.30000000000000004,
+   "acc_pj": 0.1,
+   "weight_word_pj": 1.25,
+   "state_word_pj": 5.0
+  }
+ }
+}

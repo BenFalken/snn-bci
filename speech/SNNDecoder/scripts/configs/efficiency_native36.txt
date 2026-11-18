@@ -1,0 +1,26 @@
+# Efficiency list for the native36 round (scripts/efficiency.py)
+GRU 2x1024, same input, 36 ep | gru | $BASE_DIR/derived/snns/controls/gru_1024_full36.json
+GRU 2x512, 4-bin frames (80 ms ref) | gru | $BASE_DIR/derived/snns/controls/gru_stack_2x512_k4.json
+GRU 5x512 k14 (paper real-time shape) | gru | $BASE_DIR/derived/snns/controls/gru_stack_5x512_k14.json
+Paper RNN | gru_spec | hidden=1024 layers=5 window=32 stride=4 smooth_sd=2 per=0.188
+Native N3_full_gain (48 ep, 1 s horizon) | snn | $BASE_DIR/derived/snns/native_full/*_N3_full_gain/final_model_*.pth
+Native N_base           | snn | $BASE_DIR/derived/snns/native36/*_N_base/final_model_*.pth
+Native N_norec          | snn | $BASE_DIR/derived/snns/native36/*_N_norec/final_model_*.pth
+Native N_wide2048       | snn | $BASE_DIR/derived/snns/native36/*_N_wide2048/final_model_*.pth
+Native N_tbptt50        | snn | $BASE_DIR/derived/snns/native36/*_N_tbptt50/final_model_*.pth
+Native N_tbptt200       | snn | $BASE_DIR/derived/snns/native36/*_N_tbptt200/final_model_*.pth
+Native N_lif            | snn | $BASE_DIR/derived/snns/native36/*_N_lif/final_model_*.pth
+Native N_iaf            | snn | $BASE_DIR/derived/snns/native36/*_N_iaf/final_model_*.pth
+Native N_rec_full       | snn | $BASE_DIR/derived/snns/native36/*_N_rec_full/final_model_*.pth
+Native N_recdelay       | snn | $BASE_DIR/derived/snns/native36/*_N_recdelay/final_model_*.pth
+Native N_ramp           | snn | $BASE_DIR/derived/snns/native36/*_N_ramp/final_model_*.pth
+Native N_delaynet       | snn | $BASE_DIR/derived/snns/native36/*_N_delaynet/final_model_*.pth
+Native N_out80          | snn | $BASE_DIR/derived/snns/native36/*_N_out80/final_model_*.pth
+Native N_hetdelay_in    | snn | $BASE_DIR/derived/snns/native36/*_N_hetdelay_in/final_model_*.pth
+Native N_events         | snn | $BASE_DIR/derived/snns/native36/*_N_events/final_model_*.pth
+Native N_hetdelay_rec   | snn | $BASE_DIR/derived/snns/native36/*_N_hetdelay_rec/final_model_*.pth
+Native N_syn_wide       | snn | $BASE_DIR/derived/snns/native36/*_N_syn_wide/final_model_*.pth
+Native N_hetdelay_rec   (rerun) | snn | $BASE_DIR/derived/snns/native36_fix/*_N_hetdelay_rec/final_model_*.pth
+Native N_delaynet       (rerun) | snn | $BASE_DIR/derived/snns/native36_fix/*_N_delaynet/final_model_*.pth
+Native N_syn_wide       (rerun) | snn | $BASE_DIR/derived/snns/native36_fix/*_N_syn_wide/final_model_*.pth
+Native N_delaynet_noramp(rerun) | snn | $BASE_DIR/derived/snns/native36_fix/*_N_delaynet_noramp/final_model_*.pth

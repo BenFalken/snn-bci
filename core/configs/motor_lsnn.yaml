@@ -1,0 +1,39 @@
+# Motor LSNN, per session (spike_bmi lsnn_ladder_adapt: 37.30 per-axis RMSE on indy). The paper's final motor LSNN is
+# this network pretrained on the other sessions and fine-tuned per session: train it on the pooled sessions first
+# (--data DIR1 DIR2 ..., train.epochs=10, train.patience=5, train.scheduler_patience=5), then per session with --init.
+experiment: motor
+model:
+  kind: lsnn
+  step_ms: 4
+  n_channels: 96
+  n_outputs: 2
+  input: {encoding: clip}                 # binarized spike counts
+  layers:
+    hidden: [256, 256]
+    recurrent: true
+    reset: soft
+    tau_syn_ms: [20, 1300]
+    adaptive_fraction: 0.9
+    tau_adapt_ms: 500
+    adapt_scale: 1.8
+    max_spikes: 3
+    min_vmem: -1
+    max_vmem: 50
+    rec_init_scale: 0.5
+    surrogate: lsnn
+  readout: {type: leaky, read: all, tau_ms: 40, stages: 2, init: bias, bias_init: neutral}
+train:
+  batches: trials
+  batch_size: 20
+  optimizer: adamw
+  lr: 1.0e-3
+  weight_decay: 1.0e-3
+  schedule: plateau
+  factor: 0.1
+  scheduler_patience: 10
+  min_lr: 1.0e-6
+  epochs: 50
+  patience: 10
+  grad_clip: 1.0
+  loss_eps: 1.0e-8
+  select_on: test                         # spike_bmi scores the test split each epoch

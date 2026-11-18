@@ -1,0 +1,33 @@
+# More memory for the spike-native SNN. Base: N3_full_gain (native_full: 2 x 1024 recurrent ALIF stepping every
+# 20 ms, no input window, the 256 normalized features through the per-channel gain, 48 epochs): PER 0.407.
+# What the base already remembers with: membrane leak 25 steps (500 ms), threshold adaptation 24 steps (480 ms),
+# per-neuron synaptic time constants 1-64 steps (trained at 0.1x lr), recurrence (orthogonal, at 0.5x), leaky
+# output neurons (2 steps); gradients cut every 50 steps (1 s). Time constants below are in 20 ms steps.
+# One change per run:
+#
+#   N4_tbptt100     gradients cut every 100 steps (2 s) instead of 50: the network can learn to use longer memory
+#   N4_leak100      membrane leak 100 steps (2 s) instead of 25: neurons integrate over longer
+#   N4_adapt        threshold adaptation spread over 2-200 steps (40 ms - 4 s) across neurons, trained at 0.1x lr
+#                   (base: 24 for all): the slow memory of long short-term SNNs
+#   N4_syn_wide     synaptic time constants spread over 1-256 steps (to 5 s) instead of 1-64
+#   N4_rec_full     recurrent weights starting at full strength (orthogonal x 1.0) instead of x 0.5
+#   N4_3layers      a third recurrent layer of 1,024
+#   N4_traces       the input reaches layer 1 through synaptic currents of 0, 4, 12 and 40 steps (0-800 ms), each
+#                   with its own weights (frontend.py): input memory without a window
+#   N4_out80        one output per 80 ms (every 4th step's output potential), as the RNN's CTC frames, still
+#                   stepping every 20 ms; spike-rate target 0.4 per 80 ms frame = the base's 0.1 per step
+#   N4_out_tau8     leaky output neurons starting at 8 steps (160 ms) instead of 2: memory in the readout
+#   N4_tbptt200     gradients cut every 200 steps (4 s): on the linear base, 100 steps took PER from 0.567 to
+#                   0.416, the largest single gain on the native model so far
+# Ordered for PACK=2: three runs per 24 GB GPU ran out of memory (N4_leak100 beside N4_tbptt100 on the
+# linear base); the longer-horizon runs each share with a lighter one.
+N4_tbptt100  | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 48 --tbptt 100
+N4_out_tau8  | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 48 --out-tau-init 8
+N4_leak100   | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 48 --tau-mem 100
+N4_adapt     | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 48 --tau-adapt-range 2 200
+N4_syn_wide  | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 48 --tau-syn-range 1 256
+N4_rec_full  | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 48 --rec-init-scale 1.0
+N4_3layers   | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 48 --hidden-dims 1024 1024 1024
+N4_out80     | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 48 --output-stride 4 --spike-rate-target 0.4
+N4_traces    | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 48 --input-traces 0 4 12 40
+N4_tbptt200  | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 48 --tbptt 200

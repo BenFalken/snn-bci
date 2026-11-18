@@ -1,0 +1,14 @@
+# Build-up round toward model A (the delay model), bin by bin, 36 epochs, 2 seeds per step (42 and 43), so steps
+# smaller than seed-to-seed variation show as such (two earlier single-run effects of ~0.02 changed sign between rounds).
+# Base: C_iaf = C_base with IAF neurons (80 ms outputs, 2 s gradient horizon, synaptic filters, per-channel gain):
+# PER 0.298 (seed 42). Ingredients, from the delay round (single runs, on C_base with ALIF):
+#   4 delayed input synapses per pair, 0-600 ms (D_in_mult4): 0.273
+#   3 layers, recurrent delays 0-40 / 0-100 / 0-200 ms by depth, 0-100 ms between layers (D_3layers_grow): 0.276
+#   two output stages of 80 ms (C_out2_tau4): 0.306
+# Delay assignments are fixed per model (same across seeds); the seed changes initial weights and batch order.
+# Two per GPU (PACK=2):
+#   B0_iaf_s43     the base again with seed 43: the seed-to-seed spread on this base
+#   B1_in4_s42/43  IAF + 4 delayed input synapses per pair
+B0_iaf_s43 | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 36 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --seed 43
+B1_in4_s42 | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 36 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --syn-delay-in 30 --syn-delay-in-mult 4 --seed 42
+B1_in4_s43 | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 36 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --syn-delay-in 30 --syn-delay-in-mult 4 --seed 43

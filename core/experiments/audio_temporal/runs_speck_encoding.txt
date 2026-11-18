@@ -1,0 +1,14 @@
+# Audio Speck SNN, input encoding (2026-11-16). The deployed encoding spreads each frame's count over 10 chip steps
+# and binarizes (at most one event per sub-step); in the day-normalized features a frame exceeds 10 in only 0.16% of
+# frame-channel cells (2.9% of events lost), so binarizing should cost almost nothing.
+#   P6  spread over 10 sub-steps, NOT binarized (several events per sub-step allowed; the current chip path,
+#       snndec.chip.chip_events, sends 0/1 only, so deploying it would need repeated events per step)
+#   P7  graded input: each frame's value straight into layer 1, one model step per 40 ms frame (not chip-deployable:
+#       the software ceiling for the event coding). Readout decay 0.107 per 40 ms = the deployed 0.8 per 4 ms.
+# name | config | --set overrides
+P6_nobinarize_s1337 | audio_speck | model.input.binarize=false train.seed=1337
+P6_nobinarize_s11 | audio_speck | model.input.binarize=false train.seed=11
+P6_nobinarize_s99 | audio_speck | model.input.binarize=false train.seed=99
+P7_graded_s1337 | audio_speck | model.input.encoding=none model.input.substeps=1 model.readout.decay=0.107 train.seed=1337
+P7_graded_s11 | audio_speck | model.input.encoding=none model.input.substeps=1 model.readout.decay=0.107 train.seed=11
+P7_graded_s99 | audio_speck | model.input.encoding=none model.input.substeps=1 model.readout.decay=0.107 train.seed=99

@@ -1,0 +1,44 @@
+{
+ "session": "sub-Jenkins_ses-20090918_behavior+ecephys",
+ "trials": 20,
+ "rmse_trained": 40.12235641479492,
+ "out_spikes_per_step_trained": 724.1874436351023,
+ "results": {
+  "software": {
+   "rmse": 40.2347412109375,
+   "agreement_r": 0.9997087123913676,
+   "out_spikes_per_step": 736.5985431841831
+  },
+  "0.75": {
+   "rmse": 133.3601531982422,
+   "agreement_r": 0.6429920241572267,
+   "out_spikes_per_step": 3428.5882761012836
+  },
+  "1": {
+   "rmse": 131.44985961914062,
+   "agreement_r": 0.7338515796850655,
+   "out_spikes_per_step": 1927.4333680194243
+  },
+  "1.5": {
+   "rmse": 121.37125396728516,
+   "agreement_r": 0.8585109361379091,
+   "out_spikes_per_step": 799.626361429067
+  },
+  "2": {
+   "rmse": 93.53446960449219,
+   "agreement_r": 0.9195223874151527,
+   "out_spikes_per_step": 433.51612903225805
+  },
+  "3": {
+   "rmse": 52.941246032714844,
+   "agreement_r": 0.9707279347839041,
+   "out_spikes_per_step": 214.8892126257371
+  },
+  "4": {
+   "rmse": 57.55769729614258,
+   "agreement_r": 0.9571673482453698,
+   "out_spikes_per_step": 145.6693721817551
+  }
+ },
+ "chosen_scale": "3"
+}

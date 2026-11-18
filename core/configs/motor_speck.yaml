@@ -1,0 +1,33 @@
+# Motor Speck SNN with the host delay bank (spike_bmi speck_delay: 40.28 on indy): 96 channels x delays 0, 40, 100,
+# 200 ms = 384 chip inputs -> 128 -> 256 -> 256 -> 36 output neurons (18 per velocity axis, preferred values 0..1),
+# their spikes smoothed on the host and decoded as a population vector.
+experiment: motor
+model:
+  kind: speck
+  step_ms: 4
+  n_channels: 96
+  n_outputs: 2
+  input: {encoding: clip, delays: [0, 10, 25, 50]}
+  layers:
+    hidden: [128, 256, 256, 36]
+    reset: hard
+    thresholds: 1.0
+    max_spikes: null
+    min_vmem: -1
+    surrogate: periodic_exponential
+  readout: {type: ema, read: last, decay: 0.8, stages: 2, head: population, normalize: false, neutral: neutral}
+train:
+  batches: trials
+  batch_size: 20
+  optimizer: adamw
+  lr: 1.0e-3
+  weight_decay: 1.0e-3
+  schedule: plateau
+  factor: 0.1
+  scheduler_patience: 5
+  min_lr: 1.0e-6
+  epochs: 50
+  patience: 10
+  grad_clip: 1.0
+  loss_eps: 1.0e-8
+  select_on: test

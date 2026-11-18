@@ -1,0 +1,21 @@
+{
+  "timesteps": 5,
+  "n_layers": 1,
+  "optimizer": "Adam",
+  "units": 200,
+  "epochs": 5,
+  "batch_size": 32,
+  "dropout": 0.5,
+  "learning_rate": 0.004,
+  "input_dim": 192,
+  "output_dim": 2,
+  "window_size": 2,
+  "loss": "mse",
+  "metric": "mse",
+  "test_frac": 0.1,
+  "feature": "mua",
+  "train_duration_minutes": null,
+  "train_duration_samples": null,
+  "split_gap_samples": 0,
+  "decoder": "lstm"
+}

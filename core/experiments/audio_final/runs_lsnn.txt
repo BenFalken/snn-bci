@@ -1,0 +1,26 @@
+# Audio LSNN, final tuning on the word set (ALLWORDS_VERIFIED_DAYNORM), 3 seeds; one change at a time from the
+# pipeline's LSNN (2 x 256 recurrent, 90% adaptive, synapses 20-1300 ms, windows of 8 past + 1 + 8 ahead frames
+# read from rest). Choose on validation r; the test r is reported. past: frames of history in each window (40 ms each:
+# 8 = 320 ms, 16 = 640 ms, 24 = 960 ms), look-ahead unchanged. If a longer window wins, the ANNs get it too.
+# name | config | --set overrides
+L0_base_s1337 | audio_lsnn | train.seed=1337
+L0_base_s11 | audio_lsnn | train.seed=11
+L0_base_s99 | audio_lsnn | train.seed=99
+L1_past16_s1337 | audio_lsnn | data.past=16 train.seed=1337
+L1_past16_s11 | audio_lsnn | data.past=16 train.seed=11
+L1_past16_s99 | audio_lsnn | data.past=16 train.seed=99
+L2_past24_s1337 | audio_lsnn | data.past=24 train.seed=1337
+L2_past24_s11 | audio_lsnn | data.past=24 train.seed=11
+L2_past24_s99 | audio_lsnn | data.past=24 train.seed=99
+L3_adapt0_s1337 | audio_lsnn | model.layers.adaptive_fraction=0.0 train.seed=1337
+L3_adapt0_s11 | audio_lsnn | model.layers.adaptive_fraction=0.0 train.seed=11
+L3_adapt0_s99 | audio_lsnn | model.layers.adaptive_fraction=0.0 train.seed=99
+L4_adapt05_s1337 | audio_lsnn | model.layers.adaptive_fraction=0.5 train.seed=1337
+L4_adapt05_s11 | audio_lsnn | model.layers.adaptive_fraction=0.5 train.seed=11
+L4_adapt05_s99 | audio_lsnn | model.layers.adaptive_fraction=0.5 train.seed=99
+L5_3layers_s1337 | audio_lsnn | model.layers.hidden=[256,256,256] train.seed=1337
+L5_3layers_s11 | audio_lsnn | model.layers.hidden=[256,256,256] train.seed=11
+L5_3layers_s99 | audio_lsnn | model.layers.hidden=[256,256,256] train.seed=99
+L6_512_s1337 | audio_lsnn | model.layers.hidden=[512,512] train.seed=1337
+L6_512_s11 | audio_lsnn | model.layers.hidden=[512,512] train.seed=11
+L6_512_s99 | audio_lsnn | model.layers.hidden=[512,512] train.seed=99

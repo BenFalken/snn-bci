@@ -1,0 +1,10 @@
+# Is the remaining gap to the GRU the spikes' information per step? The current SNN (R_full96: 2 x 1,024 IAF, 4 delayed
+# input synapses per pair, 96 epochs) is 0.2465 against 0.2114 for the GRU trained the same way; the gap was the same
+# at 36 epochs (0.034) and 96 (0.035). Each neuron passes at most 3 spikes per 20 ms step (about 2 bits); a GRU unit
+# passes a continuous value. 96 epochs, seed 42, so a winner can replace the current SNN directly.
+#   F_spikes7  up to 7 spikes per neuron per step (3 bits) instead of 3, everywhere
+#   F_vmem     the output neurons read the last layer's membrane potentials instead of its spikes (continuous values
+#              at the output only; costs a multiply-add per neuron and class every step instead of an add per spike)
+# One per GPU (PACK=1), about 8 h each.
+F_spikes7 | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 96 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --syn-delay-in 30 --syn-delay-in-mult 4 --seed 42 --max-spikes 7
+F_vmem    | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 96 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --syn-delay-in 30 --syn-delay-in-mult 4 --seed 42 --readout-source vmem

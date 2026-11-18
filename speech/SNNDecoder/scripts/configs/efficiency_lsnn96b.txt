@@ -1,0 +1,5 @@
+# Efficiency list for LSNN round 2 (configs/lsnn96b.txt)
+GRU 2x1024 out80, same input, 96 ep | gru | $BASE_DIR/derived/snns/controls/gru_1024_out80_full96.json
+Delay model (R_readall96) | snn | $BASE_DIR/derived/snns/readall96/*_R_readall96/final_model_*.pth
+LSNN, no delays (C_lsnn_nodelay96) | snn | $BASE_DIR/derived/snns/nodelay96/*_C_lsnn_nodelay96/final_model_*.pth
+LSNN, 2 x 1,152 | snn | $BASE_DIR/derived/snns/lsnn96b/*_Q_w1152/final_model_*.pth

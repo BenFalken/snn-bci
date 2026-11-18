@@ -1,0 +1,20 @@
+# Audio Speck SNN, rebuilt with the speech round's wins, on the word set, 3 seeds. Base: binB (48 best channels x
+# 10 delays over the 17-frame window = 480 chip inputs -> 128-256-256, hard reset, each frame's counts spread over 10
+# chip steps, no spike cap; host EMA + linear readout of Hidden 3).
+#   S0  96 channels x 5 delays (the channel/delay sweep's winner for audio: 0.58 vs 0.48)
+#   S1  S0 + soft reset (a chip setting; it took speech from 0.87 toward 0.70)
+#   S2  S1 + the host readout reads all three layers (speech: 0.562 -> 0.549)
+#   S3  binB's 48 x 10 + soft reset + all layers (does channels-over-delays hold on the word set?)
+# name | config | --set overrides
+S0_96x5_s1337 | audio_speck | model.input.n_channels=96 model.input.n_delays=5 train.seed=1337
+S0_96x5_s11 | audio_speck | model.input.n_channels=96 model.input.n_delays=5 train.seed=11
+S0_96x5_s99 | audio_speck | model.input.n_channels=96 model.input.n_delays=5 train.seed=99
+S1_96x5_soft_s1337 | audio_speck | model.input.n_channels=96 model.input.n_delays=5 model.layers.reset=soft train.seed=1337
+S1_96x5_soft_s11 | audio_speck | model.input.n_channels=96 model.input.n_delays=5 model.layers.reset=soft train.seed=11
+S1_96x5_soft_s99 | audio_speck | model.input.n_channels=96 model.input.n_delays=5 model.layers.reset=soft train.seed=99
+S2_96x5_soft_all_s1337 | audio_speck | model.input.n_channels=96 model.input.n_delays=5 model.layers.reset=soft model.readout.read=all train.seed=1337
+S2_96x5_soft_all_s11 | audio_speck | model.input.n_channels=96 model.input.n_delays=5 model.layers.reset=soft model.readout.read=all train.seed=11
+S2_96x5_soft_all_s99 | audio_speck | model.input.n_channels=96 model.input.n_delays=5 model.layers.reset=soft model.readout.read=all train.seed=99
+S3_48x10_soft_all_s1337 | audio_speck | model.layers.reset=soft model.readout.read=all train.seed=1337
+S3_48x10_soft_all_s11 | audio_speck | model.layers.reset=soft model.readout.read=all train.seed=11
+S3_48x10_soft_all_s99 | audio_speck | model.layers.reset=soft model.readout.read=all train.seed=99

@@ -1,0 +1,20 @@
+# Audio temporal precision (2026-11-16): the LSNN's spectrograms are blurred in time (effective kernel ~150 ms against
+# ~100 ms for the GRU/LSTM, half the weight on the current frame). Each change on the audio_final base (L0); controls
+# already trained: L0_base (base) and L3_adapt0 (no adaptation), runs/audio_final.
+#   T1  synapses 20-300 ms instead of 20-1300 ms (the window is only 17 frames = 680 ms)
+#   T2  T1 + no adaptation (500 ms adaptation cannot act inside a 680 ms window read from rest)
+#   T3  base + the frame-to-frame loss term (train.deriv_weight=1)
+#   T4  T2 + the frame-to-frame loss
+# name | config | --set overrides
+T1_tau300_s1337 | audio_lsnn | model.layers.tau_syn_ms=[20,300] train.seed=1337
+T1_tau300_s11 | audio_lsnn | model.layers.tau_syn_ms=[20,300] train.seed=11
+T1_tau300_s99 | audio_lsnn | model.layers.tau_syn_ms=[20,300] train.seed=99
+T2_tau300_adapt0_s1337 | audio_lsnn | model.layers.tau_syn_ms=[20,300] model.layers.adaptive_fraction=0.0 train.seed=1337
+T2_tau300_adapt0_s11 | audio_lsnn | model.layers.tau_syn_ms=[20,300] model.layers.adaptive_fraction=0.0 train.seed=11
+T2_tau300_adapt0_s99 | audio_lsnn | model.layers.tau_syn_ms=[20,300] model.layers.adaptive_fraction=0.0 train.seed=99
+T3_deriv_s1337 | audio_lsnn | train.deriv_weight=1.0 train.seed=1337
+T3_deriv_s11 | audio_lsnn | train.deriv_weight=1.0 train.seed=11
+T3_deriv_s99 | audio_lsnn | train.deriv_weight=1.0 train.seed=99
+T4_tau300_adapt0_deriv_s1337 | audio_lsnn | model.layers.tau_syn_ms=[20,300] model.layers.adaptive_fraction=0.0 train.deriv_weight=1.0 train.seed=1337
+T4_tau300_adapt0_deriv_s11 | audio_lsnn | model.layers.tau_syn_ms=[20,300] model.layers.adaptive_fraction=0.0 train.deriv_weight=1.0 train.seed=11
+T4_tau300_adapt0_deriv_s99 | audio_lsnn | model.layers.tau_syn_ms=[20,300] model.layers.adaptive_fraction=0.0 train.deriv_weight=1.0 train.seed=99

@@ -1,0 +1,17 @@
+# Delay configuration round, bin by bin (one 20 ms bin per step, no windows), 36 epochs, on the combination round's
+# base C_base = N_out80 (2 x 1024 recurrent ALIF, synaptic filters, 2 s gradient horizon, per-channel gain on the
+# 256 features, one output per 80 ms): PER 0.314. Delays are fixed and random per synapse, one weight each, unless
+# several synapses per pair are asked for. Compare the input-delay runs with C_hetin (one input synapse per pair,
+# 0-600 ms, combination round).
+#   D_in_mult2    each input channel reaches each layer-1 neuron through 2 synapses, each with its own weight and its
+#                 own delay in 0-600 ms: two samples of the input's past per pair instead of one (2x the first
+#                 layer's weights)
+#   D_in_mult4    4 synapses per pair (4x the first layer's weights): toward the stacked window's 32 weights per pair,
+#                 with each bin still entering once
+#   D_in_200ms    one input synapse per pair, delays 0-200 ms (C_hetin: 0-600 ms)
+#   D_in_1200ms   one input synapse per pair, delays 0-1.2 s
+# Ordered for PACK=2.
+D_in_mult2  | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 36 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --syn-delay-in 30 --syn-delay-in-mult 2
+D_in_mult4  | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 36 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --syn-delay-in 30 --syn-delay-in-mult 4
+D_in_200ms  | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 36 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --syn-delay-in 10
+D_in_1200ms | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 36 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --syn-delay-in 60

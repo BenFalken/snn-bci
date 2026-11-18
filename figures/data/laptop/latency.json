@@ -1,0 +1,119 @@
+{
+ "machine": {
+  "platform": "Linux-5.15.0-139-generic-x86_64-with-glibc2.31",
+  "processor": "x86_64",
+  "python": "3.9.19",
+  "torch": "2.7.1+cu126",
+  "threads": 1
+ },
+ "results": {
+  "motor/kf": {
+   "median_ms": 0.002353452146053314,
+   "p95_ms": 0.0026384368538856506,
+   "calls": 783131,
+   "interval_ms": 4
+  },
+  "motor/kf_full": {
+   "median_ms": 0.11137314140796661,
+   "p95_ms": 0.12346729636192322,
+   "calls": 17578,
+   "interval_ms": 4
+  },
+  "motor/wf": {
+   "median_ms": 0.001062639057636261,
+   "p95_ms": 0.0011995434761047363,
+   "calls": 1619359,
+   "interval_ms": 4
+  },
+  "motor/lstm": {
+   "median_ms": 0.20633824169635773,
+   "p95_ms": 0.23134984076023102,
+   "calls": 9501,
+   "interval_ms": 4
+  },
+  "motor/qrnn": {
+   "median_ms": 0.20974408835172653,
+   "p95_ms": 0.23333542048931122,
+   "calls": 9341,
+   "interval_ms": 4
+  },
+  "motor/lsnn": {
+   "median_ms": 0.22027548402547836,
+   "p95_ms": 0.24542585015296936,
+   "calls": 8917,
+   "interval_ms": 4
+  },
+  "motor/speck_host": {
+   "median_ms": 0.034146010875701904,
+   "p95_ms": 0.03859959542751312,
+   "calls": 56892,
+   "interval_ms": 4
+  },
+  "audio/kf": {
+   "median_ms": 0.0038659200072288513,
+   "p95_ms": 0.0042477622628211975,
+   "calls": 491207,
+   "interval_ms": 40
+  },
+  "audio/kf_full": {
+   "median_ms": 0.34647900611162186,
+   "p95_ms": 0.37417374551296234,
+   "calls": 5673,
+   "interval_ms": 40
+  },
+  "audio/wf": {
+   "median_ms": 0.006843358278274536,
+   "p95_ms": 0.007945112884044647,
+   "calls": 275709,
+   "interval_ms": 40
+  },
+  "audio/dense_nn": {
+   "median_ms": 0.1130574382841587,
+   "p95_ms": 0.1281779259443283,
+   "calls": 17444,
+   "interval_ms": 40
+  },
+  "audio/lstm": {
+   "median_ms": 6.733918096870184,
+   "p95_ms": 7.662847638130188,
+   "calls": 300,
+   "interval_ms": 40
+  },
+  "audio/gru": {
+   "median_ms": 3.8970010355114937,
+   "p95_ms": 4.429628141224384,
+   "calls": 507,
+   "interval_ms": 40
+  },
+  "audio/lsnn": {
+   "median_ms": 3.6404705606400967,
+   "p95_ms": 3.7693018093705177,
+   "calls": 548,
+   "interval_ms": 40
+  },
+  "audio/speck_host": {
+   "median_ms": 0.29366184026002884,
+   "p95_ms": 0.3201104700565338,
+   "calls": 6705,
+   "interval_ms": 40
+  },
+  "speech/lstm": {
+   "median_ms": 16.474689356982708,
+   "p95_ms": 18.543751910328865,
+   "calls": 126,
+   "interval_ms": 80
+  },
+  "speech/paper_rnn": {
+   "median_ms": 6.79619237780571,
+   "p95_ms": 7.3834918439388275,
+   "calls": 293,
+   "interval_ms": 80
+  },
+  "speech/lsnn": {
+   "median_ms": 1.860196702182293,
+   "p95_ms": 2.2660959511995316,
+   "calls": 1039,
+   "interval_ms": 80
+  }
+ }
+}

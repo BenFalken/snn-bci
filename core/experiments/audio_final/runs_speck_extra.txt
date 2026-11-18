@@ -1,0 +1,5 @@
+# S4: binB's 48 x 10 with soft reset only (isolates soft reset on the word set's best input; S3 adds the all-layer readout)
+# name | config | --set overrides
+S4_48x10_soft_s1337 | audio_speck | model.layers.reset=soft train.seed=1337
+S4_48x10_soft_s11 | audio_speck | model.layers.reset=soft train.seed=11
+S4_48x10_soft_s99 | audio_speck | model.layers.reset=soft train.seed=99

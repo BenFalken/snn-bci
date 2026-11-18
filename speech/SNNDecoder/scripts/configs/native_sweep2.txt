@@ -1,0 +1,22 @@
+# Spike-native recurrent SNN, second round. The first round (native_sweep) never trained: nearly every update had
+# non-finite gradients and was skipped. Cause found: with at most 3 spikes per step and no membrane leak, charge
+# beyond what can be fired accumulated without bound (to ~16,000 thresholds over 700 steps), saturating neurons and
+# breaking the gradient arithmetic. Now (configs/speech_native.yaml): a 500 ms membrane leak, a ceiling of 50 on the
+# membrane potential, truncated backpropagation every 50 steps (1 s), recurrent weights starting at 0.5x, and the
+# 80 ms SNN's best training (single-exponential surrogate, spike-rate penalty weight 30 above 0.1 per 20 ms step).
+# Otherwise as before: raw 6v threshold-crossing counts (derived/snnDataTx1), 2 x 1024 recurrent ALIF, at most 3
+# spikes per step, synaptic time constants 1-64 steps, per-day input gain, 41 leaky output neurons, paper recipe,
+# 19 sessions, 48 epochs. Reference: GRU 2 x 1024 on the same input (GRU_TX1).
+#
+#   N2_base        the base configuration
+#   N2_periodic    sinabs' default periodic surrogate, no spike-rate penalty (the first round's training)
+#   N2_single      at most one spike per neuron per step
+#   N2_feedback    plus top-down input from layer 2 into layer 1
+#   N2_nosyn       no synaptic time constants
+#   N2_norm_input  the same on block-normalized counts (derived/snnData, first 128 columns)
+N2_base       | --config ../snnDecoder/configs/speech_native.yaml --epochs 48 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnDataTx1
+N2_periodic   | --config ../snnDecoder/configs/speech_native.yaml --epochs 48 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnDataTx1 --surrogate-grad periodic_exponential --spike-rate-weight 0
+N2_single     | --config ../snnDecoder/configs/speech_native.yaml --epochs 48 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnDataTx1 --spike-fn single
+N2_feedback   | --config ../snnDecoder/configs/speech_native.yaml --epochs 48 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnDataTx1 --feedback true
+N2_nosyn      | --config ../snnDecoder/configs/speech_native.yaml --epochs 48 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnDataTx1 --tau-syn-range 0 0
+N2_norm_input | --config ../snnDecoder/configs/speech_native.yaml --epochs 48 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --input-channels 0 128
