@@ -4,6 +4,7 @@ mechanism, the layer-1 threshold sweeps, layer firing, per-neuron rates, the dec
 and the readout icons. Data: data/calibration_speech.{npz,json} (calibration_data.py), final_results/l1_final (the
 threshold sweeps of the deployed networks), speck_r19/results (speech V2 sweep and refit).
 """
+from repo_paths import WORKSPACE  # noqa: E402  (the repository's paths.yaml)
 import glob
 import json
 from pathlib import Path
@@ -15,7 +16,7 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Rectangle
 import style
 
 HERE = Path(__file__).parent
-DL = Path.home() / "Downloads"
+DL = WORKSPACE
 L1 = DL / "final_results/l1_final"
 R19 = DL / "speck_r19/results"
 R20 = DL / "speck_r20/results"          # round 20 V2+C, the final speech network

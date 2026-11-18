@@ -12,6 +12,7 @@ keeps its final value. The playing lane is outlined in its color.
 Needs Docker running (the pipeline's sklearn_preprocess_test and mikko_test images) and ffmpeg.
 """
 
+from repo_paths import AUDITORY_REPO  # noqa: E402  (the repository's paths.yaml)
 import argparse
 import subprocess
 import sys
@@ -27,7 +28,7 @@ from scipy.io import wavfile
 import style
 
 HERE = Path(__file__).parent
-REPO = Path.home() / "Documents/GitHub/AuditoryDecoding"
+REPO = AUDITORY_REPO
 sys.path.insert(0, str(REPO))
 import os
 START = Path.cwd()                                    # output paths are relative to where the script was started

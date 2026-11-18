@@ -18,6 +18,7 @@ and is checked against it.
     python fig_motor_events.py      -> figures/fig_motor_events.{pdf,svg,png}
 """
 
+from repo_paths import WORKSPACE, CORE  # noqa: E402  (the repository's paths.yaml)
 import json
 import sys
 from pathlib import Path
@@ -29,14 +30,14 @@ import torch
 import style
 
 HERE = Path(__file__).parent
-SNNDEC = Path.home() / "Documents/GitHub/snn-decoders"
+SNNDEC = CORE
 sys.path.insert(0, str(SNNDEC))
 sys.path.insert(0, str(SNNDEC / "experiments/chip"))
 from snndec import chip, data  # noqa: E402
 from snndec.convert import load  # noqa: E402
 from motor_l1_sweep import decode  # noqa: E402
 
-PS = Path.home() / "Downloads/speck_per_session"
+PS = WORKSPACE / "speck_per_session"
 SCALERS = str(PS / "main/snn_training/velocity_scalers.json")
 CASES = {"indy": ("bmi/indy", "indy_20160921_01"),
          "jenkins_m1": ("hkm/jenkins_m1", "sub-Jenkins_ses-20090916_behavior+ecephys")}

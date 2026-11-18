@@ -12,6 +12,7 @@ Data for fig_calibration.py, from the speech Speck SNN (V2: two networks on one 
 
     python calibration_data.py      -> data/calibration_speech.npz + data/calibration_speech.json
 """
+from repo_paths import WORKSPACE, SPEECH_SNN  # noqa: E402  (the repository's paths.yaml)
 import json
 import sys
 from pathlib import Path
@@ -19,8 +20,8 @@ from pathlib import Path
 import numpy as np
 import torch
 
-DL = Path.home() / "Downloads"
-sys.path.insert(0, str(DL / "speechBCI-main/SNNDecoder/scripts"))
+DL = WORKSPACE
+sys.path.insert(0, str(SPEECH_SNN / "scripts"))
 import refit_readout as rr  # noqa: E402
 import speech_chip as sc  # noqa: E402
 import speck_io  # noqa: E402

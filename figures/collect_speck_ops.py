@@ -16,6 +16,7 @@ Operation counts for the FINAL Speck SNNs, under the same 45 nm rule as every ot
     python collect_speck_ops.py      -> data/speck_ops.csv (experiment, macs, accs, energy_uj per output, notes)
 """
 
+from repo_paths import WORKSPACE, AUDITORY_DATA, SNN_RUNS, CORE  # noqa: E402  (the repository's paths.yaml)
 import json
 import os
 import sys
@@ -28,15 +29,15 @@ import torch
 from collect_efficiency import energy_uj
 
 HERE = Path(__file__).parent
-SNNDEC = Path.home() / "Documents/GitHub/snn-decoders"
+SNNDEC = CORE
 sys.path.insert(0, str(SNNDEC))
 sys.path.insert(0, str(SNNDEC / "experiments/chip"))
 from snndec import chip, data  # noqa: E402
 from snndec.convert import load  # noqa: E402
 
-MOTOR = Path.home() / "Downloads/speck_per_session"
-AUDIO = Path.home() / "Downloads/speck_final_batch2/audio"
-SPEECH_S3 = Path.home() / "Downloads/final_results/decoderComparison_speckS3.json"
+MOTOR = WORKSPACE / "speck_per_session"
+AUDIO = WORKSPACE / "speck_final_batch2/audio"
+SPEECH_S3 = WORKSPACE / "final_results/decoderComparison_speckS3.json"
 
 
 def synaptic_adds(model, events):
@@ -82,8 +83,8 @@ def audio():
     from snndec.evaluate import recording_file
     rows = []
     # 2026-11-18: the final audio networks, P5 on the expanded cohorts of both monkeys, 3 seeds each
-    AD = Path.home() / "Documents/GitHub/AuditoryDecoding/pipeline_data"
-    SD = Path.home() / "Documents/GitHub/snn-decoders/runs"
+    AD = AUDITORY_DATA
+    SD = SNN_RUNS
     for monkey, seed in [(m, s) for m in ("Neil", "Gomez") for s in ("s11", "s1337", "s99")]:
         model, info = load(str(SD / f"audio_novel_{monkey}/P5_centre_ema1_deriv_{seed}/best.pt"))
         model.eval()

@@ -22,6 +22,7 @@ attempted speech made no usable sound, so the voice is synthetic. (macOS `say` i
 system and read the phoneme names aloud; the earlier version is video_speech.py.say.)
 """
 
+from repo_paths import WORKSPACE, TTS_ENV, TTS_VOICES  # noqa: E402  (the repository's paths.yaml)
 import argparse
 import base64
 import glob
@@ -89,8 +90,8 @@ def phoneme_runs(segs):
     return runs
 
 
-TTS_PY = HERE / ".tts-venv" / "bin" / "python"
-TTS_VOICE = HERE / "tts_voices" / "en_US-lessac-high.onnx"
+TTS_PY = TTS_ENV / "bin" / "python"
+TTS_VOICE = TTS_VOICES / "en_US-lessac-high.onnx"
 
 
 def word_runs(segs):
@@ -230,9 +231,9 @@ def render(d, path, playing, audio_s):
 
 def main():
     pa = argparse.ArgumentParser()
-    pa.add_argument("--trials", default=str(Path.home() / "Downloads/viewer_final"))
+    pa.add_argument("--trials", default=str(WORKSPACE / "viewer_final"))
     pa.add_argument("--output", default=str(HERE / "figures" / "video_speech.mp4"))
-    pa.add_argument("--chip-logits", default=str(Path.home() / "Downloads/final_results/speech_v2c/chip_refit_logits.npz"),
+    pa.add_argument("--chip-logits", default=str(WORKSPACE / "final_results/speech_v2c/chip_refit_logits.npz"),
                     help="the speech Speck SNN's logits from the devkit (speech_chip.py --mode chip): its lane is "
                          "added after the LSNN's when the file exists")
     a = pa.parse_args()

@@ -8,6 +8,7 @@ speck_audio_novel.zip); speck_float = the same networks in software; speck_chip_
 
     python collect_audio_novel.py   -> data/audio_novel_fidelity.csv
 """
+from repo_paths import WORKSPACE, AUDITORY_DATA  # noqa: E402  (the repository's paths.yaml)
 import csv
 from pathlib import Path
 
@@ -18,8 +19,8 @@ from collect_final import AUDIO_NAMES, SAMPLES_BEFORE
 from collect_fidelity import align_raw, fisher_mean_r, sound_frames, spectral_r
 
 HERE = Path(__file__).parent
-AD = Path.home() / "Documents/GitHub/AuditoryDecoding/pipeline_data"
-CHIP = Path.home() / "Downloads/results_audio_novel"
+AD = AUDITORY_DATA
+CHIP = WORKSPACE / "results_audio_novel"
 SEEDS = ("s11", "s1337", "s99")
 NOVEL = {"bloop", "pop", "goop"}
 KINDS = {"speck": "chip_refit", "speck_float": "float", "speck_chip_trained": "chip"}

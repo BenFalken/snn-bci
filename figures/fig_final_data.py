@@ -18,6 +18,7 @@ Final figure: properties of the data that explain how the decoders came out.
     python fig_final_data.py      -> figures/fig_final_data.{pdf,svg,png}
 """
 
+from repo_paths import WORKSPACE, AUDITORY_DATA, SNN_RUNS  # noqa: E402  (the repository's paths.yaml)
 import json
 from pathlib import Path
 
@@ -28,8 +29,8 @@ import numpy as np
 import style
 
 HERE = Path(__file__).parent
-DL = Path.home() / "Downloads"
-AUD = Path.home() / "Documents/GitHub/AuditoryDecoding/pipeline_data/Neil/aSTG"
+DL = WORKSPACE
+AUD = AUDITORY_DATA / "Neil/aSTG"
 DAYS = ["07_19_11", "07_20_10", "07_31_13", "08_03_10", "08_06_13"]
 AUD_DECS = [("kalman_filter", "kf"), ("wiener_filter", "wf"), ("gru_rnn", "gru"), ("lstm_rnn", "lstm"),
             ("lsnn", "lsnn"), ("speck_snn", "speck")]
@@ -144,7 +145,7 @@ def main():
 
     import pandas as pd
     lad = pd.read_csv(LADDER).mean(numeric_only=True)
-    aud = json.load(open(Path.home() / "Documents/GitHub/snn-decoders/runs/audio_final_scores.json"))
+    aud = json.load(open(SNN_RUNS / "audio_final_scores.json"))
     r8 = np.mean([v["r_test"] for k, v in aud.items() if k.startswith("L0_base")])
     r24 = np.mean([v["r_test"] for k, v in aud.items() if k.startswith("L2_past24")])
     gains = [("motor\n(recurrence)", 100 * (1 - lad["recurrence"] / lad["lsnn_neurons"])),

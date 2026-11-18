@@ -17,6 +17,7 @@ jenkins_m1, Speck = final_results/jenkins_refit/<session>_pred.npy.
     python3 video_motor.py --subject jenkins_m1 --session sub-Jenkins_ses-20090916_behavior+ecephys \
         --output figures/video_motor2.mp4
 """
+from repo_paths import WORKSPACE  # noqa: E402  (the repository's paths.yaml)
 import argparse
 import subprocess
 from pathlib import Path
@@ -30,7 +31,7 @@ from matplotlib.collections import LineCollection
 import style
 
 HERE = Path(__file__).parent
-DL = Path.home() / "Downloads"
+DL = WORKSPACE
 DT = 0.004
 FPS = 30
 TRAIL_S, WIN_S = 1.5, 3.0

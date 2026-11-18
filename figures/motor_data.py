@@ -8,6 +8,7 @@ The local Indy recordings for the motor figures: each session's held-out segment
     date(session)               datetime.date of the session
 """
 
+from repo_paths import WORKSPACE  # noqa: E402  (the repository's paths.yaml)
 import datetime
 import glob
 import os
@@ -17,7 +18,7 @@ import h5py
 import numpy as np
 from scipy.ndimage import gaussian_filter1d
 
-ROOT = Path.home() / "Downloads/speck_per_session/data/dataset/bmi/indy/mua"
+ROOT = WORKSPACE / "speck_per_session/data/dataset/bmi/indy/mua"
 STEP_MS = 4.0
 
 

@@ -18,6 +18,7 @@ three seeds, default s11, the median one on the chip per word), from final_resul
 Needs Docker running (the pipeline's sklearn_preprocess_test and mikko_test images) and ffmpeg.
 """
 
+from repo_paths import WORKSPACE  # noqa: E402  (the repository's paths.yaml)
 import argparse
 import csv
 import subprocess
@@ -103,10 +104,9 @@ def main():
     # the chip's Hidden 3 spikes read by the readout refitted to the chip's firing on the training stream (the final
     # audio Speck SNN; experiments/chip/audio_refit.py + audio_apply_refit.py)
     if a.speck_preds is None and a.dataset == "ALLWORDS_NOVEL_DAYNORM":
-        a.speck_preds = (Path.home() / f"Downloads/results_audio_novel/preds_{a.subject}_{a.speck_seed}/"
+        a.speck_preds = (WORKSPACE / f"results_audio_novel/preds_{a.subject}_{a.speck_seed}/"
                          f"{a.subject}_P5_{a.speck_seed}/chip_refit.npy")
-    preds["speck"] = np.load(a.speck_preds or Path.home() /
-                             f"Downloads/final_results/audio_preds/words_P5_{a.speck_seed}/chip_refit.npy")
+    preds["speck"] = np.load(a.speck_preds or WORKSPACE / f"final_results/audio_preds/words_P5_{a.speck_seed}/chip_refit.npy")
     assert len(preds["speck"]) == len(targets), (len(preds["speck"]), len(targets))
     tmp = tempfile.mkdtemp(prefix="paper_audio_words_video_")
     clips = []

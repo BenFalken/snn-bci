@@ -13,6 +13,7 @@ on the same test steps):
     python fig_jenkins_chip.py      -> figures/fig_jenkins_chip.{pdf,svg,png}
 """
 
+from repo_paths import WORKSPACE  # noqa: E402  (the repository's paths.yaml)
 import json
 from pathlib import Path
 
@@ -22,7 +23,7 @@ import numpy as np
 import style
 
 HERE = Path(__file__).parent
-RUNS = Path.home() / "Downloads/final_v2"
+RUNS = WORKSPACE / "final_v2"
 DECS = ["kf", "wf", "lstm", "qrnn", "snn", "speck"]
 NAME = {"snn": "lsnn"}
 

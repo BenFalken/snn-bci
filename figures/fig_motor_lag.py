@@ -15,6 +15,7 @@ velocity it encodes. A channel counts as tuned at peak R^2 >= 0.02.
     python fig_motor_lag.py      -> figures/fig_motor_lag.{pdf,svg,png}
 """
 
+from repo_paths import WORKSPACE  # noqa: E402  (the repository's paths.yaml)
 import glob
 import json
 from pathlib import Path
@@ -25,7 +26,7 @@ import numpy as np
 import style
 
 HERE = Path(__file__).parent
-LAG = Path.home() / "Downloads/spike_bmi_lsnn_data/lag_tuning_all"
+LAG = WORKSPACE / "spike_bmi_lsnn_data/lag_tuning_all"
 EXAMPLE = "indy_20160921_01"
 TAPS = [0, 40, 100, 200]
 

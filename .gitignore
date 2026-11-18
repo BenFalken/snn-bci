@@ -15,3 +15,5 @@ __pycache__/
 *.zip
 runs/
 pipeline_data/
+paths.local.yaml
+figures/figures/

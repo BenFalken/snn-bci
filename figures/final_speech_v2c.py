@@ -18,6 +18,7 @@ Same procedure as final_speech_v2.py (kept for V2), generalized to networks of d
 
     python3 final_speech_v2c.py
 """
+from repo_paths import WORKSPACE, SPEECH_SNN  # noqa: E402  (the repository's paths.yaml)
 import json
 import shutil
 import sys
@@ -26,9 +27,9 @@ from pathlib import Path
 import numpy as np
 import torch
 
-DL = Path.home() / "Downloads"
+DL = WORKSPACE
 HERE = Path(__file__).parent
-sys.path.insert(0, str(DL / "speechBCI-main/SNNDecoder/scripts"))
+sys.path.insert(0, str(SPEECH_SNN / "scripts"))
 sys.path.insert(0, str(HERE))
 import refit_readout as rr  # noqa: E402
 import speech_chip as sc  # noqa: E402

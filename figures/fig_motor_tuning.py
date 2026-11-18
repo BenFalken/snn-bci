@@ -18,6 +18,7 @@ Channels with no activity in a segment are left out.
     python fig_motor_tuning.py      -> figures/fig_motor_tuning.{pdf,svg,png}
 """
 
+from repo_paths import WORKSPACE  # noqa: E402  (the repository's paths.yaml)
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -130,7 +131,7 @@ def main():
     ax = fig.add_subplot(gs[2])
     import glob, json
     peaks = []
-    for f in sorted(glob.glob(str(Path.home() / "Downloads/spike_bmi_lsnn_data/lag_tuning_all/lag_tuning_indy_*.json"))):
+    for f in sorted(glob.glob(str(WORKSPACE / "spike_bmi_lsnn_data/lag_tuning_all/lag_tuning_indy_*.json"))):
         peaks += [c["peak_r2"] for c in json.load(open(f))["channels"]]
     peaks = np.array(peaks)
     ax.hist(peaks, bins=np.linspace(0, 0.6, 31), color=style.MUTED, alpha=0.85)

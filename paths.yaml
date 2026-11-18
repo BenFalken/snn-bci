@@ -1,0 +1,24 @@
+# Where everything that is NOT code lives. Every script in the repository builds its paths from these roots.
+# To run on another machine (or on Oscar), copy this file to paths.local.yaml (git-ignored) and change the roots
+# there; paths.local.yaml overrides this file key by key. ~ is expanded.
+
+# data, checkpoints and results (final_v2, final_results, speck_r19, speck_r20, speech_rebuild, speck_per_session, ...)
+workspace: ~/Downloads
+
+# the AuditoryDecoding checkout with its derived cohorts (pipeline_data); its Docker reference decoders run from here
+auditory_repo: ~/Documents/GitHub/AuditoryDecoding
+auditory_data: ~/Documents/GitHub/AuditoryDecoding/pipeline_data
+
+# trained networks of the shared library (the audio Speck SNNs)
+snn_runs: ~/Documents/GitHub/snn-decoders/runs
+
+# raw recordings (only the data-preparation scripts read these)
+raw_auditory: ~/Dropbox/SNN_Main/data/Auditory_cortex
+
+# Oscar (only the cluster job scripts use these)
+oscar_home: /users/$USER
+oscar_scratch: /users/$USER/scratch/speechBCI_dryad
+
+# tools installed outside the repository: the offline speech synthesizer (Piper) the speech video voices phonemes with
+tts_env: ~/Downloads/paper_figures/.tts-venv
+tts_voices: ~/Downloads/paper_figures/tts_voices

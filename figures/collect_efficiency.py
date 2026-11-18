@@ -25,6 +25,7 @@ One efficiency table for the three experiments: data/efficiency.csv, one row per
              CPU thread
 """
 
+from repo_paths import WORKSPACE, AUDITORY_REPO, CORE, SNN_RUNS  # noqa: E402  (the repository's paths.yaml)
 import json
 import sys
 import time
@@ -35,11 +36,11 @@ import pandas as pd
 import torch
 
 HERE = Path(__file__).parent
-MOTOR = Path.home() / "Downloads/results/final/indy"
-AUDIO_REPO = Path.home() / "Documents/GitHub/AuditoryDecoding"
-SNNDEC = Path.home() / "Documents/GitHub/snn-decoders"
+MOTOR = WORKSPACE / "results/final/indy"
+AUDIO_REPO = AUDITORY_REPO
+SNNDEC = CORE
 AUDIO_DAYS = ["07_19_11", "07_20_10", "07_31_13", "08_03_10", "08_06_13"]
-SPEECH = Path.home() / "Downloads/speechBCI-main/figures/inference_final/efficiency_final.json"
+SPEECH = WORKSPACE / "speechBCI-main/figures/inference_final/efficiency_final.json"
 SPEECH_ROWS = {"Kalman filter per session": "kf", "Wiener filter (160 ms)": "wf", "LSTM 2x1024, 96 ep": "lstm",
                "Model B, LSNN, final (C_lsnn_nodelay96)": "lsnn", "GRU 2x1024 out80, same input, 96 ep": "gru",
                "QRNN 2x1024, 96 ep": "qrnn", "Paper RNN": "paper_rnn", "Model A, DelayNet (R_readall96)": "delaynet"}
@@ -147,7 +148,7 @@ def audio_speck_row():
     from snndec.convert import load
     per_day = []
     for day in AUDIO_DAYS:
-        model, info = load(SNNDEC / f"runs/speck_audio_binB/{day}_r13_binB_s1337/model.pt")
+        model, info = load(SNN_RUNS / f"speck_audio_binB/{day}_r13_binB_s1337/model.pt")
         model.eval()
         rec, _, n = data.audio_recording(str(AUDIO_REPO / f"pipeline_data/Neil/aSTG/{day}/pipeline"))
         rec = rec[-n["test"]:]                                             # the recording as scored, test part

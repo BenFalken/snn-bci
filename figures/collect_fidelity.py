@@ -10,6 +10,7 @@ metric), each experiment in its native metric:
              (speechBCI figures/inference_final/decoderComparison_final.json)
 """
 
+from repo_paths import WORKSPACE, AUDITORY_DATA  # noqa: E402  (the repository's paths.yaml)
 import csv
 import json
 import os
@@ -19,9 +20,9 @@ import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).parent
-MOTOR = Path.home() / "Downloads/results/final"
-AUDIO = Path.home() / "Documents/GitHub/AuditoryDecoding/pipeline_data/Neil/aSTG"
-SPEECH = Path.home() / "Downloads/speechBCI-main/figures/inference_final/decoderComparison_final.json"
+MOTOR = WORKSPACE / "results/final"
+AUDIO = AUDITORY_DATA / "Neil/aSTG"
+SPEECH = WORKSPACE / "speechBCI-main/figures/inference_final/decoderComparison_final.json"
 
 MOTOR_NAMES = {"kf": "kf", "wf": "wf", "lstm": "lstm", "qrnn": "qrnn", "snn": "lsnn", "speck": "speck"}
 AUDIO_NAMES = {"kalman_filter": "kf", "wiener_filter": "wf", "lstm_rnn": "lstm", "lsnn": "lsnn", "gru_rnn": "gru",

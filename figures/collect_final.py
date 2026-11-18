@@ -31,6 +31,7 @@ energy minus the idle power measured before and after):
     converges within the first second, so a deployed filter runs x <- A x + K (z - H x).
 """
 
+from repo_paths import WORKSPACE  # noqa: E402  (the repository's paths.yaml)
 import csv
 import json
 from pathlib import Path
@@ -41,7 +42,7 @@ import pandas as pd
 from collect_fidelity import AUDIO, SAMPLES_BEFORE, WORDS, sound_frames, spectral_r
 
 HERE = Path(__file__).parent
-DL = Path.home() / "Downloads"
+DL = WORKSPACE
 MOTOR = DL / "final_v2"
 FINAL = DL / "final_results"
 SPEECH = DL / "speechBCI-main/figures/inference_final/decoderComparison_final.json"

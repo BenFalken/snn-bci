@@ -11,6 +11,7 @@ is its best-decoded utterance.
 
     python3 video_audio_showcase.py [--output figures/video_audio_showcase.mp4]
 """
+from repo_paths import WORKSPACE  # noqa: E402  (the repository's paths.yaml)
 import argparse
 import tempfile
 from pathlib import Path
@@ -31,7 +32,7 @@ def cohort(subject):
     paths = PipelinePaths("pipeline_data", subject, "aSTG", DATASET)
     y = np.load(paths.pipeline / "window_targets_test.npy")
     preds = {n: np.load(paths.pipeline / f"{dec}_predict_test.npy") for n, dec in LANES if dec}
-    preds["speck"] = np.load(Path.home() / f"Downloads/results_audio_novel/preds_{subject}_{SEED}/"
+    preds["speck"] = np.load(WORKSPACE / f"results_audio_novel/preds_{subject}_{SEED}/"
                              f"{subject}_P5_{SEED}/chip_refit.npy")
     assert all(len(p) == len(y) for p in preds.values())
     return paths, y, preds
