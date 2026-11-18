@@ -1,4 +1,0 @@
-# Efficiency list: final LSNN with, without and with fixed synaptic filters (configs/filters96.txt)
-Final LSNN, last layer (B_noro_s42) | snn | $BASE_DIR/derived/snns/noreadout96/*_B_noro_s42/final_model_*.pth
-No synaptic filters (B_nofilt) | snn | $BASE_DIR/derived/snns/filters96/*_B_nofilt/final_model_*.pth
-Fixed synaptic filters (B_fixfilt) | snn | $BASE_DIR/derived/snns/filters96/*_B_fixfilt/final_model_*.pth

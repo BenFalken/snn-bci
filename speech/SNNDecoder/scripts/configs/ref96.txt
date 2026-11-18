@@ -1,3 +1,0 @@
-# The new reference at full length: B1_in4 recipe (2 x 1,024 IAF, 4 delayed input synapses per pair), 96 epochs
-# (learning rate decaying to 0 over all 96), seed 42. Replaces model A's 96-epoch run.
-R_full96  | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 96 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --syn-delay-in 30 --syn-delay-in-mult 4 --seed 42

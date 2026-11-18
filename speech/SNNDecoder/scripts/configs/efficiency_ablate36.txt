@@ -1,7 +1,0 @@
-# Efficiency list for the model A ablations (configs/ablate36.txt)
-GRU 2x1024 out80, same input, 36 ep | gru | $BASE_DIR/derived/snns/controls/gru_1024_out80_c36.json
-Native model A, 36 ep | snn | $BASE_DIR/derived/snns/modelA/*_A_test36_s42/final_model_*.pth
-X_no_in | snn | $BASE_DIR/derived/snns/ablate36/*_X_no_in/final_model_*.pth
-X_no_rec | snn | $BASE_DIR/derived/snns/ablate36/*_X_no_rec/final_model_*.pth
-X_no_ff | snn | $BASE_DIR/derived/snns/ablate36/*_X_no_ff/final_model_*.pth
-X_rec_uniform | snn | $BASE_DIR/derived/snns/ablate36/*_X_rec_uniform/final_model_*.pth

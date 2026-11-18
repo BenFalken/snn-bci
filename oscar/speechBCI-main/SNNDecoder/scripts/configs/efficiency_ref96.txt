@@ -1,6 +1,0 @@
-# Efficiency list for the full-length reference (configs/ref96.txt)
-GRU 2x1024 out80, same input, 36 ep | gru | $BASE_DIR/derived/snns/controls/gru_1024_out80_c36.json
-Paper RNN | gru_spec | hidden=1024 layers=5 window=32 stride=4 smooth_sd=2 per=0.188
-Reference B1_in4, 36 ep | snn | $BASE_DIR/derived/snns/build36_light/*_B1_in4_s42/final_model_*.pth
-Model A, 36 ep | snn | $BASE_DIR/derived/snns/modelA/*_A_test36_s42/final_model_*.pth
-Reference, 96 ep | snn | $BASE_DIR/derived/snns/ref96/*_R_full96/final_model_*.pth

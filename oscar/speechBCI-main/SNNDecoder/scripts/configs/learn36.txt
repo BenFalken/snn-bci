@@ -1,6 +1,0 @@
-# Learned input delays, rerun. R_learn (ref36) never moved its delays: the RNN recipe's Adam epsilon (0.1) scaled
-# the delay updates down ~1e5-fold, since delay gradients are ~500x smaller than weight gradients. The delay
-# positions now have their own epsilon (1e-8). Same recipe as R_learn: the reference (2 x 1,024 IAF, 4 delayed
-# input synapses per pair) with --learn-delays; compare with B1_in4_s42 (0.279) and R_learn (0.286).
-# Check after an epoch or two that the log's "learned delays" line shows "moved" above 0.
-R_learn2  | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 36 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --syn-delay-in 30 --syn-delay-in-mult 4 --seed 42 --learn-delays true

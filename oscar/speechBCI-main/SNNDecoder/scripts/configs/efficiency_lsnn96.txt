@@ -1,7 +1,0 @@
-# Efficiency list for the LSNN exploration (configs/lsnn96.txt), against the delay model
-GRU 2x1024 out80, same input, 96 ep | gru | $BASE_DIR/derived/snns/controls/gru_1024_out80_full96.json
-Delay model (R_readall96) | snn | $BASE_DIR/derived/snns/readall96/*_R_readall96/final_model_*.pth
-LSNN, no delays (C_lsnn_nodelay96) | snn | $BASE_DIR/derived/snns/nodelay96/*_C_lsnn_nodelay96/final_model_*.pth
-LSNN, 2 s adaptation | snn | $BASE_DIR/derived/snns/lsnn96/*_Q_adapt2s/final_model_*.pth
-LSNN, trained adaptation 200 ms-2 s | snn | $BASE_DIR/derived/snns/lsnn96/*_Q_adaptrange/final_model_*.pth
-LSNN, 50% adaptive | snn | $BASE_DIR/derived/snns/lsnn96/*_Q_frac50/final_model_*.pth

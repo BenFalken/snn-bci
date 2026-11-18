@@ -1,9 +1,0 @@
-# Do the input delays still help at full length? Every delay comparison so far was at 36 epochs, and the every-layer
-# readout's 36-epoch gain vanished at 96. The current SNN (R_readall96: 2 x 1,024 IAF, 4 delayed input synapses per
-# pair, every-layer readout, 96 epochs: 0.2449) with the input delays removed, and the same as an LSNN (90% adaptive,
-# 500 ms, as Bellec et al.'s TIMIT network). 96 epochs, seed 42.
-#   C_nodelay96    no input delays: one undelayed synapse per input-neuron pair
-#   C_lsnn_nodelay96  no input delays, 90% adaptive neurons (500 ms adaptation)
-# One per GPU (PACK=1).
-C_nodelay96      | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 96 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --seed 42 --readout-all true
-C_lsnn_nodelay96 | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 96 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --adaptive-fraction 0.90 --tau-adapt 25 --seed 42 --readout-all true

@@ -1,8 +1,0 @@
-# Last test: two output smoothing stages on the final LSNN (last-layer readout), 96 epochs. At 36 epochs two 80 ms
-# stages were the best of four output-smoothing variants (C_out2_tau4: 0.306 vs 0.314), the only change left of the
-# seed-noise band; 41 extra time constants, a little more output lag. Same-seed comparisons:
-#   O_out2_s42  vs B_noro_s42 (0.2516)
-#   O_out2_s43  vs B_noro_s43 (running)
-# Both on one GPU (PACK=2).
-O_out2_s42 | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 96 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --adaptive-fraction 0.90 --tau-adapt 25 --seed 42 --out-stages 2 --out-tau-init 4
-O_out2_s43 | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 96 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --adaptive-fraction 0.90 --tau-adapt 25 --seed 43 --out-stages 2 --out-tau-init 4

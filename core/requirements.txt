@@ -1,4 +1,0 @@
-torch>=2.0
-numpy
-pyyaml
-sinabs>=3.1   # the chip mapping check and the sinabs surrogate gradients

@@ -1,7 +1,0 @@
-# Efficiency list: full-length runs against the GRUs (configs/ref96.txt, configs/readall96.txt)
-GRU 2x1024 out80, same input, 36 ep | gru | $BASE_DIR/derived/snns/controls/gru_1024_out80_c36.json
-GRU 2x1024 out80, same input, 96 ep | gru | $BASE_DIR/derived/snns/controls/gru_1024_out80_full96.json
-Paper RNN | gru_spec | hidden=1024 layers=5 window=32 stride=4 smooth_sd=2 per=0.188
-SNN 2x2048 stacked, 96 ep (best stacked) | snn | $BASE_DIR/derived/snns/rsnn_srs2/*_W2048_t015/final_model_*.pth
-Reference, 96 ep | snn | $BASE_DIR/derived/snns/ref96/*_R_full96/final_model_*.pth
-Reference + readout from both layers, 96 ep | snn | $BASE_DIR/derived/snns/readall96/*_R_readall96/final_model_*.pth

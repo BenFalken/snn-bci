@@ -1,6 +1,0 @@
-# Efficiency list: final models with and without the both-layer readout (configs/noreadout96.txt)
-GRU 2x1024 out80, same input, 96 ep | gru | $BASE_DIR/derived/snns/controls/gru_1024_out80_full96.json
-Model A, DelayNet, both-layer readout (R_readall96) | snn | $BASE_DIR/derived/snns/readall96/*_R_readall96/final_model_*.pth
-Model A, DelayNet, last layer (R_full96) | snn | $BASE_DIR/derived/snns/ref96/*_R_full96/final_model_*.pth
-Model B, LSNN, both-layer readout (C_lsnn_nodelay96) | snn | $BASE_DIR/derived/snns/nodelay96/*_C_lsnn_nodelay96/final_model_*.pth
-Model B, LSNN, last layer (B_noro_s42) | snn | $BASE_DIR/derived/snns/noreadout96/*_B_noro_s42/final_model_*.pth

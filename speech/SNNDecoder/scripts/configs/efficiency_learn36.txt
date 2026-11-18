@@ -1,3 +1,0 @@
-# Efficiency list for the learned-delay rerun (configs/learn36.txt)
-Reference B1_in4, 36 ep | snn | $BASE_DIR/derived/snns/build36_light/*_B1_in4_s42/final_model_*.pth
-R_learn2 | snn | $BASE_DIR/derived/snns/learn36/*_R_learn2/final_model_*.pth
