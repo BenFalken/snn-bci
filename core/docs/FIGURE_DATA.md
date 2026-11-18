@@ -12,7 +12,7 @@ in all three experiments). Speech's Speck SNN is left out of every test.
 
 ```bash
 $ rsync -av --exclude __pycache__ --exclude runs ~/Documents/GitHub/snn-decoders/ \
-      $USER@ssh.ccv.brown.edu:/users/$USER/snn-decoders/
+      <oscar-user>@ssh.ccv.brown.edu:/users/$USER/snn-decoders/
 # audio: the four days the sweep uses (spike counts and windows; 1.2 GB), one login; --rsync-path makes the
 # destination's parent folders, which rsync itself does not
 $ rsync -av --rsync-path="mkdir -p /users/$USER/scratch/audio_pipeline && rsync" \
@@ -20,7 +20,7 @@ $ rsync -av --rsync-path="mkdir -p /users/$USER/scratch/audio_pipeline && rsync"
     --include '/*/pipeline/' --exclude '*_full.npy' --include '/*/pipeline/features.npy' \
     --include '/*/pipeline/window_*.npy' --exclude '*' \
     ~/Documents/GitHub/AuditoryDecoding/pipeline_data/Neil/aSTG/ \
-    $USER@ssh.ccv.brown.edu:/users/$USER/scratch/audio_pipeline/
+    <oscar-user>@ssh.ccv.brown.edu:/users/$USER/scratch/audio_pipeline/
 oscar$ cd /users/$USER/speechBCI-main/SNNDecoder/scripts && source ./snn_config.sh && activate_env && cd -
 oscar$ $PYTHON -c "import torch, sinabs, yaml, pandas; print('env ok')"
 ```
@@ -81,7 +81,7 @@ When all are done:
 
 ```bash
 oscar$ $PYTHON experiments/speck_memory/collect.py --root $R --out $R/results.csv --memory $R/memory.csv
-$ scp $USER@ssh.ccv.brown.edu:/users/$USER/scratch/speck_memory/{results,memory}.csv ~/Downloads/paper_figures/data/
+$ scp <oscar-user>@ssh.ccv.brown.edu:/users/$USER/scratch/speck_memory/{results,memory}.csv ~/Downloads/paper_figures/data/
 ```
 
 Rough cost: motor ~1 h per run, audio ~2–3 h (10 chip steps per frame), speech ~2–3 h per run on a GPU; the per-user
@@ -162,7 +162,7 @@ Then `python ~/Downloads/paper_figures/collect_efficiency.py`.
 ```bash
 oscar$ find /users/$USER/speechBCI-main -name 'trial_t12.2022.06.02_test_0.json' -newer \
     /users/$USER/speechBCI-main/SNNDecoder/scripts/configs/nodelay96.txt
-$ rsync -av $USER@ssh.ccv.brown.edu:<the folder found>/ ~/Downloads/viewer_trials_final/
+$ rsync -av <oscar-user>@ssh.ccv.brown.edu:<the folder found>/ ~/Downloads/viewer_trials_final/
 ```
 
 ---

@@ -64,7 +64,7 @@ from bmi.utils import customize_plot
 # Keep log output in order when stdout is redirected to a file (e.g. under SLURM).
 sys.stdout.reconfigure(line_buffering=True)
 
-BMI_DATA_ROOT = os.environ.get("BMI_DATA_ROOT", "/users/$USER/scratch/$USER/data")
+BMI_DATA_ROOT = os.environ.get("BMI_DATA_ROOT", os.path.expandvars("/users/$USER/scratch/$USER/data"))
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PYTHON = sys.executable
 

@@ -36,7 +36,8 @@ cp paths.yaml paths.local.yaml           # git-ignored; change only the roots th
 python3 paths.py                         # lists every root and whether it exists
 ```
 
-Shell scripts get the same roots as `$SNNBCI_*` from `snnbci_env.sh`.
+Shell scripts get the same roots as `$SNNBCI_*` from `snnbci_env.sh`. On a cluster, the Oscar roots follow `$USER`; to
+fetch from one, set `oscar_user` in `paths.local.yaml`.
 
 ## 4. Reproduce
 

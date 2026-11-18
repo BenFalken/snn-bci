@@ -61,7 +61,7 @@ def main():
     p.add_argument("--dst", default="jenkins_m1")
     p.add_argument("--array", default="M1")
     p.add_argument("--map", required=True)
-    p.add_argument("--data-root", default=os.environ.get("DATA_ROOT", "/users/$USER/scratch/$USER/data"))
+    p.add_argument("--data-root", default=os.environ.get("DATA_ROOT", os.path.expandvars("/users/$USER/scratch/$USER/data")))
     a = p.parse_args()
     amap = json.load(open(a.map))
     root = a.data_root

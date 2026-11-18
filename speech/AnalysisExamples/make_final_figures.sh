@@ -10,7 +10,7 @@
 source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
-OSCAR="${OSCAR:-$USER@ssh.ccv.brown.edu}"
+OSCAR="${OSCAR:-$SNNBCI_OSCAR_USER@ssh.ccv.brown.edu}"
 DERIVED="${DERIVED:-$SNNBCI_OSCAR_SCRATCH/derived}"
 FIG="$HERE/../figures/inference_final"
 VIEW="${VIEW:-$SNNBCI_WORKSPACE/viewer_final}"

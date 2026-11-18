@@ -26,7 +26,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
 SUBJ="${SUBJ:-jenkins}"     # SUBJ=jenkins_m1: the M1 array alone (make_hkm_array_subset.py), same layout
-REMOTE="$USER@ssh.ccv.brown.edu"
+REMOTE="$SNNBCI_OSCAR_USER@ssh.ccv.brown.edu"
 REMOTE_ROOT="$SNNBCI_OSCAR_MOTOR_DATA"
 REMOTE_CODE="$SNNBCI_OSCAR_HOME/spike_bmi_speck_delay/main"
 EXPORT_DIR="$SNNBCI_OSCAR_HOME/scratch/$USER/laptop_export/dataset/hkm/$SUBJ/mua"

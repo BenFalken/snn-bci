@@ -8,7 +8,8 @@ Exact copies (code and configs only) of the three code folders in the Oscar home
 | `spike_bmi_lsnn` | the motor LSNN training (leave-one-session-out pre-training, per-session fine-tuning) | 18 files differ, all but `velocity_scalers.json` newer locally: the local `motor/` copy was edited after these runs |
 | `spike_bmi_speck_delay` | the motor Speck SNN training (per session, delay taps), Jenkins datasets | 2 files differ; `nwb_conversion/make_hkm_array_subset.py` is NEWER here (it built the Jenkins M1-array dataset) |
 
-The third-party language-model toolkits (SRILM, WeNet) are left out. To reproduce a trained model exactly, use the code
+The third-party language-model toolkits (SRILM, WeNet) are left out. The only edit: the cluster login in paths is
+written as `$USER` (expanded where it is used), and as `$OSCAR_USER` in the fetch scripts' ssh address. To reproduce a trained model exactly, use the code
 in this folder; the copies elsewhere in the repository are the later, locally edited versions used for evaluation.
 
 ## The velocity scalers (checked 2026-11-18)

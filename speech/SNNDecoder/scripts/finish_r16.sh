@@ -3,7 +3,7 @@
 # bench, as $SNNBCI_WORKSPACE/speck_final_all.zip. Run ON THE MAC once the winner (lowest final training loss of R1 to R4)
 # is fetched to $SNNBCI_WORKSPACE/speech_speck/<NN>_<name>/best_model_weights.pth:
 #
-#   rsync -av $USER@ssh.ccv.brown.edu:$SNNBCI_OSCAR_SCRATCH/derived/snns/speck_r16/<NN>_<name> $SNNBCI_WORKSPACE/speech_speck/
+#   rsync -av <oscar-user>@ssh.ccv.brown.edu:$SNNBCI_OSCAR_SCRATCH/derived/snns/speck_r16/<NN>_<name> $SNNBCI_WORKSPACE/speech_speck/
 #   bash finish_r16.sh <NN>_<name>
 #
 # 1. speech's layer 1 threshold factor, without labels, on TRAINING sentences (3 per session, 6 sessions): the scale

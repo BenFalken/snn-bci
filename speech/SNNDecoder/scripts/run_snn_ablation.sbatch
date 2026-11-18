@@ -74,6 +74,7 @@ i=${SLURM_ARRAY_TASK_ID:-0}
 [ "$i" -lt "${#CONFIGS[@]}" ] || { echo "no config $i (have ${#CONFIGS[@]})"; exit 0; }
 NAME=${CONFIGS[$i]%%|*}
 FLAGS=${CONFIGS[$i]#*|}
+FLAGS=${FLAGS//\$USER/$USER}   # run lists write the Oscar home as $USER
 OUT="${SNN_CKPT_ROOT}/ablation/$(printf '%02d' "$i")_${NAME}"
 mkdir -p "$OUT"
 printf '%s\n' "$FLAGS" > "$OUT/flags.txt"

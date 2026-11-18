@@ -9,6 +9,7 @@ Optional:
     python plot_snn_sweep_heatmap.py --checkpoint-root /path/to/no_tau_syn_sweep
 """
 
+import os
 from pathlib import Path
 import argparse
 
@@ -18,10 +19,10 @@ import torch
 import matplotlib.pyplot as plt
 
 
-DEFAULT_ROOT = Path(
+DEFAULT_ROOT = Path(os.path.expandvars(
     "/users/$USER/scratch/$USER/data/snn_checkpoints/"
     "bmi/indy/no_tau_syn_sweep"
-)
+))
 
 # Loss keys commonly stored in training checkpoints.
 LOSS_KEYS = (

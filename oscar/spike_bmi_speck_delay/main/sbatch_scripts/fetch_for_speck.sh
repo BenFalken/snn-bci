@@ -19,7 +19,7 @@
 #                                                                     run on Oscar first when missing)
 #   results/model_cache/bmi/<subject>/<session>/                      unless ANN=0
 set -eo pipefail
-REMOTE="${REMOTE:-$USER@ssh.ccv.brown.edu}"
+REMOTE="${REMOTE:-${OSCAR_USER:?set OSCAR_USER to your Oscar login}@ssh.ccv.brown.edu}"
 REMOTE_ROOT="${REMOTE_ROOT:-/users/$USER/scratch/$USER/data}"
 REMOTE_CODE="${REMOTE_CODE:-/users/$USER/spike_bmi_speck_delay/main}"
 DATA_ROOT="${DATA_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)/data}"

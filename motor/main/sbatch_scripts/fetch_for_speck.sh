@@ -20,7 +20,7 @@
 #   results/model_cache/bmi/<subject>/<session>/                      unless ANN=0
 source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
-REMOTE="${REMOTE:-$USER@ssh.ccv.brown.edu}"
+REMOTE="${REMOTE:-$SNNBCI_OSCAR_USER@ssh.ccv.brown.edu}"
 REMOTE_ROOT="${REMOTE_ROOT:-$SNNBCI_OSCAR_MOTOR_DATA}"
 REMOTE_CODE="${REMOTE_CODE:-$SNNBCI_OSCAR_HOME/spike_bmi_speck_delay/main}"
 DATA_ROOT="${DATA_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)/data}"

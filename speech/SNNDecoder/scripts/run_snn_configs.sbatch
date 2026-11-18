@@ -53,6 +53,7 @@ run_line() {
     NAME=${LINES[$i]%%|*}
     NAME=${NAME//[[:space:]]/}
     FLAGS=${LINES[$i]#*|}
+    FLAGS=${FLAGS//\$USER/$USER}   # run lists write the Oscar home as $USER
     OUT="${SNN_CKPT_ROOT}/${GROUP}/$(printf '%02d' "$i")_${NAME}"
     mkdir -p "$OUT"
     printf '%s\n' "$FLAGS" > "$OUT/flags.txt"

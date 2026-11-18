@@ -25,10 +25,16 @@ def _load():
                 k, v = line.split(":", 1)
                 if v.strip():
                     cfg[k.strip()] = v.strip()
-    return {k: Path(os.path.expanduser(v)) for k, v in cfg.items()}
+    cfg = {k: os.path.expandvars(v) for k, v in cfg.items()}               # $USER, ...
+    cfg = {k: v.format(**cfg) if "{" in v else v for k, v in cfg.items()}  # {oscar_user}
+    return cfg
 
 
-_CFG = _load()
+_RAW = _load()
+OSCAR_USER = _RAW["oscar_user"]
+_CFG = {k: Path(os.path.expanduser(v)) for k, v in _RAW.items()}
+
+
 WORKSPACE = _CFG["workspace"]
 AUDITORY_REPO = _CFG["auditory_repo"]
 AUDITORY_DATA = _CFG["auditory_data"]
@@ -58,6 +64,7 @@ ALL = dict(ROOT=ROOT, WORKSPACE=WORKSPACE, AUDITORY_REPO=AUDITORY_REPO, AUDITORY
 
 if __name__ == "__main__":
     if "--sh" in sys.argv:
+        print(f'export SNNBCI_OSCAR_USER="{OSCAR_USER}"')
         for k, v in ALL.items():
             print(f'export SNNBCI_{k}="{v}"')
     else:
