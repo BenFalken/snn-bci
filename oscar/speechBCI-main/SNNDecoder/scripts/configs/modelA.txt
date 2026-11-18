@@ -1,0 +1,12 @@
+# Model A (the delay model), two runs, seed 42, one GPU each (PACK=1):
+#   A_test36_s42  36 epochs: a quick working model (the learning rate decays to 0 over the 36); identical to the
+#                 build-up round's B3_both_s42, which it replaces there
+#   A_full_s42    96 epochs: the full-length model
+# Bin by bin: one 20 ms bin per step, no windows; the 256 features through one gain per channel and session.
+# Recipe = build-up step B3: IAF neurons (soft reset, at most 3 spikes per step, per-neuron synaptic filters 20 ms-1.3 s),
+# 3 recurrent layers of 1,024 with per-synapse recurrent delays growing with depth (0-40 / 0-100 / 0-200 ms) and
+# 0-100 ms delays between layers, 4 delayed input synapses per input-neuron pair (0-600 ms), 41 leaky output neurons
+# read every 80 ms, gradients cut every 2 s. The 36-epoch ingredients: D_in_mult4 0.273, D_3layers_grow 0.276.
+# Compare: stacked SNN 2 x 2048, 96 epochs: 0.241; GRU stepping 20 ms with 80 ms outputs, 36 epochs: 0.245.
+A_test36_s42| --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 36 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --syn-delay-in 30 --syn-delay-in-mult 4 --hidden-dims 1024 1024 1024 --syn-delay-rec 2 5 10 --syn-delay-ff 5 --seed 42
+A_full_s42 | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 96 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --syn-delay-in 30 --syn-delay-in-mult 4 --hidden-dims 1024 1024 1024 --syn-delay-rec 2 5 10 --syn-delay-ff 5 --seed 42

@@ -1,0 +1,15 @@
+# Mixed populations (LSNN, Bellec et al., NeurIPS 2018), bin by bin, 36 epochs, on C_base (80 ms outputs, 2 s
+# gradient horizon, synaptic filters, per-channel gain; PER 0.314 with every neuron ALIF). Here most neurons are plain
+# IAF (no leak, no adaptation) and a fixed random fraction of each layer's neurons adapts: each spike raises its
+# threshold, which decays back with a long time constant, so those neurons hold a slow trace of recent activity
+# while the IAF neurons stay fast. References: C_base (all ALIF, adaptation 480 ms) and C_iaf (all IAF, combination
+# round). Time constants in 20 ms steps.
+#   L_f25_1s    25% adaptive, adaptation 1 s
+#   L_f40_1s    40% adaptive, 1 s
+#   L_f40_05s   40% adaptive, 0.5 s
+#   L_f40_2s    40% adaptive, 2 s
+# Ordered for PACK=2.
+L_f25_1s  | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 36 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --adaptive-fraction 0.25 --tau-adapt 50
+L_f40_1s  | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 36 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --adaptive-fraction 0.40 --tau-adapt 50
+L_f40_05s | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 36 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --adaptive-fraction 0.40 --tau-adapt 25
+L_f40_2s  | --config ../snnDecoder/configs/speech_native.yaml --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --data-dir /users/$USER/scratch/speechBCI_dryad/derived/snnData --epochs 36 --tbptt 100 --output-stride 4 --spike-rate-target 0.4 --neuron-type iaf --adaptive-fraction 0.40 --tau-adapt 100

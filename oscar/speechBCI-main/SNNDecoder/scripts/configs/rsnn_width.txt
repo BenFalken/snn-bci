@@ -1,0 +1,13 @@
+# Is the SNN's progress width, or training? The SR training (single-exponential surrogate, spike-rate penalty
+# weight 30, target 0.1 spikes per neuron per 80 ms frame (W1280_t01: 0.256 at 0.11 spikes), paper recipe, 19 sessions, 96 epochs) at the widths
+# that were only ever run under the old training, and at the paper RNN's shape:
+#   before SR: 2 x 512 0.353 | 2 x 1280 0.305 / 0.309      with SR: 2 x 1280 0.260 (t0.2) | 2 x 2048 0.256 (t0.3)
+#   SR 3 x 1024: 0.314 (depth hurts)
+#
+#   SRW_2x512     2 x 512 (5.0M parameters): the same width as the GRU 2 x 512
+#   SRW_2x896     2 x 896 (9.8M): the same width as the GRU 2 x 896
+#   SRW_5x1024    the paper RNN's shape (5 x 1024, 17.9M against its 53.5M: an SNN layer has one weight matrix, a GRU layer three)
+# Ordered for PACK=3.
+SRW_2x512  | --config ../snnDecoder/configs/speech_rsnn.yaml --recipe rnn --grad-clip 10 --weight-decay 1e-5 --rec-init orthogonal --epochs 96 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --lr 0.02 --surrogate-grad single_exponential --spike-rate-weight 30 --spike-rate-target 0.1 --hidden-dims 512 512
+SRW_2x896  | --config ../snnDecoder/configs/speech_rsnn.yaml --recipe rnn --grad-clip 10 --weight-decay 1e-5 --rec-init orthogonal --epochs 96 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --lr 0.02 --surrogate-grad single_exponential --spike-rate-weight 30 --spike-rate-target 0.1 --hidden-dims 896 896
+SRW_5x1024 | --config ../snnDecoder/configs/speech_rsnn.yaml --recipe rnn --grad-clip 10 --weight-decay 1e-5 --rec-init orthogonal --epochs 96 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --lr 0.02 --surrogate-grad single_exponential --spike-rate-weight 30 --spike-rate-target 0.1 --hidden-dims 1024 1024 1024 1024 1024

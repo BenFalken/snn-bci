@@ -1,0 +1,12 @@
+# Efficiency list for the 96-epoch build-up ladder (configs/ladder96.txt)
+GRU 2x1024 out80, same input, 96 ep | gru | $BASE_DIR/derived/snns/controls/gru_1024_out80_full96.json
+Paper RNN | gru_spec | hidden=1024 layers=5 window=32 stride=4 smooth_sd=2 per=0.188
+L0 original design | snn | $BASE_DIR/derived/snns/ladder96/*_L0_orig/final_model_*.pth
+L1 + width | snn | $BASE_DIR/derived/snns/ladder96/*_L1_width/final_model_*.pth
+L2 + recurrence | snn | $BASE_DIR/derived/snns/ladder96/*_L2_rec/final_model_*.pth
+L3 + delayed input synapses | snn | $BASE_DIR/derived/snns/ladder96/*_L3_delays/final_model_*.pth
+L4 + readout from both layers | snn | $BASE_DIR/derived/snns/ladder96/*_L4_readall/final_model_*.pth
+L5 + 80 ms outputs | snn | $BASE_DIR/derived/snns/ladder96/*_L5_out80/final_model_*.pth
+L6 + trained time constants (R_readall96) | snn | $BASE_DIR/derived/snns/readall96/*_R_readall96/final_model_*.pth
+Event input, 96 ep | snn | $BASE_DIR/derived/snns/ladder96/*_E_events96/final_model_*.pth
+C_lsnn_nodelay96 (ALIF, no delays) | snn | $BASE_DIR/derived/snns/nodelay96/*_C_lsnn_nodelay96/final_model_*.pth

@@ -1,0 +1,18 @@
+# Efficiency list for the final deck: power, memory, latency of the final models (both read both layers, seed 42)
+# and of every ladder rung on the final model's path, plus the references: GRU, LSTM, QRNN, Wiener and Kalman
+# filters (same input) and the paper RNN.
+GRU 2x1024 out80, same input, 96 ep | gru | $BASE_DIR/derived/snns/controls/gru_1024_out80_full96.json
+LSTM 2x1024, 96 ep | gru | $BASE_DIR/derived/snns/controls/lstm_1024_out80_full96.json
+QRNN 2x1024, 96 ep | gru | $BASE_DIR/derived/snns/controls/qrnn_1024_out80_full96.json
+Wiener filter (160 ms) | gru | $BASE_DIR/derived/snns/controls/wiener_160ms.json
+Kalman filter per session | gru | $BASE_DIR/derived/snns/controls/kalman_80ms_day.json
+Paper RNN | gru_spec | hidden=1024 layers=5 window=32 stride=4 smooth_sd=2 per=0.188
+0 original layout (L0_orig) | snn | $BASE_DIR/derived/snns/ladder96/*_L0_orig/final_model_*.pth
+narrow + recurrence (R1_rec) | snn | $BASE_DIR/derived/snns/ladder_final/*_R1_rec/final_model_*.pth
+1 + width (L1_width) | snn | $BASE_DIR/derived/snns/ladder96/*_L1_width/final_model_*.pth
+2 + recurrence (S2_rec) | snn | $BASE_DIR/derived/snns/fork96/*_S2_rec/final_model_*.pth
+3 + 80 ms outputs (S3_out80) | snn | $BASE_DIR/derived/snns/fork96/*_S3_out80/final_model_*.pth
+4 + readout from both layers (S4_readall) | snn | $BASE_DIR/derived/snns/fork96/*_S4_readall/final_model_*.pth
+5 + trained time constants (C_nodelay96) | snn | $BASE_DIR/derived/snns/nodelay96/*_C_nodelay96/final_model_*.pth
+Model A, DelayNet (R_readall96) | snn | $BASE_DIR/derived/snns/readall96/*_R_readall96/final_model_*.pth
+Model B, LSNN, final (C_lsnn_nodelay96) | snn | $BASE_DIR/derived/snns/nodelay96/*_C_lsnn_nodelay96/final_model_*.pth

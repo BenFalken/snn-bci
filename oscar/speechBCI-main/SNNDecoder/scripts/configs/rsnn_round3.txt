@@ -1,0 +1,16 @@
+# Round 3 of the recurrent SNN, all with the paper RNN's training recipe (train.py --recipe rnn:
+# Adam epsilon 0.1, L2 1e-5, lr decayed linearly to 0, clip 10, orthogonal recurrent init), on all
+# 19 baseline sessions for 96 epochs (the RNN's 10,000 batches). References on these sessions'
+# test trials: SNN R2 (2 x 512) 0.353 ALIF / 0.344 IAF; GRU twins 0.246 (2 x 512, 15M parameters),
+# 0.212 (5 x 1024, causal), 0.197 (5 x 1024 smoothed); the cached paper RNN 0.188.
+#
+#   R2x1280_alif  2 x 1280 recurrent ALIF, lr 0.02: ~15M parameters like the 2 x 512 GRU twin, so
+#                 SNN vs GRU at equal size separates the cost of spiking from that of capacity
+#   R2x1280_iaf   the same with plain IAF, lr 0.005
+#   R1_recipe     the 5 x 1024 replica, ALIF, lr 0.02, recurrent init 0.5x and a spike-rate penalty
+#                 above 0.5 (it ran away without them, and collapsed late under the old recipe)
+#   R3x768_alif   3 x 768 recurrent ALIF, lr 0.02: a middle size
+R2x1280_alif | --config ../snnDecoder/configs/speech_rsnn.yaml --recipe rnn --grad-clip 10 --weight-decay 1e-5 --rec-init orthogonal --epochs 96 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --hidden-dims 1280 1280 --lr 0.02
+R2x1280_iaf  | --config ../snnDecoder/configs/speech_rsnn.yaml --recipe rnn --grad-clip 10 --weight-decay 1e-5 --rec-init orthogonal --epochs 96 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --hidden-dims 1280 1280 --neuron-type iaf --lr 0.005
+R1_recipe    | --config ../snnDecoder/configs/speech_rsnn.yaml --recipe rnn --grad-clip 10 --weight-decay 1e-5 --rec-init orthogonal --epochs 96 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --hidden-dims 1024 1024 1024 1024 1024 --lr 0.02 --rec-init-scale 0.5 --spike-rate-weight 10 --spike-rate-target 0.5
+R3x768_alif  | --config ../snnDecoder/configs/speech_rsnn.yaml --recipe rnn --grad-clip 10 --weight-decay 1e-5 --rec-init orthogonal --epochs 96 --sessions t12.2022.04.28 t12.2022.05.05 t12.2022.05.17 t12.2022.05.19 t12.2022.05.24 t12.2022.05.26 t12.2022.06.02 t12.2022.06.07 t12.2022.06.14 t12.2022.06.16 t12.2022.06.21 t12.2022.06.28 t12.2022.07.05 t12.2022.07.14 t12.2022.07.21 t12.2022.07.27 t12.2022.08.02 t12.2022.08.11 t12.2022.08.13 --hidden-dims 768 768 768 --lr 0.02

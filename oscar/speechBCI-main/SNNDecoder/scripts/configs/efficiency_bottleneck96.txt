@@ -1,0 +1,6 @@
+# Efficiency list for the spike-bottleneck runs (configs/bottleneck96.txt), with the current SNN and the GRUs
+GRU 2x1024 out80, same input, 96 ep | gru | $BASE_DIR/derived/snns/controls/gru_1024_out80_full96.json
+Paper RNN | gru_spec | hidden=1024 layers=5 window=32 stride=4 smooth_sd=2 per=0.188
+SNN reference, 96 ep | snn | $BASE_DIR/derived/snns/ref96/*_R_full96/final_model_*.pth
+F_spikes7 | snn | $BASE_DIR/derived/snns/bottleneck96/*_F_spikes7/final_model_*.pth
+F_vmem | snn | $BASE_DIR/derived/snns/bottleneck96/*_F_vmem/final_model_*.pth

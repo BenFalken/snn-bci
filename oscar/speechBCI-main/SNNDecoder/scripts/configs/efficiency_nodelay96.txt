@@ -1,0 +1,5 @@
+# Efficiency list for the full-length no-delay controls (configs/nodelay96.txt)
+GRU 2x1024 out80, same input, 96 ep | gru | $BASE_DIR/derived/snns/controls/gru_1024_out80_full96.json
+Current SNN, 96 ep (R_readall96) | snn | $BASE_DIR/derived/snns/readall96/*_R_readall96/final_model_*.pth
+C_nodelay96 | snn | $BASE_DIR/derived/snns/nodelay96/*_C_nodelay96/final_model_*.pth
+C_lsnn_nodelay96 | snn | $BASE_DIR/derived/snns/nodelay96/*_C_lsnn_nodelay96/final_model_*.pth

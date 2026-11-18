@@ -1,0 +1,1068 @@
+"""
+BMI Model -- elegant feedforward SNN for hand-velocity decoding.
+
+Architecture: linear+spiking blocks (default 4: 512 -> 256 -> 128 hidden,
+see hidden_dims for customizing this), fed one 4ms timestep at a time.
+Output is decoded via a causal EMA-smoothed population-vector readout
+(see decode_output()) into a continuous (x, y) velocity prediction per
+timestep.
+
+Confirmed fixes present in this file (relative to an earlier, pre-fix
+version -- kept documented here since neither is obvious from reading
+the code alone):
+  - spike_threshold now reaches EVERY branch (sinabs LIF, spikingjelly
+    LIF/IF, sinabs IAF) -- an earlier revision meant only sinabs IAF
+    actually received it; sinabs LIF and both spikingjelly neuron types
+    silently fell back to their library's own hardcoded default (1.0),
+    regardless of what spike_thresholds/--spike-thresholds specified.
+    Confirmed directly: constructed two LIF neurons with
+    spike_threshold=0.5 and 5.0 and found IDENTICAL vmem trajectories
+    and spike counts before this fix -- the argument had no effect
+    whatsoever, not just a subtle one. This project's own production
+    checkpoints all use neuron_type='iaf', which was never affected.
+  - `positions` changed from geometric decay (0.5**arange(n_bins), which
+    left bins 4+ contributing almost nothing -- effectively only ~4 of
+    18 bins were doing any work) to torch.linspace(0, 1, n_bins) --
+    genuine, uniformly-spaced population-vector semantics, full n_bins
+    resolution actually usable.
+
+Cross-batch state: every forward() call resets membrane state at the
+start, unconditionally -- one trial, one independent example, matching
+how the ANN decoders train. An earlier revision supported carrying state
+across calls (reset_state=False, with a separate detach_states() to
+truncate BPTT) for a "continuous, never-reset stream" training mode;
+that mode was tried, found substantially worse in real comparative
+results, and removed along with the machinery that only existed to
+support it -- see train_snn.py's own module docstring for the comparison.
+(model_hkm.py, a separate fork of this file for HKM's own variable-
+length-trial evaluation needs, reintroduces an explicit, optional
+reset_state argument for a different, inference-time-only reason -- see
+that file's own docstring; nothing here changes as a result.)
+
+norm_input (LIF only -- IAF has no leak/normalization concept) controls
+whether incoming input is divided by tau_mem before accumulating
+(sinabs' own default: True) -- see NeuronFactory.build()'s own docstring
+for the real, confirmed depth-attenuation consequence this has.
+
+tau_syn (BOTH IAF and LIF -- confirmed directly via inspect.signature,
+not assumed: sinabs' IAF constructor accepts tau_syn too, not just LIF)
+adds a SECOND filtering stage before the membrane potential itself:
+input -> synaptic current (decaying at tau_syn) -> membrane potential
+(decaying at tau_mem, for LIF; accumulating without decay for IAF).
+Default None matches sinabs' own default exactly.
+
+count_ops (forward()'s own optional argument, default False, zero
+overhead when off): accumulates raw effective-operation counts (MAC,
+ACC, elementwise) inline during the same forward pass used for training/
+eval, rather than via a separate external estimator re-walking the model
+afterward -- see forward()'s own docstring for why counting inline here
+specifically was necessary (this function calls itself once per
+timestep internally, and the EMA cascade + decode_output() both
+contribute real additional operations an external re-walk couldn't see
+without re-deriving this function's own logic a second time). Feeds
+op_energy_estimate.py's finalize_snn_ops(), the same MAC/ACC framework
+already used for every other decoder in this project. MUST stay off
+during training -- only test_all_decoders.py's evaluation call should
+ever turn it on.
+"""
+
+from __future__ import annotations
+
+from typing import Callable, List, Optional, Union
+from enum import Enum
+
+import math
+import torch
+import torch.nn as nn
+import sinabs
+import sinabs.layers as sl
+import sinabs.utils
+import sinabs.activation
+from sinabs.activation import (
+    Gaussian,
+    Heaviside,
+    MultiGaussian,
+    PeriodicExponential,
+    SingleExponential,
+)
+from spikingjelly.activation_based import functional, neuron, surrogate
+
+from .init_utils import initialize_snn_model
+
+
+# ---------------------------------------------------------------------------
+# Optional Exodus acceleration
+# ---------------------------------------------------------------------------
+try:
+    import sinabs.exodus.layers as exodus_layers
+
+    EXODUS_AVAILABLE = True
+    print("Sinabs Exodus detected -- using CUDA-accelerated layers")
+    print("  Note: Exodus requires soft reset (MembraneSubtract) for all neurons")
+except ImportError:
+    EXODUS_AVAILABLE = False
+
+
+class NeuronType(Enum):
+    IAF = "iaf"
+    LIF = "lif"
+
+
+# ---------------------------------------------------------------------------
+# Small helpers
+# ---------------------------------------------------------------------------
+
+def get_reset_fn(reset_type: str, force_soft: bool = False):
+    """Return a sinabs reset function. reset_type: 'hard' or 'soft'.
+    force_soft: always return soft reset (required by Exodus)."""
+    if force_soft or reset_type == "soft":
+        return sinabs.activation.MembraneSubtract()
+    if reset_type == "hard":
+        return sinabs.activation.MembraneReset()
+    raise ValueError(f"Unknown reset_type {reset_type!r}. Choose 'hard' or 'soft'.")
+
+
+def get_surrogate_grad_fn(surrogate_type: Union[str, dict, Callable]) -> Callable:
+    """Return an instantiated sinabs surrogate-gradient function."""
+    if callable(surrogate_type):
+        return surrogate_type
+
+    if isinstance(surrogate_type, dict):
+        fn_type = surrogate_type.get("type", "periodic_exponential")
+        params = {k: v for k, v in surrogate_type.items() if k != "type"}
+    else:
+        fn_type = surrogate_type
+        params = {}
+
+    _map = {
+        "periodic_exponential": PeriodicExponential,
+        "single_exponential": SingleExponential,
+        "gaussian": Gaussian,
+        "multi_gaussian": MultiGaussian,
+        "heaviside": Heaviside,
+    }
+    if fn_type not in _map:
+        raise ValueError(f"Unknown surrogate gradient {fn_type!r}. Available: {list(_map)}")
+    return _map[fn_type](**params)
+
+
+# ---------------------------------------------------------------------------
+# Neuron-layer factory
+# ---------------------------------------------------------------------------
+
+class NeuronFactory:
+    """Builds a single spiking neuron layer with the requested backend/type."""
+
+    def __init__(
+        self,
+        neuron_type: NeuronType,
+        use_spikingjelly: bool,
+        use_exodus: bool,
+        reset_type: str,
+        surrogate_grad: Union[str, dict, Callable],
+        tau_mem: float,
+        min_vmem: float,
+        spike_fn: Optional[Callable],
+        use_squeeze: bool,
+        tau_syn: Optional[Union[float, List[float]]] = None,
+        norm_input: bool = True,
+    ):
+        self.use_squeeze = use_squeeze
+        self.neuron_type = neuron_type
+        self.use_sj = use_spikingjelly
+        self.use_exodus = use_exodus and EXODUS_AVAILABLE
+        self.reset_type = reset_type
+        self.surrogate_grad = surrogate_grad
+        self.tau_mem = tau_mem
+        self.min_vmem = min_vmem
+        self.spike_fn = spike_fn
+        self.tau_syn = tau_syn
+        self.norm_input = norm_input
+
+    def build(
+        self,
+        spike_threshold: float = 1.0,
+        override_reset_type: Optional[str] = None,
+    ) -> nn.Module:
+        """Builds one spiking neuron layer with the requested threshold.
+
+        norm_input (LIF only -- IAF has no leak/normalization concept)
+        controls whether incoming input is divided by tau_mem before
+        accumulating (sinabs' own default: True). This has a real,
+        confirmed, non-obvious consequence for deep networks: with
+        norm_input=True, EVERY layer divides whatever it receives by
+        tau_mem again, compounding multiplicatively with depth -- at
+        tau_mem=100 on a real 5-layer network, this measurably produced
+        complete signal death by layer 2-3 regardless of how low earlier
+        layers' thresholds were set, since the problem isn't any single
+        layer's threshold but the exponential-with-depth attenuation
+        itself. norm_input=False avoids the division (confirmed: a brief
+        input pulse's membrane trace persisted for 20+ timesteps at
+        tau_mem=100 with norm_input=False, vs. decaying to zero in ~10
+        steps at tau_mem=1) -- genuine long-timescale memory without the
+        input being divided away. Whether that alone resolves the depth-
+        attenuation problem for a REAL multi-layer network is NOT yet
+        confirmed here (isolated 2-neuron tests gave inconsistent, still-
+        being-investigated results depending on exact calibration) --
+        this parameter exists so that question can be tested directly
+        against the real architecture and real data, via
+        diagnose_layer_thresholds.py --norm-input, rather than guessed at.
+        """
+        rst = override_reset_type or self.reset_type
+
+        if self.use_sj:
+            v_reset = 0.0 if rst == "hard" else None
+            if self.neuron_type == NeuronType.LIF:
+                return neuron.LIFNode(v_threshold=spike_threshold, decay_input=self.norm_input,
+                                       step_mode="s", v_reset=v_reset, surrogate_function=surrogate.ATan())
+            return neuron.IFNode(v_threshold=spike_threshold, step_mode="s", v_reset=v_reset,
+                                  surrogate_function=surrogate.ATan())
+
+        force_soft = self.use_exodus
+        reset_fn = get_reset_fn(rst, force_soft=force_soft)
+        grad_fn = get_surrogate_grad_fn(self.surrogate_grad)
+
+        if self.use_squeeze:
+            if self.neuron_type == NeuronType.LIF:
+                cls = exodus_layers.LIFSqueeze if self.use_exodus else sl.LIFSqueeze
+                return cls(
+                    spike_threshold=spike_threshold, min_v_mem=self.min_vmem,
+                    surrogate_grad_fn=grad_fn, tau_mem=self.tau_mem, norm_input=self.norm_input,
+                    tau_syn=self.tau_syn,
+                    reset_fn=reset_fn, spike_fn=self.spike_fn, num_timesteps=1,
+                )
+            cls = exodus_layers.IAFSqueeze if self.use_exodus else sl.IAFSqueeze
+            return cls(
+                spike_threshold=spike_threshold, min_v_mem=self.min_vmem, surrogate_grad_fn=grad_fn,
+                tau_syn=self.tau_syn,
+                reset_fn=reset_fn, spike_fn=self.spike_fn, num_timesteps=1,
+            )
+
+        if self.neuron_type == NeuronType.LIF:
+            cls = exodus_layers.LIF if self.use_exodus else sl.LIF
+            return cls(
+                spike_threshold=spike_threshold, min_v_mem=self.min_vmem,
+                surrogate_grad_fn=grad_fn, tau_mem=self.tau_mem, norm_input=self.norm_input,
+                tau_syn=self.tau_syn,
+                reset_fn=reset_fn, spike_fn=self.spike_fn,
+            )
+        cls = exodus_layers.IAF if self.use_exodus else sl.IAF
+        return cls(
+            spike_threshold=spike_threshold, min_v_mem=self.min_vmem, surrogate_grad_fn=grad_fn,
+            tau_syn=self.tau_syn,
+            reset_fn=reset_fn, spike_fn=self.spike_fn,
+        )
+
+
+# ---------------------------------------------------------------------------
+# Thin wrappers that own a neuron layer, exposing .vmem()/.reset_states()
+# ---------------------------------------------------------------------------
+
+class _SinabsNeuronLayer(nn.Module):
+    """Wraps a sinabs neuron layer, handling the unsqueeze(1)/squeeze(1)
+    needed for 1-timestep-at-a-time processing on linear layers (standard,
+    non-Squeeze case), or passing through directly for Squeeze layers."""
+
+    def __init__(self, neuron_layer: nn.Module, last_layer_reset: bool = False, is_squeeze: bool = False,
+                 unit_gain_syn: bool = False):
+        super().__init__()
+        self.neuron = neuron_layer
+        self.last_layer_reset = last_layer_reset
+        self.is_squeeze = is_squeeze
+        # unit_gain_syn: sinabs' synaptic stage, i_syn <- alpha * (i_syn + input), settles at
+        # alpha / (1 - alpha) times a constant input (1.5x at tau_syn 2 steps, 15.5x at 16);
+        # scaling the input by (1 - alpha) / alpha makes it a unit-gain low-pass filter.
+        # Only acts when the neuron has a synaptic stage (tau_syn set).
+        self.unit_gain_syn = unit_gain_syn and getattr(neuron_layer, "tau_syn", None) is not None
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if self.unit_gain_syn:
+            alpha = self.neuron.alpha_syn_calculated
+            x = x * (1 - alpha) / alpha
+        if self.last_layer_reset:
+            self.neuron.reset_states()
+        out = self.neuron(x) if self.is_squeeze else self.neuron(x.unsqueeze(1)).squeeze(1)
+        if getattr(self, "max_vmem", None) is not None:
+            # ceiling on the membrane potential (as the LSNN's max_vmem): with no leak and a cap on spikes per step,
+            # a neuron driven above the cap would otherwise charge without bound
+            self.neuron.v_mem = torch.clamp(self.neuron.v_mem, max=self.max_vmem)
+        return out
+
+    def vmem(self) -> torch.Tensor:
+        return self.neuron.v_mem.clone()
+
+    def reset_states(self):
+        self.neuron.reset_states()
+
+
+class _SJNeuronLayer(nn.Module):
+    """Wraps a SpikingJelly IF/LIF node, handling last-layer reset."""
+
+    def __init__(self, neuron_layer: nn.Module, last_layer_reset: bool = False):
+        super().__init__()
+        self.neuron = neuron_layer
+        self.last_layer_reset = last_layer_reset
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if self.last_layer_reset:
+            self.neuron.v = self.neuron.v * 0.0
+        return self.neuron(x)
+
+    def vmem(self) -> torch.Tensor:
+        return self.neuron.v.clone()
+
+    def reset_states(self):
+        self.neuron.v = self.neuron.v * 0.0
+
+
+# ---------------------------------------------------------------------------
+# Block builder -- linear only, this architecture never uses conv/pool
+# ---------------------------------------------------------------------------
+
+def add_linear_block(
+    layers: List[nn.Module],
+    in_features: int,
+    out_features: int,
+    factory: NeuronFactory,
+    spike_threshold: float = 1.0,
+    override_reset_type: Optional[str] = None,
+    last_layer_reset: bool = False,
+    unit_gain_syn: bool = False,
+) -> List[nn.Module]:
+    """Append: Linear -> NeuronLayer."""
+    layers.append(nn.Linear(in_features, out_features, bias=False))
+    raw = factory.build(spike_threshold=spike_threshold, override_reset_type=override_reset_type)
+    if factory.use_sj:
+        layers.append(_SJNeuronLayer(raw, last_layer_reset=last_layer_reset))
+    else:
+        layers.append(_SinabsNeuronLayer(raw, last_layer_reset=last_layer_reset, is_squeeze=factory.use_squeeze,
+                                         unit_gain_syn=unit_gain_syn))
+    return layers
+
+
+def delay_bank(x: torch.Tensor, delays) -> torch.Tensor:
+    """(T, N, C) -> (T, N, C * len(delays)): step t carries, for each delay d
+    in order, the input of step t - d (zeros before the start). The input
+    delay bank of SNN_Speck(input_delays=...): it holds no weights, so it
+    runs off-chip, between the input stream and the chip, and the first
+    Linear sees every delayed copy as an input channel of its own -- each
+    neuron then has one synapse (weight) per channel and delay.
+    delays may also be a (n_delays, C) integer tensor: a delay per copy and
+    channel (SNN_Speck(input_delays_random=True))."""
+    T = x.shape[0]
+    if torch.is_tensor(delays):
+        d_max = int(delays.max())
+        padded = torch.cat([x.new_zeros((d_max,) + x.shape[1:]), x])
+        t = torch.arange(T, device=x.device)[:, None] + d_max                      # (T, 1)
+        return torch.cat([padded.gather(0, (t - row.to(x.device)[None, :])[:, None, :].expand_as(x))
+                          for row in delays], dim=-1)
+    copies = [x if d == 0 else torch.cat([x.new_zeros((min(d, T),) + x.shape[1:]), x[:max(T - d, 0)]])
+              for d in delays]
+    return torch.cat(copies, dim=-1)
+
+
+class _RoundSTE(torch.autograd.Function):
+    """Round to integers forward; pass the gradient straight through."""
+    @staticmethod
+    def forward(ctx, x):
+        return torch.round(x)
+
+    @staticmethod
+    def backward(ctx, g):
+        return g
+
+
+class InputDelayPositions(nn.Module):
+    """Learnable positions (in 4 ms steps, within [0, D]) of the delayed copies of
+    the input, after the speech decoder's delays.py (Hammouamri, Khalfaoui-Hassani
+    & Masquelier, ICLR 2024): pos (n_copies, C) for one delay per channel and copy,
+    (n_copies, 1) for one per copy shared by every channel. While sigma > 0 a copy
+    reads a Gaussian window (width sigma) of the past around its position, which
+    gives the position a gradient; sigma 0 ("hard"): whole-step delays, as deployed.
+    train_snn.py sets sigma each epoch (set_input_delay_sigma())."""
+
+    def __init__(self, init_delays: torch.Tensor, max_delay: int):
+        super().__init__()
+        self.D = int(max_delay)
+        self.pos = nn.Parameter(init_delays.float().clone())
+        self.register_buffer("pos_init", init_delays.float().clone())
+        self.register_buffer("sigma", torch.tensor(0.0))
+
+    def delays(self) -> torch.Tensor:
+        """Whole-step delays (n_copies, C or 1), as deployed."""
+        return self.pos.detach().clamp(0, self.D).round().long()
+
+    def kernel(self) -> torch.Tensor:
+        """(n_copies, C or 1, D + 1): each copy's share of the input at delays 0..D."""
+        d = torch.arange(self.D + 1, device=self.pos.device, dtype=self.pos.dtype)
+        g = torch.exp(-0.5 * ((d - self.pos.clamp(0, self.D)[..., None]) / float(self.sigma)) ** 2)
+        return g / g.sum(-1, keepdim=True).clamp_min(1e-12)
+
+
+def set_input_delay_sigma(model, epoch: int, soft_epochs: int, sigma_frac: float = 0.25) -> bool:
+    """Epoch (0-based) schedule: sigma from max(1, sigma_frac * D) down to 0.5 over
+    soft_epochs, then 0: positions rounded and frozen. True once hard (or no
+    learnable delays)."""
+    m = getattr(model, "input_delay_pos", None)
+    if m is None:
+        return True
+    hard = epoch >= soft_epochs
+    s0 = max(1.0, sigma_frac * m.D)
+    m.sigma.fill_(0.0 if hard else s0 + (0.5 - s0) * epoch / max(1, soft_epochs))
+    if hard:
+        with torch.no_grad():
+            m.pos.copy_(m.pos.clamp(0, m.D).round())
+    m.pos.requires_grad_(not hard)
+    return hard
+
+
+def reset_vmems(network: nn.Module):
+    """Reset all spiking neuron states in *network*."""
+    for m in network.modules():
+        if isinstance(m, (_SinabsNeuronLayer, _SJNeuronLayer)):
+            m.reset_states()
+
+
+# ---------------------------------------------------------------------------
+# Main network
+# ---------------------------------------------------------------------------
+
+class SNN_Speck(nn.Module):
+    """
+    Feedforward spiking network for BMI hand-velocity decoding.
+    """
+
+    def __init__(
+        self,
+        use_spikingjelly: bool,
+        last_layer_reset: bool,
+        min_vmem: float,
+        spike_fn: Optional[Callable],
+        neuron_type: NeuronType = NeuronType.LIF,
+        tau_mem: float = 1.0,
+        reset_type: str = "hard",
+        final_layer_reset_type: Optional[str] = None,
+        surrogate_grad: Union[str, dict, Callable] = "periodic_exponential",
+        use_exodus: bool = False,
+        use_iaf_squeeze: bool = False,
+        n_bins: int = 18,
+        spike_thresholds: Optional[List[float]] = None,
+        temporal_decay_init: float = 0.8,
+        learnable_temporal_decay: bool = True,
+        temporal_decay_stages: int = 1,
+        num_input_channels: int = 96,
+        hidden_dims: Optional[List[int]] = None,
+        tau_syn: Optional[Union[float, List[float]]] = None,
+        norm_input: bool = True,
+        velocity_lo: float = -280.56,
+        velocity_hi: float = 316.54,
+        velocity_margin: float = 0.05,
+        unit_gain_syn: bool = False,
+        input_delays: Optional[List[int]] = None,
+        input_mix: Optional[str] = None,
+        input_delays_random: bool = False,
+        input_plan: Optional[dict] = None,
+        learn_input_delays: Optional[str] = None,
+        input_delay_max: int = 75,
+        recurrent: bool = False,
+        max_vmem: Optional[float] = None,
+    ):
+        super().__init__()
+        self.use_spikingjelly = use_spikingjelly
+        self.use_iaf_squeeze = use_iaf_squeeze
+        self.n_bins = n_bins
+        out_rst = final_layer_reset_type or reset_type
+
+        # Hidden dimensions can be customized as needed, but the original structure remains as default.
+        hidden_dims = list(hidden_dims) if hidden_dims is not None else [512, 256, 128]
+        # input_delays (in 4 ms steps): the input delay bank (delay_bank()) in
+        # front of the first layer; it multiplies the first layer's inputs by
+        # len(input_delays). None: no delay bank, the network as before.
+        self.input_delays = sorted({int(d) for d in input_delays}) if input_delays else None
+        if self.input_delays and self.input_delays[0] < 0:
+            raise ValueError(f"input_delays must be >= 0 (causal), got {input_delays}")
+        # input_mix: fold the delayed copies back into num_input_channels on the
+        # host, so the chip's network keeps its widths. 'sum': each channel's
+        # delayed copies added (a count of 0..n_delays events per step);
+        # 'learned': a gain per channel and delay (>= 0), trained, the sum
+        # rounded to whole events (straight-through gradient).
+        # input_delays_random: every channel its own delays, as in the speech
+        # decoder's random synaptic delays: copy 0 keeps input_delays[0] ("now"
+        # for 0), the other len(input_delays) - 1 copies of each channel take
+        # distinct delays drawn from 1..max(input_delays) (only the count and
+        # the maximum of input_delays matter), fixed (seed 3) and saved with
+        # the weights. Same input count as shared delays.
+        if input_delays_random:
+            if not self.input_delays:
+                raise ValueError("input_delays_random needs input_delays")
+            g = torch.Generator().manual_seed(3)
+            rows = [torch.full((num_input_channels,), self.input_delays[0], dtype=torch.long)]
+            k, d_max = len(self.input_delays) - 1, self.input_delays[-1]
+            if k > d_max:
+                raise ValueError(f"input_delays_random: {k} distinct delays need max(input_delays) >= {k}")
+            draws = torch.stack([torch.randperm(d_max, generator=g)[:k].sort().values + 1
+                                 for _ in range(num_input_channels)], dim=1)                 # (k, C)
+            self.register_buffer("channel_delays", torch.cat([rows[0][None], draws]))
+        elif input_plan:
+            # input_plan (per session, snn_training/make_input_plans.py): the
+            # channels kept ('channels', indices into the num_input_channels
+            # inputs) and each kept channel's own delays ('delays', n_copies x
+            # n_kept, in steps). Takes the place of input_delays; saved with the
+            # weights. The chip gets n_kept * n_copies inputs.
+            if input_delays or input_mix:
+                raise ValueError("input_plan takes the place of input_delays and input_mix")
+            self.register_buffer("input_channels", torch.tensor(input_plan["channels"], dtype=torch.long))
+            self.register_buffer("channel_delays", torch.tensor(input_plan["delays"], dtype=torch.long))
+            if self.channel_delays.dim() != 2 or self.channel_delays.shape[1] != len(self.input_channels) \
+                    or int(self.channel_delays.min()) < 0:
+                raise ValueError("input_plan: 'delays' must be n_copies x len(channels), all >= 0")
+        else:
+            self.channel_delays = None
+        if not input_plan:
+            self.input_channels = None
+        # learn_input_delays 'channel' | 'shared': input_delays[1:] are starting
+        # positions, trained within [0, input_delay_max] steps (InputDelayPositions),
+        # one per channel and copy or one per copy for all channels; the first copy
+        # stays at input_delays[0] (0: "now"). Same chip inputs as fixed delays.
+        self.input_delay_pos = None
+        if learn_input_delays:
+            if learn_input_delays not in ("channel", "shared"):
+                raise ValueError(f"learn_input_delays must be 'channel' or 'shared', got {learn_input_delays!r}")
+            if not self.input_delays or len(self.input_delays) < 2 or input_mix or input_plan or input_delays_random:
+                raise ValueError("learn_input_delays needs input_delays (2+) and no input_mix/plan/random delays")
+            if self.input_delays[-1] > input_delay_max:
+                raise ValueError(f"input_delays must lie within input_delay_max={input_delay_max}")
+            width = num_input_channels if learn_input_delays == "channel" else 1
+            init = torch.tensor(self.input_delays[1:], dtype=torch.float)[:, None].expand(-1, width)
+            self.input_delay_pos = InputDelayPositions(init, input_delay_max)
+        if input_mix not in (None, "sum", "learned"):
+            raise ValueError(f"input_mix must be None, 'sum' or 'learned', got {input_mix!r}")
+        if input_mix and not self.input_delays:
+            raise ValueError("input_mix needs input_delays")
+        self.input_mix = input_mix
+        if input_mix == "learned":
+            self.input_mix_gain = nn.Parameter(torch.ones(len(self.input_delays), num_input_channels))
+        if input_plan:
+            n_first = self.channel_delays.numel()
+        else:
+            n_first = num_input_channels * (len(self.input_delays) if self.input_delays and not input_mix else 1)
+        layer_widths = [n_first] + hidden_dims + [2 * n_bins]
+        n_layers = len(layer_widths) - 1
+
+        # Spike threshold pattern can also be modified, leaving empty triggers default.
+        thresholds = spike_thresholds or ([2.0] + [1.0] * (n_layers - 1))
+        if len(thresholds) != n_layers:
+            raise ValueError(
+                f"spike_thresholds must have exactly {n_layers} values (one per layer, "
+                f"given hidden_dims={hidden_dims} -> {n_layers} layers total), "
+                f"got {len(thresholds)}")
+
+        # tau_syn: one initial value for every spiking layer, or one per layer.
+        taus = list(tau_syn) if isinstance(tau_syn, (list, tuple)) else [tau_syn] * n_layers
+        if len(taus) != n_layers:
+            raise ValueError(f"tau_syn must have 1 or {n_layers} values (one per layer), got {len(taus)}")
+
+        factory = NeuronFactory(
+            neuron_type=neuron_type,
+            use_spikingjelly=use_spikingjelly,
+            use_exodus=use_exodus,
+            reset_type=reset_type,
+            surrogate_grad=surrogate_grad,
+            tau_mem=tau_mem,
+            min_vmem=min_vmem,
+            spike_fn=spike_fn,
+            use_squeeze=use_iaf_squeeze,
+            tau_syn=tau_syn,
+            norm_input=norm_input,
+        )
+
+        # Dynamically-built SNN
+        raw_layers: List[nn.Module] = []
+        for i in range(n_layers):
+            is_last = (i == n_layers - 1)
+            factory.tau_syn = taus[i]
+            add_linear_block(
+                raw_layers, layer_widths[i], layer_widths[i + 1], factory,
+                spike_threshold=thresholds[i],
+                override_reset_type=out_rst if is_last else None,
+                last_layer_reset=last_layer_reset if is_last else False,
+                unit_gain_syn=unit_gain_syn,
+            )
+        self.layers = nn.ModuleList(raw_layers)
+        for layer in self.layers:
+            if isinstance(layer, _SinabsNeuronLayer):
+                layer.max_vmem = max_vmem
+        # recurrent: every hidden layer also receives its own spikes of the previous step through a
+        # weight matrix (orthogonal, scaled by 0.5 at the start, as the LSNN's); the output layer stays
+        # feedforward. Not deployable to Speck.
+        self.rec = None
+        if recurrent:
+            self.rec = nn.ModuleList(nn.Linear(w, w, bias=False) for w in hidden_dims)
+            self.init_recurrent()
+        self.total_neuron_units = sum(layer_widths[1:])
+        self.layer_widths = list(layer_widths[1:])   # neurons per spiking layer
+
+        positions_init = torch.linspace(0.0, 1.0, n_bins, dtype=torch.float32)
+        self.register_buffer("positions", positions_init)
+
+        # EMA readout: bounded, learnable scalar
+        init_logit = torch.logit(torch.tensor(float(temporal_decay_init)))
+        self._temporal_decay_raw = nn.Parameter(init_logit, requires_grad=learnable_temporal_decay)
+
+        # Number of CASCADED EMA stages feeding the readout -- default 1
+        # reproduces the original single-stage EMA exactly (confirmed
+        # directly: with 1 stage, the cascade loop in forward() reduces
+        # to precisely the old temporal_ema = decay*temporal_ema + x
+        # update, byte-for-byte). >1 stages chains multiple EMAs (all
+        # sharing this SAME decay parameter), which is a well-established
+        # signal-processing technique for building a gamma/Erlang-shaped
+        # kernel -- verified numerically before implementing here: unlike
+        # a single EMA (peaked at lag 0, monotonically decreasing), a
+        # 2-stage cascade with decay=0.9 peaks at lag 8 with a 9-step
+        # plateau before decaying, and more stages push the peak further
+        # out and widen the plateau further. This lets the network
+        # weight a RANGE of recent windows near-equally before tapering,
+        # rather than always weighting the single most recent timestep
+        # most heavily.
+        if temporal_decay_stages < 1:
+            raise ValueError(f"temporal_decay_stages must be >= 1, got {temporal_decay_stages}")
+        self.temporal_decay_stages = temporal_decay_stages
+
+        # The SCALED-space value that unscales to a PHYSICAL velocity of
+        # exactly 0.0 -- used as decode_output()'s fallback for whichever
+        # individual samples in a batch produce zero spikes in a given
+        # axis at a given timestep (no accumulated population-vector
+        # signal to decode). Computed as the exact algebraic inverse of
+        # train_snn.py's unscale_velocity(): v = lo + (hi-lo)*(scaled-
+        # margin)/(1-2*margin), solved for scaled at v=0. MUST be built
+        # from the SAME velocity_lo/hi/margin the dataloader's forward
+        # scaling and unscale_velocity() use, or "no spikes" stops
+        # actually meaning "predict no movement" and silently means some
+        # other, non-zero physical velocity instead.
+        #
+        # This replaces an earlier fallback (an unconditional
+        # denominator clamp) that put every no-spike sample at SCALED
+        # 0.0, not the value corresponding to physical 0.0 -- with this
+        # project's actual velocity_lo=-280.56, that unscaled to
+        # roughly -313.7, a value MORE EXTREME than anything the
+        # network was ever calibrated to predict (v_lo itself), for
+        # what should have been the single most conservative, least
+        # committal output the network could produce.
+        neutral_scaled = velocity_margin - velocity_lo * (1 - 2 * velocity_margin) / (velocity_hi - velocity_lo)
+        self.register_buffer("neutral_scaled_pred",
+                              torch.tensor(float(neutral_scaled), dtype=torch.float32))
+
+    def init_recurrent(self):
+        """Recurrent weights orthogonal, scaled so the gain around each layer's loop is 0.5 at the start. The
+        recurrent input passes through the layer's synaptic filter, whose steady-state gain is alpha / (1 - alpha)
+        (alpha = exp(-1 / tau_syn): 1.5x at tau_syn 2 steps, 7.5x at 8), so the weights are scaled by 0.5 / that gain.
+        create_model() calls this again after initialize_snn_model(), whose Kaiming init of every Linear would give a
+        loop gain of about 1.4 before the filter: with no leak and no cap on spikes per step, activity runs away."""
+        if self.rec is None:
+            return
+        neurons = [l for l in self.layers if isinstance(l, (_SinabsNeuronLayer, _SJNeuronLayer))]
+        with torch.no_grad():
+            for r, layer in zip(self.rec, neurons):
+                tau = getattr(getattr(layer, "neuron", None), "tau_syn", None)
+                gain = 1.0
+                if tau is not None and not getattr(layer, "unit_gain_syn", False):
+                    alpha = math.exp(-1.0 / float(torch.as_tensor(tau).float().mean()))
+                    gain = alpha / (1 - alpha)
+                nn.init.orthogonal_(r.weight)
+                r.weight.mul_(0.5 / gain)
+
+    def host_input(self, x: torch.Tensor) -> torch.Tensor:
+        """(T, N, C) input -> what the first layer (on Speck, the chip) receives:
+        unchanged without input_delays or input_plan, else the delay bank's
+        copies, side by side or folded back into C channels (input_mix); with
+        input_plan, the kept channels only, each with its own delays. Runs
+        off-chip."""
+        if self.input_channels is not None:
+            return delay_bank(x[..., self.input_channels], self.channel_delays)
+        if not self.input_delays:
+            return x
+        if self.input_delay_pos is not None:
+            return self._learned_delays(x)
+        x = delay_bank(x, self.channel_delays if self.channel_delays is not None else self.input_delays)
+        if not self.input_mix:
+            return x
+        x = x.reshape(*x.shape[:-1], len(self.input_delays), -1)            # (T, N, delays, C)
+        if self.input_mix == "sum":
+            return x.sum(dim=-2)
+        return _RoundSTE.apply((x * self.input_mix_gain.clamp(min=0)).sum(dim=-2))
+
+    def _learned_delays(self, x: torch.Tensor) -> torch.Tensor:
+        """host_input() with learnable delays: whole-step delays once hard, else
+        each copy a Gaussian-weighted window of the past (a per-channel causal
+        convolution). Copies side by side, as delay_bank()."""
+        m = self.input_delay_pos
+        T, N, C = x.shape
+        first = torch.full((1, C), self.input_delays[0], dtype=torch.long, device=x.device)
+        if float(m.sigma) <= 0:
+            return delay_bank(x, torch.cat([first, m.delays().to(x.device).expand(-1, C)]))
+        K1 = m.pos.shape[0]
+        w = m.kernel().expand(K1, C, m.D + 1).permute(1, 0, 2).reshape(C * K1, 1, m.D + 1).flip(-1)
+        xp = torch.nn.functional.pad(x.permute(1, 2, 0), (m.D, 0))                  # (N, C, D + T)
+        y = torch.nn.functional.conv1d(xp, w, groups=C)                             # (N, C * K1, T)
+        y = y.reshape(N, C, K1, T).permute(3, 0, 2, 1).reshape(T, N, K1 * C)        # copy-major, as delay_bank
+        return torch.cat([delay_bank(x, [self.input_delays[0]]), y], dim=-1)
+
+    @property
+    def temporal_decay(self) -> float:
+        """Current EMA decay in (0, 1)."""
+        return torch.sigmoid(self._temporal_decay_raw).item()
+
+    def decode_output(self, acc: torch.Tensor) -> torch.Tensor:
+        """Turn one timestep's EMA-smoothed final-layer output into a
+        decoded (x, y) prediction. acc: (N, 2*n_bins).
+
+        Falls back to neutral_scaled_pred (see __init__) -- NOT the
+        previous behavior of an unconditional denominator clamp landing
+        at scaled 0.0 -- for whichever individual samples in the batch
+        have zero accumulated activity in a given axis. Checked and
+        applied PER SAMPLE (via torch.where, not a single scalar
+        branch), so a batch where some sequences have spiked and others
+        haven't yet (the normal case at the start of a trial) is handled
+        correctly for each one independently.
+        """
+        n = self.n_bins
+        x_acc = acc[:, :n]
+        y_acc = acc[:, n:2 * n]
+        x_raw_total = x_acc.sum(dim=1)
+        y_raw_total = y_acc.sum(dim=1)
+        x_has_signal = x_raw_total > 0
+        y_has_signal = y_raw_total > 0
+        x_total = x_raw_total.clamp(min=1)  # backstop against div-by-zero only; the
+        y_total = y_raw_total.clamp(min=1)  # actual no-signal case is handled by torch.where below
+        pos = self.positions.to(acc.device)
+        pred_x_raw = (x_acc * pos).sum(dim=1) / x_total
+        pred_y_raw = (y_acc * pos).sum(dim=1) / y_total
+        neutral = self.neutral_scaled_pred.to(acc.device)
+        pred_x = torch.where(x_has_signal, pred_x_raw, neutral)
+        pred_y = torch.where(y_has_signal, pred_y_raw, neutral)
+        return torch.stack([pred_x, pred_y], dim=-1)
+
+    def forward(self, x_total: torch.Tensor, count_ops: bool = False):
+        """
+        Run the network over T timesteps for a batch of N sequences.
+        Membrane state is reset to zero at the start of every call --
+        every trial is treated as an independent example (matching how
+        the ANN decoders train). An earlier revision supported carrying
+        state across calls for a "continuous, never-reset stream"
+        training mode; that mode was tried, found substantially worse in
+        real comparative results, and removed, along with the
+        reset_state parameter and detach_states() that only existed to
+        support it -- see module docstring.
+
+        Parameters
+        ----------
+        x_total : torch.Tensor
+            Shape (T, N, num_input_channels) -- time-major input.
+        count_ops : bool, default False
+            If True, ALSO accumulates and returns raw effective-operation
+            counts (MAC, ACC, elementwise) across every layer, the EMA
+            cascade, and decode_output() -- see
+            op_energy_estimate.py's finalize_snn_ops() for converting
+            these into memory accesses and an energy estimate, the same
+            MAC/ACC framework already used for every other decoder in
+            this project. Counted HERE, inline, rather than by a
+            separate external estimator re-walking the model afterward
+            (which is what every OTHER decoder in this project uses) --
+            an earlier attempt at an external estimator had to be
+            discarded once this function's real structure was seen: it
+            calls itself once per timestep internally (not once per
+            sample externally), and the EMA cascade + decode_output()
+            both contribute real additional operations beyond the
+            four-layer IAF stack itself, neither of which an external
+            re-walk could see without re-deriving this function's own
+            logic a second time, with the drift risk that implies.
+
+            Defaults to False and adds ZERO overhead to the normal
+            training/eval path when off (every accumulation below is
+            behind an `if count_ops:` guard) -- this MUST stay off
+            during training; only test_all_decoders.py's evaluation call
+            should ever turn it on.
+
+        Returns
+        -------
+        predictions : torch.Tensor, shape (T, N, 2)
+            Decoded (x, y) velocity prediction at every timestep.
+        final_layer_spikes : torch.Tensor, scalar
+            Total spike count in the final layer, summed over the whole call.
+        total_spikes : torch.Tensor, scalar
+            Total spike count across every layer, summed over the whole call.
+        op_counts : dict, ONLY returned when count_ops=True
+            {'mac': int, 'acc': float, 'elementwise': int} -- raw,
+            UNCONVERTED operation counts for the whole call (already
+            summed over every timestep and every sample in the batch;
+            pass n_samples = T * N to finalize_snn_ops() alongside these).
+        """
+        T, N = x_total.shape[0], x_total.shape[1]
+        x_total = self.host_input(x_total)
+
+        if not self.use_spikingjelly:
+            sinabs.utils.reset_states(self)
+        else:
+            functional.reset_net(self)
+
+        predictions_over_time = []
+        final_layer_spikes = torch.zeros(1, device=x_total.device)
+        total_spikes = torch.zeros(1, device=x_total.device)
+        # Spikes summed over the call, one entry per neuron layer (with
+        # gradients), for train_snn.py's per-layer --spike-rate-weight
+        # penalty; widths in self.layer_widths.
+        self.layer_spikes = []
+
+        if count_ops:
+            op_mac = 0
+            op_acc = 0.0
+            op_elementwise = 0
+
+        decay = torch.sigmoid(self._temporal_decay_raw)
+        prev_spikes = [torch.zeros((N, r.in_features), device=x_total.device) for r in self.rec] if self.rec else None
+        temporal_ema_stages = [torch.zeros((N, 2 * self.n_bins), device=x_total.device)
+                                for _ in range(self.temporal_decay_stages)]
+
+        for ts in range(T):
+            x = x_total[ts]  # (N, num_input_channels)
+            linear_seen = 0
+            neuron_seen = 0
+            for layer in self.layers:
+                if count_ops and isinstance(layer, nn.Linear):
+                    out_features = layer.out_features
+                    if linear_seen == 0:
+                        # First Linear: raw, continuous-valued input (this
+                        # timestep's MUA feature vector, not a spike train
+                        # yet) -- MAC, sparsity-aware via nnz, same rule as
+                        # every other decoder's own first layer.
+                        op_mac += int(torch.count_nonzero(x).item()) * out_features
+                    else:
+                        # Every later Linear: input is the PRECEDING neuron
+                        # layer's actual spike output -- genuinely spike-
+                        # driven, so ACC, tallied from the SUM of spike
+                        # VALUES (not just nnz) since this model uses
+                        # MultiSpike -- a neuron can emit more than one
+                        # spike in a single timestep, and each one needs a
+                        # separate unit of accumulate work downstream.
+                        op_acc += float(x.sum().item()) * out_features
+                    linear_seen += 1
+                x = layer(x)
+                if self.rec is not None and isinstance(layer, nn.Linear) and neuron_seen < len(self.rec):
+                    k = neuron_seen        # the neuron layer this Linear feeds
+                    if count_ops:
+                        op_acc += float(prev_spikes[k].sum().item()) * self.rec[k].out_features
+                    x = x + self.rec[k](prev_spikes[k])
+                if isinstance(layer, (_SinabsNeuronLayer, _SJNeuronLayer)):
+                    # Spike counts are structurally non-negative; clamp
+                    # defensively before accumulating. Under severe
+                    # numerical instability (e.g. an unbounded membrane
+                    # potential combined with an aggressive learning rate)
+                    # this has been observed to go negative, which would
+                    # otherwise silently corrupt the spike-sparsity loss
+                    # term downstream (see train_snn.py's
+                    # spike_sparsity_lambda) into something that no longer
+                    # means "average spikes per neuron per timestep" at
+                    # all. --min-vmem should still be set (as it already
+                    # is in normal usage) to prevent the instability
+                    # itself; this clamp is a backstop, not a substitute.
+                    step_spikes = x.sum().clamp(min=0)
+                    total_spikes = total_spikes + step_spikes
+                    if ts == 0:
+                        self.layer_spikes.append(step_spikes)
+                    else:
+                        self.layer_spikes[neuron_seen] = self.layer_spikes[neuron_seen] + step_spikes
+                    if self.rec is not None and neuron_seen < len(self.rec):
+                        prev_spikes[neuron_seen] = x
+                    neuron_seen += 1
+                    if count_ops:
+                        units = x.shape[-1]
+                        if isinstance(layer, _SinabsNeuronLayer):
+                            # Synaptic current decay (i_syn[t] = decay*i_syn[t-1]
+                            # + I_in[t]): a REAL multiply against a continuous
+                            # decay constant, every neuron, every timestep,
+                            # regardless of spike activity -- sinabs-SPECIFIC
+                            # (tau_syn), not applicable to the SpikingJelly
+                            # backend, which this project's own NeuronFactory
+                            # never passes tau_syn to (see NeuronFactory.build()).
+                            op_mac += N * units
+                        # Membrane update (v_mem += i_syn, IAF has no leak of
+                        # its own) + threshold compare + MembraneSubtract reset
+                        # -- a small per-neuron add-and-compare, not a
+                        # weighted-sum operation, for EITHER backend.
+                        op_elementwise += 2 * N * units
+
+            final_layer_spikes = final_layer_spikes + x.sum().clamp(min=0)
+            # Cascade: stage 0 fed by this timestep's raw output, each
+            # subsequent stage fed by the PREVIOUS stage's own EMA output
+            # -- with temporal_decay_stages=1 this is exactly one update,
+            # identical to the original single-stage mechanism.
+            stage_input = x
+            for i in range(self.temporal_decay_stages):
+                if count_ops:
+                    # decay*prev + input: one multiply+add per element of
+                    # this (N, 2*n_bins) stage tensor.
+                    op_mac += N * (2 * self.n_bins)
+                temporal_ema_stages[i] = decay * temporal_ema_stages[i] + stage_input
+                stage_input = temporal_ema_stages[i]
+            pred = self.decode_output(temporal_ema_stages[-1])
+            if count_ops:
+                # decode_output(): a position-weighted dot product over
+                # n_bins per axis per sample (n_bins MACs each for x and
+                # y), plus the two sum(dim=1) normalization reductions
+                # (counted as elementwise adds, not MAC -- no weight
+                # multiply involved).
+                op_mac += N * 2 * self.n_bins
+                op_elementwise += N * 2 * self.n_bins
+            predictions_over_time.append(pred)
+
+        predictions = torch.stack(predictions_over_time, dim=0)  # (T, N, 2)
+        if count_ops:
+            return predictions, final_layer_spikes, total_spikes, {
+                'mac': op_mac, 'acc': op_acc, 'elementwise': op_elementwise}
+        return predictions, final_layer_spikes, total_spikes
+
+
+def create_model(
+    use_spikingjelly: bool,
+    last_layer_reset: bool,
+    weight_init: str,
+    spike_fn,
+    min_vmem,
+    neuron_type: str = "lif",
+    tau_mem: float = 1.0,
+    reset_type: str = "hard",
+    final_layer_reset_type=None,
+    surrogate_grad: Union[str, dict, Callable] = "periodic_exponential",
+    use_exodus: bool = False,
+    use_iaf_squeeze: bool = False,
+    n_bins: int = 18,
+    spike_thresholds: Optional[List[float]] = None,
+    temporal_decay_init: float = 0.8,
+    learnable_temporal_decay: bool = True,
+    temporal_decay_stages: int = 1,
+    num_input_channels: int = 96,
+    hidden_dims: Optional[List[int]] = None,
+    tau_syn: Optional[Union[float, List[float]]] = None,
+    norm_input: bool = True,
+    velocity_lo: float = -280.56,
+    velocity_hi: float = 316.54,
+    velocity_margin: float = 0.05,
+    unit_gain_syn: bool = False,
+    input_delays: Optional[List[int]] = None,
+    input_mix: Optional[str] = None,
+    input_delays_random: bool = False,
+    input_plan: Optional[dict] = None,
+    learn_input_delays: Optional[str] = None,
+    input_delay_max: int = 75,
+    recurrent: bool = False,
+    max_vmem: Optional[float] = None,
+    **kwargs,
+) -> SNN_Speck:
+    """Factory function to create an SNN_Speck model.
+
+    velocity_lo/hi/margin MUST match whatever the dataloader's forward
+    scaling and train_snn.py's unscale_velocity() actually use -- see
+    SNN_Speck.__init__()'s neutral_scaled_pred, computed from these three
+    values as the exact inverse of unscale_velocity() at physical v=0.
+
+    hidden_dims: list of hidden layer widths (default None -> [512, 256,
+    128], reproducing the original fixed 4-layer architecture exactly).
+    len(hidden_dims)+1 is the number of layers, and spike_thresholds (if
+    given explicitly) must have exactly that many values -- see
+    SNN_Speck.__init__()'s own ValueError for the precise, per-call
+    requirement.
+
+    norm_input: LIF only (ignored for IAF, which has no leak to
+    normalize against) -- see NeuronFactory.build()'s docstring for the
+    real, confirmed consequence this has for deep networks with large
+    tau_mem.
+    """
+    try:
+        neuron_enum = NeuronType(neuron_type.lower())
+    except ValueError:
+        raise ValueError(f"neuron_type must be one of {[t.value for t in NeuronType]}, "
+                          f"got {neuron_type!r}")
+
+    model = SNN_Speck(
+        use_spikingjelly=use_spikingjelly,
+        last_layer_reset=last_layer_reset,
+        min_vmem=min_vmem,
+        spike_fn=spike_fn,
+        neuron_type=neuron_enum,
+        tau_mem=tau_mem,
+        reset_type=reset_type,
+        final_layer_reset_type=final_layer_reset_type,
+        surrogate_grad=surrogate_grad,
+        use_exodus=use_exodus,
+        use_iaf_squeeze=use_iaf_squeeze,
+        n_bins=n_bins,
+        spike_thresholds=spike_thresholds,
+        temporal_decay_init=temporal_decay_init,
+        learnable_temporal_decay=learnable_temporal_decay,
+        temporal_decay_stages=temporal_decay_stages,
+        num_input_channels=num_input_channels,
+        hidden_dims=hidden_dims,
+        tau_syn=tau_syn,
+        norm_input=norm_input,
+        velocity_lo=velocity_lo,
+        velocity_hi=velocity_hi,
+        velocity_margin=velocity_margin,
+        unit_gain_syn=unit_gain_syn,
+        input_delays=input_delays,
+        input_mix=input_mix,
+        input_delays_random=input_delays_random,
+        input_plan=input_plan,
+        learn_input_delays=learn_input_delays,
+        input_delay_max=input_delay_max,
+        recurrent=recurrent,
+        max_vmem=max_vmem,
+    )
+
+    initialize_snn_model(model, weight_init)
+    model.init_recurrent()     # after the general init, which would give the recurrent weights a runaway gain
+    return model
+
+
+def load_model_weights(model: SNN_Speck, state_dict: dict, neuron_type: str,
+                        source_description: str = "checkpoint") -> None:
+    """Loads ONLY weight/parameter values into `model` from `state_dict`,
+    correctly excluding sinabs' lazily-shaped STATE buffers (not learned
+    parameters) rather than letting load_state_dict fail on them.
+
+    Shared by every checkpoint loader (inference's load_snn_model() and
+    train_snn.py's --init-weights-from).
+
+    v_mem/i_syn are lazily shaped for EVERY neuron type (sinabs only
+    gives them their real shape the first time forward() actually runs
+    with real data -- a freshly-constructed model sits at a degenerate
+    placeholder shape, which load_state_dict refuses to overwrite with a
+    checkpoint's differently-shaped, already-initialized values).
+
+    neuron_type is kept as a parameter for call-site compatibility, but
+    no longer changes this function's behavior -- it previously
+    determined an ALIF-specific extra exclusion (.b/.spike_threshold, ALIF's
+    adaptation state and its derived, per-step threshold), removed along
+    with ALIF support itself.
+
+    Raises RuntimeError on anything that looks like a genuine
+    architecture mismatch (a missing Linear.weight, an unexpected key)
+    rather than silently loading a partially-wrong model.
+    """
+    exclude_suffixes = ['.v_mem', '.neuron.v', '.i_syn']
+    filtered_state_dict = {k: v for k, v in state_dict.items()
+                            if not any(k.endswith(suffix) for suffix in exclude_suffixes)}
+    missing, unexpected = model.load_state_dict(filtered_state_dict, strict=False)
+
+    unexpected_missing = [k for k in missing
+                           if not (any(k.endswith(suffix) for suffix in exclude_suffixes)
+                                   or k == 'neutral_scaled_pred')]
+    if unexpected_missing:
+        raise RuntimeError(
+            f"{source_description}: load_state_dict is missing key(s) beyond the "
+            f"expected {exclude_suffixes} state buffers: {unexpected_missing} -- this "
+            f"suggests a real architecture mismatch, not the lazy-state-buffer issue "
+            f"this filtering is meant to handle.")
+    if unexpected:
+        raise RuntimeError(
+            f"{source_description}: checkpoint has unexpected key(s) not present in the "
+            f"current model_bmi.py architecture: {unexpected}")

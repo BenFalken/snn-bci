@@ -1,0 +1,7 @@
+# Efficiency list for the short-schedule check (configs/val12.txt)
+V12_readall | snn | $BASE_DIR/derived/snns/val12/*_V12_readall/final_model_*.pth
+V12_modelA | snn | $BASE_DIR/derived/snns/val12/*_V12_modelA/final_model_*.pth
+V12_ref | snn | $BASE_DIR/derived/snns/val12/*_V12_ref/final_model_*.pth
+V12_iaf | snn | $BASE_DIR/derived/snns/val12/*_V12_iaf/final_model_*.pth
+V12_out80 | snn | $BASE_DIR/derived/snns/val12/*_V12_out80/final_model_*.pth
+V12_base20ms | snn | $BASE_DIR/derived/snns/val12/*_V12_base20ms/final_model_*.pth
