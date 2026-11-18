@@ -41,7 +41,7 @@ the network the chip holds, though the chip itself updates per input event
 Outputs in --out-dir: speck_delays.json, .md (and train_snn.py's directories).
     python snn_training/compare_speck_delays.py --data-path .../indy_20160411_01 --out-dir .../indy_20160411_01 --device cpu
 """
-import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[3]))
+import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[2]))
 from paths import MOTOR_LSNN_DATA  # noqa: E402  (the repository's paths.yaml)
 
 import argparse

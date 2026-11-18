@@ -6,7 +6,7 @@
 #   bash fetch_for_speck.sh [subject ...]            (default: indy loco)
 #
 # Settings (environment):
-#   DATA_ROOT  local data root (default: the data/ folder next to main/, which run_inference.sbatch
+#   DATA_ROOT  local data root (default: the data/ folder next to the code, which run_inference.sbatch
 #              --local uses without DATA_ROOT)
 #   CKPT_DIR   checkpoint folder to fetch (default speckdelay_loso_finetuned_binarized: the Speck SNN
 #              with input delays, pretrained leave-one-session-out and fine-tuned)
@@ -18,12 +18,12 @@
 #   dataset/bmi/<subject>/mua/<session>_binning.h5                    test rows only (export_test_split.py,
 #                                                                     run on Oscar first when missing)
 #   results/model_cache/bmi/<subject>/<session>/                      unless ANN=0
-source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 REMOTE="${REMOTE:-$SNNBCI_OSCAR_USER@ssh.ccv.brown.edu}"
 REMOTE_ROOT="${REMOTE_ROOT:-$SNNBCI_OSCAR_MOTOR_DATA}"
 REMOTE_CODE="${REMOTE_CODE:-$SNNBCI_OSCAR_HOME/spike_bmi_speck_delay/main}"
-DATA_ROOT="${DATA_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)/data}"
+DATA_ROOT="${DATA_ROOT:-$SNNBCI_MOTOR_DATA}"
 CKPT_DIR="${CKPT_DIR:-speckdelay_loso_finetuned_binarized}"
 SUBJECTS=("$@"); [ ${#SUBJECTS[@]} -eq 0 ] && SUBJECTS=(indy loco)
 

@@ -18,7 +18,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 SUBJECTS=("$@"); [ ${#SUBJECTS[@]} -eq 0 ] && SUBJECTS=(indy loco jenkins)
 FACTORS="$HERE/speck_l1_factors.txt"
 bash "$HERE/run_speck.sh" check
-cd "$HERE/main/sbatch_scripts"
+cd "$HERE/sbatch_scripts"
 for SUBJ in "${SUBJECTS[@]}"; do
     EXP=bmi; SPECK_DIR=per_session_delay_binarized
     [ "$SUBJ" = jenkins ] && { EXP=hkm; SPECK_DIR=per_session_delay2_binarized; }

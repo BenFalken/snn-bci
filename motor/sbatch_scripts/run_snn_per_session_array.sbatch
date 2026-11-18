@@ -20,7 +20,7 @@
 # These are the 'speck' checkpoints of run_inference.sbatch.
 # Re-submitting skips finished sessions and resumes interrupted ones.
 
-source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 
 if [ -z "${EXPERIMENT:-}" ] || [ -z "${SUBJECT:-}" ]; then

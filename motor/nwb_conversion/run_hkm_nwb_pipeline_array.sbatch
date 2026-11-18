@@ -22,7 +22,7 @@
 #   sbatch --array=0-$((N-1)) run_hkm_nwb_pipeline_array.sbatch
 #   sbatch --export=ALL,SUBJECT=nitschke --array=0-$((N_NITSCHKE-1)) run_hkm_nwb_pipeline_array.sbatch
 
-source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 
 deactivate 2>/dev/null || true

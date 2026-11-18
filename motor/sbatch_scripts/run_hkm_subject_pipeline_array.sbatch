@@ -24,7 +24,7 @@
 #   N=$(find $DATA_ROOT/dataset/hkm/jenkins/mua -name '*_binning.h5' | wc -l)
 #   sbatch --export=ALL,SUBJECT=jenkins --array=0-$((N-1)) run_hkm_subject_pipeline_array.sbatch
 
-source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 
 deactivate 2>/dev/null || true

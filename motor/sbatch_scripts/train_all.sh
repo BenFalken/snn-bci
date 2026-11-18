@@ -34,7 +34,7 @@
 # HKM_TIME (Slurm time limit for hkm SNN jobs, default 48:00:00; an hkm epoch
 # takes about an hour per session), DRY_RUN=1.
 
-source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 

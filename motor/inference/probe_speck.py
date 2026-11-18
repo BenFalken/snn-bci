@@ -1,6 +1,6 @@
 """
 Measure how a Speck2f neuron integrates and fires, with a one-neuron network
-on the devkit (run from main/inference, devkit connected).
+on the devkit (run from motor/inference, devkit connected).
 
 Each case sends a pattern of input events (events per timestep) to one IAF
 neuron with threshold 1.0 and a given input weight, under hard reset

@@ -58,7 +58,7 @@
 #   FIGURES=1 bash run_inference.sbatch --submit bmi indy     # also per-session diagnostic figures
 #   FIGURE_DECODERS=snn,speck FIGURES=1 ...   only these decoders in them (and the crosshair GIFs)
 #   DATA_ROOT=~/data VENV=~/speck-env bash run_inference.sbatch --local bmi indy
-#   (--local and --report without DATA_ROOT use the data/ folder next to main/, if there is one)
+#   (--local and --report without DATA_ROOT use the data/ folder next to the code, if there is one)
 #   SPECK_WAIT_TIME=0.005 ...   seconds the chip gets per timestep before its output is read
 #                               (default 0.003 for hkm, test_all_decoders.py's 0.001 for bmi)
 #   SPECK_H1_SCALE=1 ...        hidden layer 1 threshold factor on the chip (default 2 for hkm, 1 for bmi)
@@ -74,7 +74,7 @@
 #   predictions (no evaluation, no chip, any checkpoints):
 #       bash run_inference.sbatch --figures bmi indy FIGURE_DECODERS=snn,speck
 
-source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 
 # Settings this script reads from the environment (see the examples above).
@@ -118,10 +118,9 @@ if [ -z "${RUN:-}" ] && [ -z "${MODE:-}" ] && [ -z "${SLURM_JOB_ID:-}" ]; then
     echo "       (or --submit for Slurm, --report / --figures for the report or figures only)" >&2
     exit 1
 fi
-# Data root: $DATA_ROOT if set; outside Slurm (--local, --report), else the
-# data/ folder next to main/ (repo/main/../data) when it exists; else the
-# cluster scratch directory.
-LOCAL_DATA_ROOT="$(cd "$(dirname "$0")/../.." && pwd)/data"
+# Data root: $DATA_ROOT if set; outside Slurm (--local, --report), else motor_data
+# in paths.yaml when it exists; else the cluster scratch directory.
+LOCAL_DATA_ROOT="$SNNBCI_MOTOR_DATA"
 if [ -z "${DATA_ROOT:-}" ] && [ "${RUN:-}" != "--submit" ] && [ -z "${SLURM_JOB_ID:-}" ] \
         && [ -d "$LOCAL_DATA_ROOT" ]; then
     DATA_ROOT="$LOCAL_DATA_ROOT"

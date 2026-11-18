@@ -16,7 +16,7 @@ mean, with the number of sessions each model wins), loso_comparison.png.
     python snn_training/compare_loso.py --data-root $DATA_ROOT --experiment bmi --subject indy \\
         --out-dir lsnn_vs_snn_loso/indy --device cpu
 """
-import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[3]))
+import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[2]))
 from paths import OSCAR_MOTOR_DATA  # noqa: E402  (the repository's paths.yaml)
 
 import argparse

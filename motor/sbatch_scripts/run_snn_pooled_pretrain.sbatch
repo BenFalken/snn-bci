@@ -33,7 +33,7 @@
 # Re-submitting skips a finished run and resumes an interrupted one (for hkm,
 # where an epoch over a pool takes hours, expect to re-submit).
 
-source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 
 if [ -z "${EXPERIMENT:-}" ] || [ -z "${SUBJECT:-}" ]; then

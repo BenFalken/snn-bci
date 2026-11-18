@@ -44,7 +44,7 @@ Usage:
     python single_subject_pipeline.py --raw_stem indy_20160407_02
     python single_subject_pipeline.py --raw_stem SESSION --nwb_dataset_filepath SESSION_binning.h5
 """
-import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[3]))
+import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[2]))
 from paths import OSCAR_MOTOR_DATA  # noqa: E402  (the repository's paths.yaml)
 
 import json

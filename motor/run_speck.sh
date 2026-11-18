@@ -48,7 +48,7 @@ case "$MODE" in
     chip)   DECODERS=snn,speck ;;
     *) echo "usage: bash run_speck.sh [check|nochip|chip] [subject ...]" >&2; exit 1 ;;
 esac
-cd "$HERE/main/sbatch_scripts"
+cd "$HERE/sbatch_scripts"
 for SUBJ in "${SUBJECTS[@]}"; do
     CKPTS="$SNNBCI_MOTOR_DATA/snn_checkpoints/bmi/$SUBJ/$CKPT_DIR"
     [ -d "$CKPTS" ] || { echo "No checkpoints for $SUBJ under $CKPTS" >&2; exit 1; }

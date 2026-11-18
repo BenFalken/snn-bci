@@ -42,7 +42,7 @@ json.dump({'n': n, 'W': int(np.load(f'{P}/window_features_train.npy', mmap_mode=
 done; done
 
 # ---- motor (II): Jenkins, M1 array, 4 sessions, each with its readout refitted in software
-cp "$DL/speck_per_session/main/snn_training/velocity_scalers.json" "$T/models/"
+cp "$REPO/motor/snn_training/velocity_scalers.json" "$T/models/"
 for s in 20090912 20090916 20090918 20090923; do
   S=sub-Jenkins_ses-${s}_behavior+ecephys
   mkdir -p "$T/models/jenkins_m1/$S" "$T/data/hkm/jenkins_m1/$S"

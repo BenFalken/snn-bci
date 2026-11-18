@@ -17,7 +17,7 @@ for d in "$C/lsnn_loso_finetuned_binarized" "$C/per_session_delay_binarized" "$S
     [ -d "$d" ] || { echo "Missing $d: run SUBJ=jenkins_m1 bash fetch_jenkins.sh first" >&2; exit 1; }
 done
 bash "$HERE/run_speck.sh" check
-cd "$HERE/main/sbatch_scripts"
+cd "$HERE/sbatch_scripts"
 for SESS in "${SESSIONS[@]}"; do
     F=$(awk -v s="$SESS" '$1 == "jenkins_m1" && $2 ~ s {print $3}' "$HERE/speck_l1_factors.txt")
     [ -n "$F" ] || { echo "no jenkins_m1 factor for $SESS in speck_l1_factors.txt" >&2; exit 1; }

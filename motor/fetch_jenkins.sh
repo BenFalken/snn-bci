@@ -17,7 +17,7 @@
 #   3. snn_checkpoints/hkm/jenkins/{lsnn_loso_finetuned_binarized,per_session_delay_binarized}/<session>/
 #                                                         best_model_weights.pth and summary_*.txt only
 #   4. results/model_cache/hkm/jenkins/**                the conventional decoders, minus the *min duration models
-#   5. main/snn_training/velocity_scalers.json           Oscar's copy (this bundle's has bmi only; hkm's is needed)
+#   5. snn_training/velocity_scalers.json           Oscar's copy (this bundle's has bmi only; hkm's is needed)
 #
 # Then:  bash run_final.sh jenkins      (devkit plugged in; Speck at layer 1 threshold x2, 3 ms per step)
 
@@ -80,8 +80,8 @@ FILTERS+=(
 rsync "${RSYNC_OPTS[@]}" "${FILTERS[@]}" "$REMOTE:$REMOTE_ROOT/" "$LOCAL_ROOT/"
 
 echo "== 3/3  Oscar's velocity scalers (with hkm)"
-cp "$HERE/main/snn_training/velocity_scalers.json" "$HERE/main/snn_training/velocity_scalers.json.bmi_only" 2>/dev/null || true
-rsync "${RSYNC_OPTS[@]}" "$REMOTE:$REMOTE_CODE/snn_training/velocity_scalers.json" "$HERE/main/snn_training/"
+cp "$HERE/snn_training/velocity_scalers.json" "$HERE/snn_training/velocity_scalers.json.bmi_only" 2>/dev/null || true
+rsync "${RSYNC_OPTS[@]}" "$REMOTE:$REMOTE_CODE/snn_training/velocity_scalers.json" "$HERE/snn_training/"
 
 echo "== 4/4  the first ${TRAIN_TRIALS:-20} training trials per session (for the label-free layer-1 factor; never test data)"
 for d in "$LOCAL_ROOT"/snn_datasets/hkm/$SUBJ/mua/*/; do
@@ -102,7 +102,7 @@ if [[ "${DRY_RUN:-0}" != "1" ]]; then
         train=$(ls "$LOCAL_ROOT/snn_datasets/hkm/$SUBJ/mua/$s/train" 2>/dev/null | wc -l | tr -d ' ')
         echo "  $s: LSNN $lsnn | Speck $speck | SNN test files $test | train trials $train | test split $h5"
     done
-    python3 -c "import json; print('velocity scalers:', list(json.load(open('$HERE/main/snn_training/velocity_scalers.json'))))"
+    python3 -c "import json; print('velocity scalers:', list(json.load(open('$HERE/snn_training/velocity_scalers.json'))))"
     echo
     echo "Next: bash run_final.sh $SUBJ"
 fi
