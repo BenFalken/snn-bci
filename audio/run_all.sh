@@ -13,6 +13,7 @@
 # raw_base_dir are discovered automatically (one subfolder per date,
 # containing .ns5 files).
 
+source "$(cd "$(dirname "$0")" && pwd)/../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -uo pipefail  # NOT -e: one date's failure shouldn't kill the whole batch
 
 # ---------------------------------------------------------------------------
@@ -22,14 +23,14 @@ set -uo pipefail  # NOT -e: one date's failure shouldn't kill the whole batch
 # (e.g. raw_base_dir/07_19_11/*.ns5).
 # ---------------------------------------------------------------------------
 RUNS=(
-    "Neil|aSTG|/Users/benjaminfalkenburg/Dropbox/SNN_Main/data/Auditory_cortex/Neil/Complex/aSTG"
+    "Neil|aSTG|$SNNBCI_RAW_AUDITORY/Neil/Complex/aSTG"
     # "OtherSubject|PSTG|/path/to/other/subject/pstg/data"
 )
 
 # ---------------------------------------------------------------------------
 # Defaults — override with flags below
 # ---------------------------------------------------------------------------
-DATA_ROOT="pipeline_data"
+DATA_ROOT="$SNNBCI_AUDITORY_DATA"
 DECODERS="wiener_filter,wiener_cascade,kalman_filter,dense_nn,simple_rnn,gru_rnn,lstm_rnn,lsnn"
 EPOCHS=100
 UNITS=1024

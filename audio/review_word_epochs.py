@@ -29,7 +29,7 @@ from pathlib import Path
 import numpy as np
 from scipy.io import wavfile
 
-from pipeline_paths import PipelinePaths
+from pipeline_paths import PipelinePaths, DEFAULT_DATA_ROOT
 from build_word_dataset import TWENTY_WORD_VOCABULARY, FIVE_WORD_SUBSET
 
 SAMPLING_RATE = 30000.0
@@ -101,7 +101,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--subject", required=True)
     parser.add_argument("--region", required=True)
-    parser.add_argument("--data-root", default="pipeline_data")
+    parser.add_argument("--data-root", default=DEFAULT_DATA_ROOT)
     parser.add_argument("--log-csv", required=True)
     parser.add_argument("--review-mode", choices=["all", "rejected_only"], default="all")
     parser.add_argument("--pad-s", type=float, default=0.3)

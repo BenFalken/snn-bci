@@ -37,7 +37,7 @@ import argparse
 
 import numpy as np
 
-from pipeline_paths import PipelinePaths, discover_all_runs
+from pipeline_paths import PipelinePaths, discover_all_runs, DEFAULT_DATA_ROOT
 
 TRAIN_DECIMAL = 0.80
 VALID_DECIMAL = 0.10
@@ -82,7 +82,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--subject", required=True)
     parser.add_argument("--region", required=True)
-    parser.add_argument("--data-root", default="pipeline_data")
+    parser.add_argument("--data-root", default=DEFAULT_DATA_ROOT)
     parser.add_argument("--mode", choices=["naive", "per_day_normalized"], required=True)
     parser.add_argument(
         "--clip-std", type=float, default=None,

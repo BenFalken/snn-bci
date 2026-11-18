@@ -45,7 +45,7 @@ from pathlib import Path
 import numpy as np
 from scipy.io import wavfile
 
-from pipeline_paths import PipelinePaths
+from pipeline_paths import PipelinePaths, DEFAULT_DATA_ROOT
 from prepare_auditory_data import load_session, extract_speech_epochs, BIN_MS
 
 VOCABULARY = ["tree", "good", "north", "cricket", "program"]
@@ -90,7 +90,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--subject", required=True)
     parser.add_argument("--region", required=True)
-    parser.add_argument("--data-root", default="pipeline_data")
+    parser.add_argument("--data-root", default=DEFAULT_DATA_ROOT)
     parser.add_argument("--raw-base-dir", required=True,
                          help="Same directory passed to prepare_auditory_data.py -- "
                               "needed to re-read each session's ainp8 channel.")

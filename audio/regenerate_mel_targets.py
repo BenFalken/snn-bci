@@ -40,13 +40,14 @@ import numpy as np
 from neo.io import BlackrockIO
 from scipy.io import wavfile
 from scipy.signal import ellip, filtfilt
+from pipeline_paths import RAW_AUDITORY  # noqa: E402  (paths.yaml)
 
 # ---------------------------------------------------------------------------
 # CONFIG — tune these. Defaults are placeholders, not the paper's optimum.
 # ---------------------------------------------------------------------------
 
 # Where your raw .ns5 files live, and where outputs go.
-BASE_DIR = Path("/Users/benjaminfalkenburg/Dropbox/SNN_Main/data/Auditory_cortex/Neil/Complex/aSTG")
+BASE_DIR = RAW_AUDITORY / "Neil/Complex/aSTG"
 OUT_DIR = Path("datasets_v2")
 
 # Neural preprocessing (paper grid-searched these — see Table 1 / Fig 4)

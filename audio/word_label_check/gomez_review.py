@@ -26,11 +26,13 @@ import sys
 import tempfile
 import wave
 from pathlib import Path
+import sys as _s; _s.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from paths import AUDITORY_REPO, AUDITORY_DATA  # noqa: E402  (the repository's paths.yaml)
 
 import numpy as np
 
-REPO = Path.home() / "Documents/GitHub/AuditoryDecoding"
-B = REPO / "pipeline_data/Gomez/aSTG"
+REPO = AUDITORY_REPO
+B = AUDITORY_DATA / "Gomez/aSTG"
 SRC = B / "word_transcription_log.csv"
 OUT = B / "word_human_verified_log.csv"
 VOCAB = ['error', 'good', 'macaque', 'zoo', 'program', 'tree', 'reflection', 'victory', 'two', 'apple', 'north',

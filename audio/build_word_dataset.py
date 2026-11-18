@@ -29,7 +29,7 @@ from pathlib import Path
 import numpy as np
 from scipy.io import wavfile
 
-from pipeline_paths import PipelinePaths
+from pipeline_paths import PipelinePaths, DEFAULT_DATA_ROOT
 from prepare_auditory_data import load_session, extract_speech_epochs, BIN_MS
 
 TWENTY_WORD_VOCABULARY = [
@@ -74,7 +74,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--subject", required=True)
     parser.add_argument("--region", required=True)
-    parser.add_argument("--data-root", default="pipeline_data")
+    parser.add_argument("--data-root", default=DEFAULT_DATA_ROOT)
     parser.add_argument("--raw-base-dir", required=True)
     parser.add_argument("--dates", required=True)
     parser.add_argument("--whisper-model", default="base.en")

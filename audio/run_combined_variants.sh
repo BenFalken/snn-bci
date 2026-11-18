@@ -23,11 +23,12 @@
 #     bash run_combined_variants.sh
 #     bash run_combined_variants.sh --force
 
+source "$(cd "$(dirname "$0")" && pwd)/../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -uo pipefail
 
 SUBJECT="Neil"
 REGION="aSTG"
-DATA_ROOT="pipeline_data"
+DATA_ROOT="$SNNBCI_AUDITORY_DATA"
 DECODERS="wiener_filter,wiener_cascade,kalman_filter,dense_nn,simple_rnn,gru_rnn,lstm_rnn,lsnn"
 EPOCHS=100
 UNITS=1024

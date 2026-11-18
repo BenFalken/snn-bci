@@ -35,7 +35,7 @@ from collections import defaultdict
 import numpy as np
 
 from build_word_dataset import TWENTY_WORD_VOCABULARY
-from pipeline_paths import PipelinePaths
+from pipeline_paths import PipelinePaths, DEFAULT_DATA_ROOT
 from prepare_auditory_data import BIN_MS
 
 SAMPLING_RATE = 30000.0
@@ -145,7 +145,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--subject", required=True)
     ap.add_argument("--region", required=True)
-    ap.add_argument("--data-root", default="pipeline_data")
+    ap.add_argument("--data-root", default=DEFAULT_DATA_ROOT)
     ap.add_argument("--pad-s", type=float, default=0.3)
     ap.add_argument("--clip-std", type=float, default=5.0)
     ap.add_argument("--seed", type=int, default=1337)

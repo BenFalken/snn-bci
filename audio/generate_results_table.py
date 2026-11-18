@@ -16,6 +16,7 @@ Usage:
 
 import argparse
 import pandas as pd
+from pipeline_paths import DEFAULT_DATA_ROOT  # noqa: E402  (paths.yaml)
 
 DECODER_DISPLAY_NAMES = {
     "kalman_filter": "Kalman Filter",
@@ -31,7 +32,7 @@ DECODER_DISPLAY_NAMES = {
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--csv", default="pipeline_data/aggregate/analysis/all_dates_all_decoders_metrics.csv")
+    parser.add_argument("--csv", default=DEFAULT_DATA_ROOT + "/aggregate/analysis/all_dates_all_decoders_metrics.csv")
     parser.add_argument("--out", default="figures/results_table.tex")
     args = parser.parse_args()
 

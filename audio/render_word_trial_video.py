@@ -44,7 +44,7 @@ import numpy as np
 from matplotlib.animation import FFMpegWriter, FuncAnimation
 from scipy.io import wavfile
 
-from pipeline_paths import PipelinePaths
+from pipeline_paths import PipelinePaths, DEFAULT_DATA_ROOT
 from prepare_auditory_data import BIN_MS
 
 SAMPLING_RATE = 30000.0
@@ -173,7 +173,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--subject", required=True)
     parser.add_argument("--region", required=True)
-    parser.add_argument("--data-root", default="pipeline_data")
+    parser.add_argument("--data-root", default=DEFAULT_DATA_ROOT)
     parser.add_argument("--raw-base-dir", required=True,
                          help="Same directory used by prepare_auditory_data.py -- needed to "
                               "reconstruct each session's bin offset within its day's arrays.")

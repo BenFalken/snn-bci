@@ -35,7 +35,18 @@ to the same folders no matter which script touches it.
 """
 
 import argparse
+import sys
 from pathlib import Path
+
+# The data root: auditory_data in the repository's paths.yaml; ./pipeline_data where paths.py is absent (e.g. inside
+# a decoder's Docker container, which only ever receives absolute paths).
+try:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from paths import AUDITORY_DATA, RAW_AUDITORY, AUDITORY_REPO  # noqa: E402
+    DEFAULT_DATA_ROOT = str(AUDITORY_DATA)
+except Exception:
+    AUDITORY_DATA = RAW_AUDITORY = AUDITORY_REPO = None
+    DEFAULT_DATA_ROOT = "pipeline_data"
 
 
 def add_identity_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -57,9 +68,9 @@ def add_identity_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParse
              "sessions are concatenated within a date, never across dates.",
     )
     parser.add_argument(
-        "--data-root", default="pipeline_data",
+        "--data-root", default=DEFAULT_DATA_ROOT,
         help="Root directory under which all subject/region/date output "
-             "folders are created. Default: ./pipeline_data",
+             "folders are created. Default: auditory_data in paths.yaml",
     )
     return parser
 

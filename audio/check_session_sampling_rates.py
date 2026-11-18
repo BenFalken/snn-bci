@@ -12,8 +12,9 @@ Usage:
 from pathlib import Path
 
 from neo.io import BlackrockIO
+from pipeline_paths import RAW_AUDITORY  # noqa: E402  (paths.yaml)
 
-BASE_DIR = Path("/Users/benjaminfalkenburg/Dropbox/SNN_Main/data/Auditory_cortex/Neil/Complex/aSTG")
+BASE_DIR = RAW_AUDITORY / "Neil/Complex/aSTG"
 
 skips = {".DS_Store", "desktop.ini"}
 days = sorted(d for d in BASE_DIR.iterdir() if d.name not in skips)

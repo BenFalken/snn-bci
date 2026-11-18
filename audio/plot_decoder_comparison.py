@@ -26,6 +26,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from pipeline_paths import DEFAULT_DATA_ROOT  # noqa: E402  (paths.yaml)
 
 DECODERS = [("kalman_filter", "Kalman\nfilter"), ("wiener_filter", "Wiener\nfilter"),
             ("wiener_cascade", "Wiener\ncascade"), ("dense_nn", "Dense\nNN"), ("simple_rnn", "Simple\nRNN"),
@@ -53,11 +54,11 @@ def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--subject", default="Neil")
     p.add_argument("--region", default="aSTG")
-    p.add_argument("--data-root", default="pipeline_data")
+    p.add_argument("--data-root", default=DEFAULT_DATA_ROOT)
     p.add_argument("--pretrained-dir", default=None,
                    help="directory with out/<decoder>_<split>.npy predictions of the all-words-pretrained decoders "
                         "on the five-word verified dataset")
-    p.add_argument("--output", default="pipeline_data/aggregate/analysis/decoder_comparison_all.png")
+    p.add_argument("--output", default=DEFAULT_DATA_ROOT + "/aggregate/analysis/decoder_comparison_all.png")
     a = p.parse_args()
     base = Path(a.data_root) / a.subject / a.region
 

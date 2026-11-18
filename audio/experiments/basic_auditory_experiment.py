@@ -5,14 +5,16 @@ This experiment builds multiple decoding models and generates
 WAV files of the resulting audio reconstructions for the validation set.
 """
 
+import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[2]))
+from paths import WORKSPACE  # noqa: E402  (the repository's paths.yaml)
 import copy
 import pandas as pd
 
 from dockex.core.experiment.ExperimentManager import ExperimentManager
 
 
-FEATURES_PATHNAME = "/Users/benjaminfalkenburg/Downloads/Auditory_SNN/spikes.npy"  # insert path to spike count features numpy file here
-TARGETS_PATHNAME = "/Users/benjaminfalkenburg/Downloads/Auditory_SNN/ainp7.npy"  # insert path to audio mel-spectrogram targets numpy file here
+FEATURES_PATHNAME = str(WORKSPACE / "Auditory_SNN/spikes.npy")  # insert path to spike count features numpy file here
+TARGETS_PATHNAME = str(WORKSPACE / "Auditory_SNN/ainp7.npy")  # insert path to audio mel-spectrogram targets numpy file here
 
 TRAIN_DECIMAL = 0.80
 VALID_DECIMAL = 0.10

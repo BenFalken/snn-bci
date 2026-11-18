@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from pipeline_paths import discover_all_runs
+from pipeline_paths import discover_all_runs, DEFAULT_DATA_ROOT
 
 DECODER_ORDER = [
     "wiener_filter", "wiener_cascade", "kalman_filter",
@@ -29,7 +29,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--subject", required=True)
     parser.add_argument("--region", required=True)
-    parser.add_argument("--data-root", default="pipeline_data")
+    parser.add_argument("--data-root", default=DEFAULT_DATA_ROOT)
     args = parser.parse_args()
 
     all_runs = discover_all_runs(args.data_root, include_combined=True)

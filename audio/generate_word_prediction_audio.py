@@ -35,7 +35,7 @@ from pathlib import Path
 import numpy as np
 from scipy.io import wavfile
 
-from pipeline_paths import PipelinePaths
+from pipeline_paths import PipelinePaths, DEFAULT_DATA_ROOT
 from prepare_auditory_data import BIN_MS
 from build_word_dataset import FIVE_WORD_SUBSET
 
@@ -206,7 +206,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--subject", required=True)
     parser.add_argument("--region", required=True)
-    parser.add_argument("--data-root", default="pipeline_data")
+    parser.add_argument("--data-root", default=DEFAULT_DATA_ROOT)
     parser.add_argument("--log-csv", required=True)
     parser.add_argument("--dataset-date", required=True,
                          help="The combined dataset's pseudo-date, e.g. FIVEWORD_VERIFIED_...")

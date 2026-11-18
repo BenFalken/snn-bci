@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from pipeline_paths import PipelinePaths, discover_all_runs
+from pipeline_paths import PipelinePaths, discover_all_runs, DEFAULT_DATA_ROOT
 
 DECODER_SPLIT_TAG = {
     "wiener_filter": "flat_window", "wiener_cascade": "flat_window", "dense_nn": "flat_window",
@@ -347,7 +347,7 @@ def run_aggregate_mode(data_root, subject_filter, region_filter):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mode", choices=["single", "aggregate"], default="single")
-    parser.add_argument("--data-root", default="pipeline_data")
+    parser.add_argument("--data-root", default=DEFAULT_DATA_ROOT)
     parser.add_argument("--subject", default=None, help="Required for --mode single; optional filter for --mode aggregate")
     parser.add_argument("--region", default=None, help="Required for --mode single; optional filter for --mode aggregate")
     parser.add_argument("--date", default=None, help="Required for --mode single")

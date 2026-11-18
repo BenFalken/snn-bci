@@ -33,7 +33,7 @@ import numpy as np
 from matplotlib.animation import FFMpegWriter, FuncAnimation
 from scipy.io import wavfile
 
-from pipeline_paths import PipelinePaths
+from pipeline_paths import PipelinePaths, DEFAULT_DATA_ROOT
 from generate_word_prediction_audio import (
     load_relevant_rows, compute_all_epoch_global_ranges, find_validation_epoch,
     reconstruct_audio, DECODER_SPLIT_TAG, SAMPLING_RATE,
@@ -99,7 +99,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--subject", required=True)
     parser.add_argument("--region", required=True)
-    parser.add_argument("--data-root", default="pipeline_data")
+    parser.add_argument("--data-root", default=DEFAULT_DATA_ROOT)
     parser.add_argument("--log-csv", required=True)
     parser.add_argument("--dataset-date", required=True)
     parser.add_argument("--decoder", default="lstm_rnn")

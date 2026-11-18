@@ -28,7 +28,7 @@ import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 
-from pipeline_paths import discover_all_runs
+from pipeline_paths import discover_all_runs, DEFAULT_DATA_ROOT
 
 PANEL_LABELS = "ABCD"
 
@@ -177,7 +177,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--subject", required=True)
     parser.add_argument("--region", required=True)
-    parser.add_argument("--data-root", default="pipeline_data")
+    parser.add_argument("--data-root", default=DEFAULT_DATA_ROOT)
     args = parser.parse_args()
 
     days = load_days(args.subject, args.region, args.data_root)
