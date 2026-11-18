@@ -8,6 +8,7 @@
 #     bash build_all_images.sh
 
 set -e
+cd "$(dirname "$0")"   # the Dockerfiles copy modules/ and base_dockex/ relative to this folder
 
 echo "======================================================"
 echo "librosa_mel_transformer (mikko_test)"

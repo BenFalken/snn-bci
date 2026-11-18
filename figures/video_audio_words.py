@@ -28,7 +28,7 @@ from pathlib import Path
 import numpy as np
 
 import collect_fidelity as cf
-import video_audio as va                              # changes directory to the AuditoryDecoding repo
+import video_audio as va                              # the repository's audio pipeline (changes directory to the data root)
 from video_audio import g, PipelinePaths, START, HERE, style
 
 DATASET = "ALLWORDS_VERIFIED_DAYNORM"
@@ -96,7 +96,7 @@ def main():
     style.LABEL["speck"] = "Speck"
     style.LABEL["gru"] = "GRU"
     style.LABEL["lsnn"] = "LSNN"
-    paths = PipelinePaths("pipeline_data", a.subject, "aSTG", a.dataset)
+    paths = PipelinePaths(str(va.AUDITORY_DATA), a.subject, "aSTG", a.dataset)
     lanes = ([("gru", "gru_rnn"), ("lstm", "lstm_rnn")] if a.within else [(ANN[a.ann], a.ann)]) + \
         [("lsnn", "lsnn"), ("speck", "speck_snn")]
     targets = np.load(paths.pipeline / "window_targets_test.npy")

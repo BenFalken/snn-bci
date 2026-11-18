@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 
 import collect_fidelity as cf
-import video_audio as va                              # changes directory to the AuditoryDecoding repo
+import video_audio as va                              # the repository's audio pipeline (changes directory to the data root)
 import video_audio_words as vw
 from video_audio import g, PipelinePaths, START, style
 
@@ -29,7 +29,7 @@ SEED = "s11"
 
 
 def cohort(subject):
-    paths = PipelinePaths("pipeline_data", subject, "aSTG", DATASET)
+    paths = PipelinePaths(str(va.AUDITORY_DATA), subject, "aSTG", DATASET)
     y = np.load(paths.pipeline / "window_targets_test.npy")
     preds = {n: np.load(paths.pipeline / f"{dec}_predict_test.npy") for n, dec in LANES if dec}
     preds["speck"] = np.load(WORKSPACE / f"results_audio_novel/preds_{subject}_{SEED}/"

@@ -36,7 +36,6 @@ _CFG = {k: Path(os.path.expanduser(v)) for k, v in _RAW.items()}
 
 
 WORKSPACE = _CFG["workspace"]
-AUDITORY_REPO = _CFG["auditory_repo"]
 AUDITORY_DATA = _CFG["auditory_data"]
 SNN_RUNS = _CFG["snn_runs"]
 RAW_AUDITORY = _CFG["raw_auditory"]
@@ -56,11 +55,12 @@ SPEECH_SNN = ROOT / "speech"                # the speech SNN package (snnDecoder
 MOTOR = ROOT / "motor"
 AUDIO = ROOT / "audio"
 FIGURES = ROOT / "figures"
+MIKKO = ROOT / "external" / "mikko"         # Brown's mikko toolkit: the audio reference decoders (Docker), incl. our LSNN module
 
-ALL = dict(ROOT=ROOT, WORKSPACE=WORKSPACE, AUDITORY_REPO=AUDITORY_REPO, AUDITORY_DATA=AUDITORY_DATA, SNN_RUNS=SNN_RUNS,
+ALL = dict(ROOT=ROOT, WORKSPACE=WORKSPACE, AUDITORY_DATA=AUDITORY_DATA, SNN_RUNS=SNN_RUNS,
            RAW_AUDITORY=RAW_AUDITORY, MOTOR_DATA=MOTOR_DATA, MOTOR_RESULTS=MOTOR_RESULTS,
            MOTOR_LSNN_DATA=MOTOR_LSNN_DATA, OSCAR_MOTOR_DATA=OSCAR_MOTOR_DATA, OSCAR_HOME=OSCAR_HOME, OSCAR_SCRATCH=OSCAR_SCRATCH, TTS_ENV=TTS_ENV,
-           TTS_VOICES=TTS_VOICES, SNNDEC=SNNDEC, CHIP=CHIP,
+           TTS_VOICES=TTS_VOICES, SNNDEC=SNNDEC, CHIP=CHIP, MIKKO=MIKKO,
            SPEECH_SNN=SPEECH_SNN, MOTOR=MOTOR, AUDIO=AUDIO, FIGURES=FIGURES)
 
 if __name__ == "__main__":

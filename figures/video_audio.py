@@ -12,7 +12,7 @@ keeps its final value. The playing lane is outlined in its color.
 Needs Docker running (the pipeline's sklearn_preprocess_test and mikko_test images) and ffmpeg.
 """
 
-from repo_paths import AUDITORY_REPO  # noqa: E402  (the repository's paths.yaml)
+from repo_paths import AUDIO, AUDITORY_DATA  # noqa: E402  (the repository's paths.yaml)
 import argparse
 import subprocess
 import sys
@@ -28,11 +28,11 @@ from scipy.io import wavfile
 import style
 
 HERE = Path(__file__).parent
-REPO = AUDITORY_REPO
+REPO = AUDIO                                       # the repository's audio pipeline code
 sys.path.insert(0, str(REPO))
 import os
 START = Path.cwd()                                    # output paths are relative to where the script was started
-os.chdir(REPO)
+os.chdir(AUDITORY_DATA.parent)                     # relative pipeline_data/ paths inside the pipeline resolve
 import generate_word_prediction_audio as g          # noqa: E402  (the pipeline's own word mapping and audio inversion)
 from pipeline_paths import PipelinePaths              # noqa: E402
 
@@ -175,9 +175,9 @@ def main():
     a = pa.parse_args()
     a.output = str(Path(a.output) if Path(a.output).is_absolute() else START / a.output)
     style.apply()
-    paths = PipelinePaths("pipeline_data", "Neil", "aSTG", DATASET)
-    args = types.SimpleNamespace(data_root="pipeline_data", subject="Neil", region="aSTG", pad_s=0.3)
-    rows = g.load_relevant_rows("pipeline_data/Neil/aSTG/word_human_verified_log.csv", DATASET)
+    paths = PipelinePaths(str(AUDITORY_DATA), "Neil", "aSTG", DATASET)
+    args = types.SimpleNamespace(data_root=str(AUDITORY_DATA), subject="Neil", region="aSTG", pad_s=0.3)
+    rows = g.load_relevant_rows(str(AUDITORY_DATA / "Neil/aSTG/word_human_verified_log.csv"), DATASET)
     ranges, total = g.compute_all_epoch_global_ranges(rows, args)
     preds = {n: np.load(paths.pipeline / f"{dec}_predict_valid.npy") for n, dec in LANES}
     targets = np.load(paths.pipeline / "window_targets_valid.npy")

@@ -4,17 +4,16 @@
 #   (2) the Speck SNN P5, 3 seeds per monkey (snn-decoders), each starting once its monkey's windows exist
 #   bash audio/speck/run_novel.sh > $SNNBCI_SNN_RUNS/audio_novel.log 2>&1      (from the snn-decoders root)
 source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
-AD=$SNNBCI_AUDITORY_REPO
 SD=$(cd "$(dirname "$0")/../.." && pwd)
 mkdir -p "$SNNBCI_SNN_RUNS"
-( cd "$AD" && for m in Neil Gomez; do
+( cd "$SD/audio" && for m in Neil Gomez; do
     echo "[docker start] $m $(date +%H:%M)"
     python3 run_auditory_experiment.py --subject $m --region aSTG --date ALLWORDS_NOVEL_DAYNORM --all-decoders \
-        > pipeline_data/$m/aSTG/ALLWORDS_NOVEL_DAYNORM/run_all.log 2>&1
+        > "$SNNBCI_AUDITORY_DATA/$m/aSTG/ALLWORDS_NOVEL_DAYNORM/run_all.log" 2>&1
     echo "[docker done] $m $(date +%H:%M) exit $?"
   done ) &
 for m in Neil Gomez; do
-  P=$AD/pipeline_data/$m/aSTG/ALLWORDS_NOVEL_DAYNORM/pipeline
+  P=$SNNBCI_AUDITORY_DATA/$m/aSTG/ALLWORDS_NOVEL_DAYNORM/pipeline
   until [ -f $P/window_targets_test.npy ] && [ -f $P/window_features_train.npy ]; do sleep 60; done
   sleep 120     # let the split finish writing
   echo "[speck start] $m $(date +%H:%M)"

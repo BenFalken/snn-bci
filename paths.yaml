@@ -5,8 +5,7 @@
 # data, checkpoints and results (final_v2, final_results, speck_r19, speck_r20, speech_rebuild, speck_per_session, ...)
 workspace: ~/Downloads
 
-# the AuditoryDecoding checkout with its derived cohorts (pipeline_data); its Docker reference decoders run from here
-auditory_repo: ~/Documents/GitHub/AuditoryDecoding
+# the audio cohorts (audio/prepare_auditory_data.py and build_word_dataset_daynorm.py write them here)
 auditory_data: ~/Documents/GitHub/AuditoryDecoding/pipeline_data
 
 # trained networks of the shared library (the audio Speck SNNs)

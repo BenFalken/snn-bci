@@ -25,7 +25,7 @@ One efficiency table for the three experiments: data/efficiency.csv, one row per
              CPU thread
 """
 
-from repo_paths import WORKSPACE, AUDITORY_REPO, ROOT, CHIP, SNN_RUNS  # noqa: E402  (the repository's paths.yaml)
+from repo_paths import WORKSPACE, AUDIO, AUDITORY_DATA, MIKKO, ROOT, CHIP, SNN_RUNS  # noqa: E402  (the repository's paths.yaml)
 import json
 import sys
 import time
@@ -37,7 +37,7 @@ import torch
 
 HERE = Path(__file__).parent
 MOTOR = WORKSPACE / "results/final/indy"
-AUDIO_REPO = AUDITORY_REPO
+AUDIO_REPO = AUDIO
 SNNDEC = ROOT
 AUDIO_DAYS = ["07_19_11", "07_20_10", "07_31_13", "08_03_10", "08_06_13"]
 SPEECH = WORKSPACE / "speechBCI-main/figures/inference_final/efficiency_final.json"
@@ -101,11 +101,11 @@ def audio_rows():
     rows.append(dict(decoder="dense_nn", macs=macs, accs=0, latency_ms=lat))
     # LSNN: the pipeline's model on each day's test windows; dense first layer as multiply-adds, every spike-driven
     # synapse (between layers, recurrent, readout) as an add, neuron updates (filter, adaptation, readout leak) as MACs
-    sys.path.insert(0, str(AUDIO_REPO)); sys.path.insert(0, str(AUDIO_REPO / "modules/decoders/torch/lsnn"))
+    sys.path.insert(0, str(AUDIO_REPO)); sys.path.insert(0, str(MIKKO)); sys.path.insert(0, str(MIKKO / "modules/decoders/torch/lsnn"))
     import lsnn as L
     per_day = []
     for day in AUDIO_DAYS:
-        P_ = AUDIO_REPO / f"pipeline_data/Neil/aSTG/{day}/pipeline"
+        P_ = AUDITORY_DATA / f"Neil/aSTG/{day}/pipeline"
         ck = torch.load(P_ / "lsnn_model.pt", map_location="cpu", weights_only=False)
         net = L.LSNNNet(ck["n_inputs"], ck["n_outputs"], **ck["net_kwargs"]); net.load_state_dict(ck["state_dict"]); net.eval()
         X = torch.as_tensor(np.load(P_ / "window_features_test.npy")[:600], dtype=torch.float32)
@@ -150,7 +150,7 @@ def audio_speck_row():
     for day in AUDIO_DAYS:
         model, info = load(SNN_RUNS / f"speck_audio_binB/{day}_r13_binB_s1337/model.pt")
         model.eval()
-        rec, _, n = data.audio_recording(str(AUDIO_REPO / f"pipeline_data/Neil/aSTG/{day}/pipeline"))
+        rec, _, n = data.audio_recording(str(AUDITORY_DATA / f"Neil/aSTG/{day}/pipeline"))
         rec = rec[-n["test"]:]                                             # the recording as scored, test part
         if info.get("channels") is not None:
             rec = rec[:, list(info["channels"])]

@@ -25,11 +25,11 @@ import tempfile
 import wave
 from pathlib import Path
 import sys as _s; _s.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from paths import AUDITORY_REPO, AUDITORY_DATA  # noqa: E402  (the repository's paths.yaml)
+from paths import AUDIO, AUDITORY_DATA  # noqa: E402  (the repository's paths.yaml)
 
 import numpy as np
 
-REPO = AUDITORY_REPO
+REPO = AUDIO                     # the cohort builder runs from the repository's audio code
 B = AUDITORY_DATA / "Neil/aSTG"
 LOG = B / "word_human_verified_log.csv"
 VOCAB = ['error', 'good', 'macaque', 'zoo', 'program', 'tree', 'reflection', 'victory', 'two', 'apple', 'north',
@@ -117,7 +117,7 @@ def main():
     print("rebuilding ALLWORDS_NOVEL_DAYNORM ...")
     subprocess.run([sys.executable, "build_word_dataset_daynorm.py", "--subject", "Neil", "--region", "aSTG",
                     "--include-novel", "--keep-split-from",
-                    "pipeline_data/Neil/aSTG/ALLWORDS_VERIFIED_DAYNORM/prep/epochs.csv",
+                    str(AUDITORY_DATA / "Neil/aSTG/ALLWORDS_VERIFIED_DAYNORM/prep/epochs.csv"),
                     "--name", "ALLWORDS_NOVEL_DAYNORM"], cwd=REPO, check=True)
     with open(Path(__file__).with_name("review_result.txt"), "w") as f:
         f.write(f"{datetime.datetime.now():%Y-%m-%d %H:%M} reviewed {len(todo)} epochs, changed {len(changes)}\n")

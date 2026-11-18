@@ -19,6 +19,7 @@ Usage:
         --log-csv "pipeline_data/Neil/aSTG/word_transcription_log.csv"
 """
 
+import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[1]))  # audio/
 import argparse
 import csv
 import re

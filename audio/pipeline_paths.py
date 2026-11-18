@@ -42,10 +42,10 @@ from pathlib import Path
 # a decoder's Docker container, which only ever receives absolute paths).
 try:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from paths import AUDITORY_DATA, RAW_AUDITORY, AUDITORY_REPO  # noqa: E402
+    from paths import AUDITORY_DATA, RAW_AUDITORY  # noqa: E402
     DEFAULT_DATA_ROOT = str(AUDITORY_DATA)
 except Exception:
-    AUDITORY_DATA = RAW_AUDITORY = AUDITORY_REPO = None
+    AUDITORY_DATA = RAW_AUDITORY = None
     DEFAULT_DATA_ROOT = "pipeline_data"
 
 

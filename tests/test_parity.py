@@ -13,7 +13,7 @@ import sys
 import tempfile
 import warnings
 import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[1]))
-from paths import WORKSPACE, AUDITORY_REPO, SPEECH_SNN, SNN_RUNS  # noqa: E402  (the repository's paths.yaml)
+from paths import WORKSPACE, AUDIO as AUDIO_CODE, AUDITORY_DATA, MIKKO, SPEECH_SNN, SNN_RUNS  # noqa: E402  (the repository's paths.yaml)
 
 import numpy as np
 import torch
@@ -26,8 +26,8 @@ from snndec import convert  # noqa: E402
 HOME = os.path.expanduser('~')
 MOTOR = f'{WORKSPACE}/spike_bmi_lsnn/main'
 MOTOR_CK = f'{WORKSPACE}/spike_bmi_lsnn_data/lsnn_vs_snn/indy_20160411_01'
-AUDIO = str(AUDITORY_REPO)
-AUDIO_LSNN_CK = f'{AUDIO}/pipeline_data/Neil/aSTG/07_31_13/pipeline/lsnn_model.pt'
+AUDIO = str(AUDIO_CODE)
+AUDIO_LSNN_CK = f'{AUDITORY_DATA}/Neil/aSTG/07_31_13/pipeline/lsnn_model.pt'
 AUDIO_SPECK_CK = str(SNN_RUNS / 'speck_audio_binB/07_31_13_r13_binB_s1337/model.pt')  # random weights if absent
 SPEECH = str(SPEECH_SNN)
 results = []
@@ -86,7 +86,7 @@ def motor():
 def audio():
     if not os.path.isdir(AUDIO):
         return print('skip  audio (no AuditoryDecoding checkout)')
-    sys.path[:0] = [AUDIO, f'{AUDIO}/modules/decoders/torch/lsnn', f'{AUDIO}/modules/decoders/torch/speck_snn']
+    sys.path[:0] = [str(MIKKO), AUDIO, f'{MIKKO}/modules/decoders/torch/lsnn', f'{MIKKO}/modules/decoders/torch/speck_snn']
     import lsnn as A
     import speck_snn as S
     torch.manual_seed(1)
