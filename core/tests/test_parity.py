@@ -13,7 +13,7 @@ import sys
 import tempfile
 import warnings
 import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[2]))
-from paths import WORKSPACE, AUDITORY_REPO, SPEECH_SNN  # noqa: E402  (the repository's paths.yaml)
+from paths import WORKSPACE, AUDITORY_REPO, SPEECH_SNN, SNN_RUNS  # noqa: E402  (the repository's paths.yaml)
 
 import numpy as np
 import torch
@@ -28,8 +28,7 @@ MOTOR = f'{WORKSPACE}/spike_bmi_lsnn/main'
 MOTOR_CK = f'{WORKSPACE}/spike_bmi_lsnn_data/lsnn_vs_snn/indy_20160411_01'
 AUDIO = str(AUDITORY_REPO)
 AUDIO_LSNN_CK = f'{AUDIO}/pipeline_data/Neil/aSTG/07_31_13/pipeline/lsnn_model.pt'
-AUDIO_SPECK_CK = ('/private/tmp/claude-501/-Users-benjaminfalkenburg-Downloads-speechBCI-main/'
-                  '2cd331d6-6514-4a76-8f8b-ca9427b209cc/scratchpad/speck_audio/07_31_13_r13_binB_s1337/model.pt')
+AUDIO_SPECK_CK = str(SNN_RUNS / 'speck_audio_binB/07_31_13_r13_binB_s1337/model.pt')  # random weights if absent
 SPEECH = str(SPEECH_SNN)
 results = []
 
