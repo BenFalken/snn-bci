@@ -9,7 +9,8 @@
 #
 # Phoneme error (greedy, no language model) per test sentence for round 17 (S1-S4), with round 16's R3 as the
 # anchor (should read 0.4968). Same trials as perTrialPER_final.json. Software only, no chip. Submit from here:
-#   sbatch --export=ALL,BASE_DIR=/users/$USER/scratch/speechBCI_dryad run_per_trial_r17.sbatch
+#   sbatch --export=ALL,BASE_DIR=$SNNBCI_OSCAR_SCRATCH run_per_trial_r17.sbatch
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 source ./snn_config.sh
 activate_env

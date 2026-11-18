@@ -22,8 +22,9 @@
 #
 # Submit from this directory:
 #   mkdir -p snn_logs
-#   sbatch --export=ALL,BASE_DIR=/users/$USER/scratch/speechBCI_dryad run_snn_diagnostics.sbatch
+#   sbatch --export=ALL,BASE_DIR=$SNNBCI_OSCAR_SCRATCH run_snn_diagnostics.sbatch
 #   grep -h "test PER" snn_logs/SNN_DIAG_<jobid>_*.out | less     # or: tail -n 3 snn_logs/SNN_DIAG_<jobid>_*.out
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 source ./snn_config.sh
 activate_env

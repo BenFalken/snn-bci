@@ -30,10 +30,11 @@
 #   EXPORT_DIR also write one JSON per trial for the interactive viewer (trialViewer/build_viewer.py), from the LM run
 #
 # Figures: trialPlots/noLM/ and trialPlots/LM/ (in this directory)
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 
-REPO_DIR=/users/$USER/speechBCI-main
-BASE_DIR="${BASE_DIR:-/users/$USER/scratch/speechBCI_dryad}"
+REPO_DIR=$SNNBCI_ROOT/speech
+BASE_DIR="${BASE_DIR:-$SNNBCI_OSCAR_SCRATCH}"
 SESSION="${SESSION:-t12.2022.06.02}"
 PARTITION="${PARTITION:-test}"
 TRIALS="${TRIALS:-0 1 2 3 4}"

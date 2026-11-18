@@ -15,8 +15,9 @@
 #
 # Jobs it waits for: SRS2_JOB (default 7515256) and NATIVE_JOB (default 7515268); a job that has already left
 # the queue is not waited for.
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -euo pipefail
-B=${BASE_DIR:-/users/$USER/scratch/speechBCI_dryad}
+B=${BASE_DIR:-$SNNBCI_OSCAR_SCRATCH}
 SRS2_JOB=${SRS2_JOB:-7515256}
 NATIVE_JOB=${NATIVE_JOB:-7515268}
 cd "$(dirname "$0")"

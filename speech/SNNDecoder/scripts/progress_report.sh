@@ -3,7 +3,8 @@
 # (DelayNet: 2 x 1,024 IAF, 4 delayed input synapses), both reading both layers, over three seeds, with the variants
 # set aside; the build-up ladder; the references; the queue.
 # Install as the progress command:  cp progress_report.sh ~/new_progress.sh   (then: bash ~/new_progress.sh)
-cd "${SCRIPTS_DIR:-/users/$USER/speechBCI-main/SNNDecoder/scripts}" || exit 1
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
+cd "${SCRIPTS_DIR:-$SNNBCI_ROOT/speech/SNNDecoder/scripts}" || exit 1
 
 log_of() {   # newest log of a run name (group/name in the run-file logs); nothing when it has none
   local files
@@ -86,8 +87,8 @@ else printf '  %-30s %s\n' "Wiener / Kalman filters" "no log (CLASSIC)"; fi
 printf '  %-30s PER %s\n' "paper RNN (5 x 1,024, window)" "0.188"
 
 section "INFERENCE OUTPUTS (accuracy comparison, efficiency, figures, trial export)"
-B=${BASE_DIR:-/users/$USER/scratch/speechBCI_dryad}
-AE=${SCRIPTS_DIR:-/users/$USER/speechBCI-main/SNNDecoder/scripts}/../../AnalysisExamples
+B=${BASE_DIR:-$SNNBCI_OSCAR_SCRATCH}
+AE=${SCRIPTS_DIR:-$SNNBCI_ROOT/speech/SNNDecoder/scripts}/../../AnalysisExamples
 for out in "accuracy comparison:$B/derived/decoderComparison_final.json" \
            "efficiency report:$B/derived/efficiency/efficiency_final.md" \
            "comparison figures:$B/derived/figures/final_fidelity.png" \

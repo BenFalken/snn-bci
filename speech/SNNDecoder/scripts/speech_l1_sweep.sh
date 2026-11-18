@@ -8,10 +8,11 @@
 # with input events per 20 ms bin (what the chip must process each step).
 #
 #   bash speech_l1_sweep.sh DATA_DIR OUT_DIR CKPT [CKPT ...]
-#   TRIALS=3 SCALES="1 1.5 2 3 4" bash speech_l1_sweep.sh ~/Downloads/speech_speck/snnData results/l1 \
-#        ~/Downloads/speech_speck/02_R3_hard_txpow_binary_d2/best_model_weights.pth ...
+#   TRIALS=3 SCALES="1 1.5 2 3 4" bash speech_l1_sweep.sh $SNNBCI_WORKSPACE/speech_speck/snnData results/l1 \
+#        $SNNBCI_WORKSPACE/speech_speck/02_R3_hard_txpow_binary_d2/best_model_weights.pth ...
 # Each network's run folder name labels it. Finished parts are skipped on a rerun. Runs the networks in parallel
 # (JOBS, default 4); events mode is slow, so TRIALS (sentences per session, default 3) sets the cost.
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 DATA="$1"; OUT="$2"; shift 2

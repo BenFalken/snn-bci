@@ -20,8 +20,9 @@
 #   (GRUS: GRU controls from SNNDecoder/scripts/ann_controls.py, weights in the .pt next to each .json)
 # Results: the table at the end of logs/COMPARE_<jobid>.out, and
 #          $BASE_DIR/derived/decoderComparison.json (+ _sentences.json, every decoded sentence)
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
-BASE_DIR="${BASE_DIR:-/users/$USER/scratch/speechBCI_dryad}"
+BASE_DIR="${BASE_DIR:-$SNNBCI_OSCAR_SCRATCH}"
 CK="$BASE_DIR/derived/snns/rsnn_recipe"
 SNNS="${SNNS:-R2r_alif_lr02=$CK/00_R2r_alif_lr02/best_model_weights.pth R2r_iaf_lr005=$CK/02_R2r_iaf_lr005/best_model_weights.pth}"
 
@@ -45,5 +46,5 @@ for g in ${GRUS:-}; do
   [ -f "${g#*=}" ] || { echo "ERROR: no GRU at ${g#*=}"; exit 1; }
   SNN_ARGS+=(--gru "$g")
 done
-cd /users/$USER/speechBCI-main/AnalysisExamples
+cd $SNNBCI_ROOT/speech/AnalysisExamples
 "$PYTHON" compareDecoders.py --baseDir "$BASE_DIR" "${SNN_ARGS[@]}" ${OUT:+--out "$OUT"} ${EXTRA:-}

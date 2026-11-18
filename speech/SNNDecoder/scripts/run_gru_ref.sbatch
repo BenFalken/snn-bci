@@ -10,11 +10,12 @@
 #
 # One GRU reference (ann_controls.py) on the 19 sessions with the paper recipe, as the SNN runs. Submit from this
 # directory; BASE_DIR must be exported (the job stops at once without it):
-#   B=/users/$USER/scratch/speechBCI_dryad
+#   B=$SNNBCI_OSCAR_SCRATCH
 #   sbatch -J GRU_2x896 --export=ALL,BASE_DIR=$B,MODEL=gru_stack_2x896 run_gru_ref.sbatch
 #   sbatch -J GRU_TX1   --export=ALL,BASE_DIR=$B,MODEL=gru_1024,TAG=_tx1,DATA=snnDataTx1,EPOCHS=48 run_gru_ref.sbatch
 # Options: MODEL (required), TAG (suffix of the run name), DATA (directory under derived/, default snnData),
 # EPOCHS (default 96), EXTRA (more ann_controls.py flags). Logs to snn_logs/<job name>_<job id>.out; writes derived/snns/controls/<model><tag>.json and .pt.
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 [ -n "${MODEL:-}" ] || { echo "ERROR: set MODEL, e.g. --export=ALL,BASE_DIR=...,MODEL=gru_stack_2x896" >&2; exit 1; }
 source ./snn_config.sh

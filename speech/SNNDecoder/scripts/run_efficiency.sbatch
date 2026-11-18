@@ -9,9 +9,10 @@
 #
 # Accuracy against energy, memory and latency of the models in a run list (scripts/efficiency.py), on CPU so
 # it does not wait for the 2-GPU limit. Submit from this directory:
-#   sbatch --export=ALL,BASE_DIR=/users/$USER/scratch/speechBCI_dryad run_efficiency.sbatch
+#   sbatch --export=ALL,BASE_DIR=$SNNBCI_OSCAR_SCRATCH run_efficiency.sbatch
 # Options: RUNS (default configs/efficiency_runs.txt), OUT (default $BASE_DIR/derived/efficiency/efficiency),
 # QUANT_BITS (default "8 6 4"; "" = skip quantization, the slowest part).
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 source ./snn_config.sh
 activate_env

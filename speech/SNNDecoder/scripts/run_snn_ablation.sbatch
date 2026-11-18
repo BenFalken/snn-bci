@@ -29,10 +29,11 @@
 #
 # Submit from this directory:
 #   mkdir -p snn_logs
-#   sbatch --export=ALL,BASE_DIR=/users/$USER/scratch/speechBCI_dryad run_snn_ablation.sbatch
+#   sbatch --export=ALL,BASE_DIR=$SNNBCI_OSCAR_SCRATCH run_snn_ablation.sbatch
 # Report:  python report_runs.py snn_logs --pattern 'SNN_ABL_*.out' --ckpt-root $BASE_DIR/derived/snns --out ablation_report
 # Options as run_snn_sweep.sbatch (EPOCHS, SESSIONS, --array). Resubmitting skips finished runs and
 # resumes interrupted ones.
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 source ./snn_config.sh
 activate_env

@@ -1,8 +1,9 @@
 #!/bin/bash
 # Round 20 on Oscar, from SNNDecoder/scripts:  bash submit_r20.sh
 # Writes configs/speck_r20_V2C.json (the three chains) from round 17's ranking, then submits V2C (1 GPU).
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
-B=/users/$USER/scratch/speechBCI_dryad
+B=$SNNBCI_OSCAR_SCRATCH
 mkdir -p snn_logs
 for f in configs/channels/r3/top128.txt configs/channels/r3/top64.txt configs/channels/r3/all256_top128first.txt; do
     [ -f "$f" ] || { echo "ERROR: $f missing" >&2; exit 1; }

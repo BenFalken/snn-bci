@@ -21,7 +21,7 @@
 #   mkdir -p snn_logs
 #   RUNS=configs/c2_factors.txt; PACK=5
 #   N=$(grep -cv '^[[:space:]]*\(#\|$\)' $RUNS)
-#   sbatch --export=ALL,BASE_DIR=/users/$USER/scratch/speechBCI_dryad,RUNS=$RUNS,PACK=$PACK \
+#   sbatch --export=ALL,BASE_DIR=$SNNBCI_OSCAR_SCRATCH,RUNS=$RUNS,PACK=$PACK \
 #          --array=0-$(( (N + PACK - 1) / PACK - 1 )) run_snn_configs.sbatch
 # Task t runs lines t*PACK .. t*PACK+PACK-1. Each run logs to snn_logs/SNN_RUN_<job>_<line>.out.
 # Options: SESSIONS=all (all 19 baseline sessions) or a space-separated list
@@ -30,6 +30,7 @@
 # Checkpoints: $BASE_DIR/derived/snns/<group>/<NN>_<name>/   (group = run file name)
 # Report:      python report_runs.py snn_logs --pattern 'SNN_RUN_*_[0-9]*.out' --ckpt-root $BASE_DIR/derived/snns --out runs_report
 # Resubmitting skips finished runs and resumes interrupted ones.
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 [ -n "${RUNS:-}" ] && [ -f "$RUNS" ] || { echo "ERROR: set RUNS to a run file, e.g. --export=ALL,...,RUNS=configs/c2.txt" >&2; exit 1; }
 source ./snn_config.sh

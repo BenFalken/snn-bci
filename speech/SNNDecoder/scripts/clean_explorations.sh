@@ -8,7 +8,8 @@
 # Run directories written to in the last 2 hours are skipped (a run may still be training).
 #   bash clean_explorations.sh            dry run: lists what would go, with sizes
 #   bash clean_explorations.sh --delete   deletes it
-SNNS="${BASE_DIR:-/users/$USER/scratch/speechBCI_dryad}/derived/snns"
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
+SNNS="${BASE_DIR:-$SNNBCI_OSCAR_SCRATCH}/derived/snns"
 KEEP="C_lsnn_nodelay96 Q_lsnn_s43 Q_lsnn_s44 R_readall96 R_readall_s43 R_readall_s44
       L0_orig L1_width S2_rec S3_out80 S4_readall C_nodelay96 R1_rec"
 cd "$SNNS" || exit 1

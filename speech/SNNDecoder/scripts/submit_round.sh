@@ -4,8 +4,9 @@
 # Report: $BASE_DIR/derived/efficiency/efficiency_<tag>.md (tag: TAG, default today's date); EFF_RUNS picks its
 # model list (default configs/efficiency_runs.txt). AFTER=<job ids, colon-separated> holds the runs until those jobs
 # have ended (e.g. a round still training).
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -euo pipefail
-B=${BASE_DIR:-/users/$USER/scratch/speechBCI_dryad}
+B=${BASE_DIR:-$SNNBCI_OSCAR_SCRATCH}
 PACK=${PACK:-3}
 TAG=${TAG:-$(date +%m%d)}
 cd "$(dirname "$0")"

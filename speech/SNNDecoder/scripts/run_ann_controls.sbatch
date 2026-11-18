@@ -16,10 +16,11 @@
 #
 # Submit from this directory:
 #   mkdir -p snn_logs
-#   sbatch --export=ALL,BASE_DIR=/users/$USER/scratch/speechBCI_dryad run_ann_controls.sbatch
+#   sbatch --export=ALL,BASE_DIR=$SNNBCI_OSCAR_SCRATCH run_ann_controls.sbatch
 # Progress:  grep -h "^\[\|^Epoch" snn_logs/ANN_CTRL_<jobid>_*.out | less
 # Report:    python report_runs.py snn_logs --pattern 'ANN_CTRL_*.out' --out controls_report
 # History:   $BASE_DIR/derived/snns/controls/<model>.json
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 source ./snn_config.sh
 activate_env

@@ -1,9 +1,9 @@
 #!/bin/bash
 # After round 16: builds the one final laptop batch, every experiment's Speck network on the chip plus the energy
-# bench, as ~/Downloads/speck_final_all.zip. Run ON THE MAC once the winner (lowest final training loss of R1 to R4)
-# is fetched to ~/Downloads/speech_speck/<NN>_<name>/best_model_weights.pth:
+# bench, as $SNNBCI_WORKSPACE/speck_final_all.zip. Run ON THE MAC once the winner (lowest final training loss of R1 to R4)
+# is fetched to $SNNBCI_WORKSPACE/speech_speck/<NN>_<name>/best_model_weights.pth:
 #
-#   rsync -av $USER@ssh.ccv.brown.edu:/users/$USER/scratch/speechBCI_dryad/derived/snns/speck_r16/<NN>_<name> ~/Downloads/speech_speck/
+#   rsync -av $USER@ssh.ccv.brown.edu:$SNNBCI_OSCAR_SCRATCH/derived/snns/speck_r16/<NN>_<name> $SNNBCI_WORKSPACE/speech_speck/
 #   bash finish_r16.sh <NN>_<name>
 #
 # 1. speech's layer 1 threshold factor, without labels, on TRAINING sentences (3 per session, 6 sessions): the scale
@@ -14,13 +14,14 @@
 #    speech network's host model
 #
 # On the laptop: unzip speck_final_all.zip next to speck_per_session/, then  cd speck_final_all && bash run_all.sh
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -euo pipefail
 W="${1:?usage: bash finish_r16.sh <NN>_<name>, e.g. 01_R2_hard_txpow_levels_nodelay}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
-SRC="${SRC:-$HOME/Downloads/speech_speck}"
-SND="${SND:-$HOME/Documents/GitHub/snn-decoders}"
-SPS="${SPS:-$HOME/Downloads/speck_per_session}"
-B2="${B2:-$HOME/Downloads/speck_final_batch2}"
+SRC="${SRC:-$SNNBCI_WORKSPACE/speech_speck}"
+SND="${SND:-$SNNBCI_CORE}"
+SPS="${SPS:-$SNNBCI_WORKSPACE/speck_per_session}"
+B2="${B2:-$SNNBCI_WORKSPACE/speck_final_batch2}"
 RID=$(echo "$W" | grep -o 'R[1-4]' | head -1 || true); RID=${RID:-R1}
 CK="$SRC/$W/best_model_weights.pth"
 [ -f "$CK" ] || { echo "no $CK: fetch it first"; exit 1; }
@@ -40,7 +41,7 @@ MODELS="$W" bash "$HERE/make_speech_chip_bundle.sh"
 echo "== 3/3 the batch"
 OUT="$(mktemp -d)/speck_final_all"
 mkdir -p "$OUT/code" "$OUT/audio" "$OUT/motor" "$OUT/results"
-( cd "$OUT" && unzip -q ~/Downloads/speech_chip_bundle.zip )
+( cd "$OUT" && unzip -q $SNNBCI_WORKSPACE/speech_chip_bundle.zip )
 rsync -a --exclude __pycache__ "$SND/snndec" "$SND/configs" "$OUT/code/"
 mkdir -p "$OUT/code/experiments"; rsync -a --exclude __pycache__ "$SND/experiments/chip" "$OUT/code/experiments/"
 for d in "$B2"/audio/words_old_*/; do cp -r "${d%/}" "$OUT/audio/"; done
@@ -77,6 +78,6 @@ esac; done
 echo "Done: send back results/, speech_chip/results/ and \$SPS/results/final_v2/"
 EOF
 chmod +x "$OUT/run_all.sh"
-( cd "$(dirname "$OUT")" && rm -f ~/Downloads/speck_final_all.zip && zip -qr ~/Downloads/speck_final_all.zip speck_final_all )
-du -h ~/Downloads/speck_final_all.zip
+( cd "$(dirname "$OUT")" && rm -f $SNNBCI_WORKSPACE/speck_final_all.zip && zip -qr $SNNBCI_WORKSPACE/speck_final_all.zip speck_final_all )
+du -h $SNNBCI_WORKSPACE/speck_final_all.zip
 echo "speech: $W at x$S (host model $RID)"

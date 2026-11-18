@@ -7,12 +7,13 @@
 #   3. renders one video per trial plus all_trials.mp4, and one still per trial, into figures/viewer/{videos,stills}_final
 #      (needs ffmpeg on the PATH)
 #   bash make_final_figures.sh            # SKIP_SYNC=1 to reuse what was copied before
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 OSCAR="${OSCAR:-$USER@ssh.ccv.brown.edu}"
-DERIVED="${DERIVED:-/users/$USER/scratch/speechBCI_dryad/derived}"
+DERIVED="${DERIVED:-$SNNBCI_OSCAR_SCRATCH/derived}"
 FIG="$HERE/../figures/inference_final"
-VIEW="${VIEW:-$HOME/Downloads/viewer_final}"
+VIEW="${VIEW:-$SNNBCI_WORKSPACE/viewer_final}"
 mkdir -p "$FIG" "$VIEW"
 
 if [ "${SKIP_SYNC:-0}" != "1" ]; then

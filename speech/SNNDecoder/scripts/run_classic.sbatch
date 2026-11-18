@@ -10,8 +10,9 @@
 # Fits the Wiener and Kalman filter benchmarks (classic_decoders.py) in closed form, on CPU (no GPU needed: the
 # largest step is a 2,049 x 2,049 normal-equation solve). Frame labels come from force-aligning the 96-epoch GRU
 # control on the same input. Submit from this directory:
-#   sbatch --export=ALL,BASE_DIR=/users/$USER/scratch/speechBCI_dryad run_classic.sbatch
+#   sbatch --export=ALL,BASE_DIR=$SNNBCI_OSCAR_SCRATCH run_classic.sbatch
 # Writes derived/snns/controls/wiener_160ms.json/.pt and kalman_80ms.json/.pt (read like GRU controls).
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 [ -n "${BASE_DIR:-}" ] || { echo "ERROR: export BASE_DIR" >&2; exit 1; }
 source ./snn_config.sh

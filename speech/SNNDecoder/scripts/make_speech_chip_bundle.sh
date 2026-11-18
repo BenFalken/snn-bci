@@ -1,20 +1,21 @@
 #!/bin/bash
-# Packs the speech Speck SNN's chip run for the Speck laptop: ~/Downloads/speech_chip_bundle.zip with the snnDecoder
+# Packs the speech Speck SNN's chip run for the Speck laptop: $SNNBCI_WORKSPACE/speech_chip_bundle.zip with the snnDecoder
 # package, speech_chip.py, the F3 checkpoint and every session's test split. Run ON THE MAC after fetching:
 #
-#   rsync ... ~/Downloads/speech_speck/        (snnData/<session>/test.npz and the F3 checkpoint folder)
+#   rsync ... $SNNBCI_WORKSPACE/speech_speck/        (snnData/<session>/test.npz and the F3 checkpoint folder)
 #   bash make_speech_chip_bundle.sh
 #   MODELS="G3_levels2_d2 G7_chip_multi_96ep" bash make_speech_chip_bundle.sh   (other run folders under $SRC)
 #
 # On the laptop (conda env speck, devkit plugged in):  unzip speech_chip_bundle.zip && cd speech_chip && bash run.sh
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
-SRC="${SRC:-$HOME/Downloads/speech_speck}"
+SRC="${SRC:-$SNNBCI_WORKSPACE/speech_speck}"
 OUT="$(mktemp -d)/speech_chip"
 MODELS="${MODELS:-F3_chip_soft_binary_rtr_lr01}"
 DATA="${DATA:-$SRC/snnData}"              # folder of <session>/test.npz
 ONE_CHIP="${ONE_CHIP:-}"                  # networks (bundle names, e.g. V2) whose chains share one chip: --one-chip
-BUNDLE="${BUNDLE:-$HOME/Downloads/speech_chip_bundle.zip}"
+BUNDLE="${BUNDLE:-$SNNBCI_WORKSPACE/speech_chip_bundle.zip}"
 mkdir -p "$OUT/scripts" "$OUT/data" "$OUT/results"
 for m in $MODELS; do
   CKPT=$(find "$SRC" -path "*$m*" -name best_model_weights.pth | head -1)
@@ -56,7 +57,7 @@ echo "== 3/3 on the devkit, layer 1 threshold x$S"
 ONE=""; [ -f "$NAME.onechip" ] && ONE="--one-chip" && echo "   (all chains on one chip)"
 $PY --mode chip $ONE --scale "$S" --out $R/chip.json --save-logits $R/chip_logits.npz --save-counts $R/chip_counts.npz
 done
-echo "done: copy results/ back to the Mac (~/Downloads/speech_speck/results/)"
+echo "done: copy results/ back to the Mac ($SNNBCI_WORKSPACE/speech_speck/results/)"
 EOF
 chmod +x "$OUT/run.sh"
 cat > "$OUT/README.txt" <<'EOF'

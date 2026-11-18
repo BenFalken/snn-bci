@@ -11,7 +11,8 @@
 # ever compared on validation loss: R1 (counts only, 2 levels, 2 delays), R2 (counts + spike-band power, 2 levels, no
 # delay), R4 (R2 sparser), with R3 (the chosen network) again as the anchor. Same trials as perTrialPER_final.json.
 # Software only, no chip. Submit from this directory:
-#   sbatch --export=ALL,BASE_DIR=/users/$USER/scratch/speechBCI_dryad run_per_trial_r16.sbatch
+#   sbatch --export=ALL,BASE_DIR=$SNNBCI_OSCAR_SCRATCH run_per_trial_r16.sbatch
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 source ./snn_config.sh
 activate_env

@@ -20,12 +20,13 @@
 #
 # Submit from this directory:
 #   mkdir -p snn_logs
-#   sbatch --export=ALL,BASE_DIR=/users/$USER/scratch/speechBCI_dryad run_rnn_twins.sbatch
+#   sbatch --export=ALL,BASE_DIR=$SNNBCI_OSCAR_SCRATCH run_rnn_twins.sbatch
 # RECIPE=rnn trains with the paper RNN's recipe (Adam eps 0.1, lr 0.02 -> 0 linearly, L2 1e-5,
 # clip 10; ann_controls.py --recipe rnn); its runs are named <model>_rnnrecipe. EPOCHS (default 60;
 # 96 = the RNN's 10,000 batches on these 19 sessions).
 # Progress:  for f in snn_logs/RNN_TWIN_<job>_[0-9].out; do grep -m1 "^\[" $f | cut -c1-40; grep "^Epoch" $f | tail -1; done
 # History:   $BASE_DIR/derived/snns/controls/<name>.json
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 source ./snn_config.sh
 activate_env

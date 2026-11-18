@@ -10,13 +10,14 @@
 # Rebuilds derived/snnData (emptied on Oscar 2026-11-15 16:58, with derived/tfRecords) from the release's raw data,
 # then checks it against fingerprints of the copy the earlier rounds trained on (verify_snndata.py). Submit from this
 # directory:
-#   sbatch --export=ALL,BASE_DIR=/users/$USER/scratch/speechBCI_dryad rebuild_snndata.sbatch
+#   sbatch --export=ALL,BASE_DIR=$SNNBCI_OSCAR_SCRATCH rebuild_snndata.sbatch
 # Source, first that exists:
 #   1. $BASE_DIR/derived.tar.gz (the Dryad release's derived folder): its tfRecords are extracted
 #   2. $BASE_DIR/competitionData/{train,test,competitionHoldOut}/*.mat: tfRecords rebuilt as rnn_step1 does
 # then AnalysisExamples/exportTFRecordsToNpz.py -> derived/snnData. Needs TensorFlow (and for 2, g2p_en and the
 # NeuralDecoder package): TF_ENV names the conda env that has them (default: the SNN env, speechBCI).
 # Old empty folders are moved aside (derived/snnData.empty_<date>), never deleted.
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 B="${BASE_DIR:?set BASE_DIR}"
 HERE=$(pwd)

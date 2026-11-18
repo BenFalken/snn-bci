@@ -9,7 +9,8 @@
 #
 # Greedy phoneme error per test sentence (AnalysisExamples/perTrialPER.py) for the final speech decoders: the paper
 # RNN, the same-input GRU and LSTM, the LSNN, the Speck SNN (R3) in software and on the chip. No training, no language model. Submit from here:
-#   sbatch --export=ALL,BASE_DIR=/users/$USER/scratch/speechBCI_dryad run_per_trial_per.sbatch
+#   sbatch --export=ALL,BASE_DIR=$SNNBCI_OSCAR_SCRATCH run_per_trial_per.sbatch
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 source ./snn_config.sh
 activate_env

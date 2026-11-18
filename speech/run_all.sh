@@ -1,4 +1,5 @@
 #!/bin/bash
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 #
 # Checks the data, sets up the env, exports the SNN data, runs a 1-epoch smoke
@@ -12,8 +13,8 @@ set -eo pipefail
 ############################################################
 # 0. Paths: edit BASE_DIR (or pass it: BASE_DIR=/path ./run_all.sh)
 ############################################################
-export REPO_DIR=/users/$USER/speechBCI-main
-export BASE_DIR="${BASE_DIR:-/users/$USER/scratch/speechBCI_dryad}"   # folder holding competitionData/, derived/, languageModel/
+export REPO_DIR=$SNNBCI_ROOT/speech
+export BASE_DIR="${BASE_DIR:-$SNNBCI_OSCAR_SCRATCH}"   # folder holding competitionData/, derived/, languageModel/
 export CONDA_ENV=speechBCI
 SBATCH_PARTITION="${SBATCH_PARTITION:-gpu}"                         # Oscar's GPU partition
 

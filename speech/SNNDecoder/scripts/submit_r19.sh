@@ -3,8 +3,9 @@
 # 1. rebuilds and verifies derived/snnData (rebuild_snndata.sbatch), unless it already verifies
 # 2. writes configs/channels/r3/all256_top128first.txt from top128.txt
 # 3. submits round 19 (4 runs, PACK=2, 2 GPUs), held until the rebuild succeeds
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
-B=/users/$USER/scratch/speechBCI_dryad
+B=$SNNBCI_OSCAR_SCRATCH
 mkdir -p snn_logs
 [ -f configs/channels/r3/top128.txt ] || { echo "ERROR: configs/channels/r3/top128.txt missing (round 17's ranking)" >&2; exit 1; }
 python3 - <<'PY'
