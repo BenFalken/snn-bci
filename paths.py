@@ -52,7 +52,7 @@ TTS_VOICES = _CFG["tts_voices"]
 # code, inside this repository
 SNNDEC = ROOT / "snndec"                   # the shared LSNN / Speck library
 CHIP = ROOT / "chip"                       # running the Speck SNNs on the chip: calibration, refits, bundle, benchmark
-SPEECH_SNN = ROOT / "speech" / "SNNDecoder"
+SPEECH_SNN = ROOT / "speech"                # the speech SNN package (snnDecoder) and its scripts
 MOTOR = ROOT / "motor"
 AUDIO = ROOT / "audio"
 FIGURES = ROOT / "figures"

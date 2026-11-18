@@ -247,7 +247,7 @@ def laptop_overrides(df):
         df.loc[sel, "measured_by"] = "Speck chip"
         df.loc[sel, "latency_machine"] = "Speck chip"
     df.loc[(df.experiment == "motor") & (df.decoder == "speck"), "latency_machine"] = "Speck chip"
-    chip = LAPTOP / "speech_chip.json"                 # speechBCI SNNDecoder/scripts/speech_chip.py --mode chip
+    chip = LAPTOP / "speech_chip.json"                 # speechBCI speech/scripts/speech_chip.py --mode chip
     if chip.is_file():
         C = json.load(open(chip))["chip"]
         sel = (df.experiment == "speech") & (df.decoder == "speck")

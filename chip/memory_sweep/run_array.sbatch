@@ -19,7 +19,7 @@
 source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 : "${PLAN:?set PLAN}" "${ROOT:?set ROOT}"
-ENV_SCRIPT="${ENV_SCRIPT:-$SNNBCI_ROOT/speech/SNNDecoder/scripts/snn_config.sh}"
+ENV_SCRIPT="${ENV_SCRIPT:-$SNNBCI_ROOT/speech/scripts/snn_config.sh}"
 REPO="${SLURM_SUBMIT_DIR:-$(pwd)}"
 # snn_config.sh requires BASE_DIR (the speech data root) and exits a batch job without it
 export BASE_DIR="${BASE_DIR:-$SNNBCI_OSCAR_SCRATCH}"

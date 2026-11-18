@@ -2,7 +2,7 @@
 Parity on real speech checkpoints (run where they are, e.g. Oscar): for each SNNDecoder checkpoint, the original model
 and the unified one on the same test trials -- the largest logit difference, and both PERs.
 
-    python tests/check_speech_checkpoints.py --snn-decoder ~/speechBCI-main/SNNDecoder \
+    python tests/check_speech_checkpoints.py --snn-decoder speech \
         --data /users/$USER/scratch/speechBCI_dryad/derived/snnData CKPT [CKPT ...]
 
 Raw-count runs (snnDataTx1) need --data pointing there. --trials limits the trials per session (default 5).

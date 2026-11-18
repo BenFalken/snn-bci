@@ -14,7 +14,7 @@
 source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 : "${RUNS:?set RUNS}" "${ROOT:?set ROOT}" "${DATA:?set DATA}"
-ENV_SCRIPT="${ENV_SCRIPT:-$SNNBCI_ROOT/speech/SNNDecoder/scripts/snn_config.sh}"
+ENV_SCRIPT="${ENV_SCRIPT:-$SNNBCI_ROOT/speech/scripts/snn_config.sh}"
 REPO="${SLURM_SUBMIT_DIR:-$(pwd)}"
 export BASE_DIR="${BASE_DIR:-$SNNBCI_OSCAR_SCRATCH}"
 cd "$(dirname "$ENV_SCRIPT")" && source "$ENV_SCRIPT" && activate_env && cd "$REPO"

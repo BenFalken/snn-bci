@@ -25,7 +25,7 @@ None is in the repository. Download it, then say where it is (step 3).
 | Motor I | O'Doherty et al., [Zenodo 3854034](https://zenodo.org/record/3854034) | `motor/main/sbatch_scripts/train_all.sh` (fetches and bins) |
 | Motor II | Jenkins NWB sessions *(release to be added)* | `motor/main/nwb_conversion/`, `motor/main/sbatch_scripts/train_all.sh` |
 | Audio | Heelan et al. 2019 recordings *(available on request)* | `audio/prepare_auditory_data.py`, then `audio/build_word_dataset_daynorm.py --include-novel` |
-| Speech | Willett et al. 2023, [Dryad](https://doi.org/10.5061/dryad.x69p8czpq) | `speech/SNNDecoder/scripts/rebuild_snndata.sbatch` |
+| Speech | Willett et al. 2023, [Dryad](https://doi.org/10.5061/dryad.x69p8czpq) | `speech/scripts/rebuild_snndata.sbatch` |
 
 ## 3. Paths
 

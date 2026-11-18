@@ -9,7 +9,7 @@ Fidelity for the four-experiment figures (fig_four.py), one data point per evalu
              Pearson r between decoded and true over the epoch, Fisher-z averaged; rho_word (our frame-wise spectral
              match on sound frames, collect_final.py) kept as a second metric. The Speck SNN is the mean of its 3 seeds
     speech   per test SENTENCE: greedy phoneme error (no language model) = that sentence's edit distance / its phoneme
-             count, from final_results/perTrialPER_final_s3.json (perTrialPER_final.json from AnalysisExamples/perTrialPER.py on Oscar, plus
+             count, from final_results/perTrialPER_final_s3.json (perTrialPER_final.json from speech/analysis/perTrialPER.py on Oscar, plus
              the Speck SNN V2 on the chip, readout refitted, and in software, scored on the Mac on the same sentences); per session,
              as before, while that file is absent (group 'session' instead of 'sentence')
 
