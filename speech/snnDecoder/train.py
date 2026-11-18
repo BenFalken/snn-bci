@@ -28,7 +28,7 @@ Spike-rate penalty (--spike-rate-weight, off by default): adds weight x sum
 over spiking layers of max(0, rate - target), the rate in spikes per neuron
 per timestep. Training loss only.
 
-Pretrain -> fine-tune (scripts/run_snn_pretrain.sbatch, run_snn_finetune.sbatch):
+Pretrain -> fine-tune (its job scripts, not used by the final models, are in the git tag as-assembled):
 pretrain with --reset-type hard, then fine-tune from it with
 --init-weights-from and --reset-type soft (the reset has no weights, so the
 pretrained weights load unchanged). A fine-tuning run keeps the checkpoint's
