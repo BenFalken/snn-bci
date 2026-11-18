@@ -46,10 +46,10 @@ fetch from one, set `oscar_user` in `paths.local.yaml`.
 | Paper figures and tables, from stored results | `cd figures && python3 collect_four.py && python3 collect_final.py && python3 collect_speck_ops.py && python3 fig_results.py` |
 | Motor: train (Slurm) | `bash motor/main/sbatch_scripts/train_all.sh` |
 | Motor: evaluate all decoders, software and chip | `bash motor/final_all.sh [indy loco jenkins]` |
-| Audio: train and calibrate the Speck SNN | `bash core/experiments/audio_final/run_novel.sh`, then `calibrate_novel.sh` |
+| Audio: train and calibrate the Speck SNN | `bash core/audio/speck/run_novel.sh`, then `calibrate_novel.sh` |
 | Speech: train V2+C (Slurm) | `cd speech/SNNDecoder/scripts && bash submit_r20.sh` |
 | Speech: chip run and scoring | `speech_chip.py`, then `figures/final_speech_v2c.py` |
-| Every Speck network on a devkit | `bash core/experiments/chip/make_deploy_bundle.sh` (a self-contained bundle) |
+| Every Speck network on a devkit | `bash core/chip/make_deploy_bundle.sh` (a self-contained bundle) |
 | Model parity check | `python3 core/tests/test_parity.py` |
 
 Notes:

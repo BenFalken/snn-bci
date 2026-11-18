@@ -8,7 +8,7 @@ Hidden 3's spikes are smoothed exactly as the readout does, and the linear map i
 the TRAINING rows; the ridge strength is chosen on the VALIDATION rows (as every audio decoder is selected); test is
 only scored. The control does the same on the software network's spikes (run_software: a step's input summed).
 
-    python experiments/chip/audio_refit.py --pipeline DIR --ckpt words_P5_s11/model.pt --scale 4 --out OUT
+    python chip/audio_refit.py --pipeline DIR --ckpt words_P5_s11/model.pt --scale 4 --out OUT
 
 OUT/: spikes_{event,software}.npz (Hidden 3 per chip step, uint8), refit.json, readout_{event,software}.npz
 (W, b), preds_{float,event_trained,event_refit,software_refit}.npy (test rows). A devkit run's Hidden 3 counts
@@ -23,7 +23,7 @@ import sys
 import numpy as np
 import torch
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from snndec import chip, data, tasks  # noqa: E402
 from snndec.convert import load  # noqa: E402
 from snndec.evaluate import recording_file  # noqa: E402

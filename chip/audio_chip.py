@@ -17,7 +17,7 @@ The host turns the recording into chip input exactly as in training (channels ke
 then the linear map to the 128 bands) decodes them, one output per frame. The stream starts BURN frames before the
 test split, so the network is not scored from rest.
 
-    python experiments/chip/audio_chip.py --data DIR=CKPT [DIR=CKPT ...] [--nochip] [--wait 0.003] --out results.json
+    python chip/audio_chip.py --data DIR=CKPT [DIR=CKPT ...] [--nochip] [--wait 0.003] --out results.json
 
 Per run: r (float, emulated, chip), and for the chip: latency per chip step and per 40 ms output (the loop's wall
 time, its wait included), mean power, energy per output (power x latency), input events per output.
@@ -32,7 +32,7 @@ import time
 import numpy as np
 import torch
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from snndec import chip, data, tasks  # noqa: E402
 from snndec.convert import load  # noqa: E402
 from snndec.evaluate import recording_file  # noqa: E402

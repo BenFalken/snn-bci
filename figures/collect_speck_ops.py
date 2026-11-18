@@ -16,7 +16,7 @@ Operation counts for the FINAL Speck SNNs, under the same 45 nm rule as every ot
     python collect_speck_ops.py      -> data/speck_ops.csv (experiment, macs, accs, energy_uj per output, notes)
 """
 
-from repo_paths import WORKSPACE, AUDITORY_DATA, SNN_RUNS, CORE  # noqa: E402  (the repository's paths.yaml)
+from repo_paths import WORKSPACE, AUDITORY_DATA, SNN_RUNS, ROOT, CHIP  # noqa: E402  (the repository's paths.yaml)
 import json
 import os
 import sys
@@ -29,9 +29,9 @@ import torch
 from collect_efficiency import energy_uj
 
 HERE = Path(__file__).parent
-SNNDEC = CORE
+SNNDEC = ROOT
 sys.path.insert(0, str(SNNDEC))
-sys.path.insert(0, str(SNNDEC / "experiments/chip"))
+sys.path.insert(0, str(CHIP))
 from snndec import chip, data  # noqa: E402
 from snndec.convert import load  # noqa: E402
 

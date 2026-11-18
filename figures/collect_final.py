@@ -18,7 +18,7 @@ Fidelity, one row per (experiment, group, session, decoder, metric), each experi
              Kalman and Wiener filters are left out of speech: they do not decode phonemes and are no reference.
 
 Efficiency, one row per (experiment, decoder), every CPU decoder measured in ONE run on the Speck laptop
-(snn-decoders experiments/chip/final_bench.py: one thread, one output at a time, PyTorch/NumPy, Intel RAPL package
+(chip/final_bench.py: one thread, one output at a time, PyTorch/NumPy, Intel RAPL package
 energy minus the idle power measured before and after):
 
     latency_ms     median compute time per output

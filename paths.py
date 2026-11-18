@@ -50,7 +50,8 @@ TTS_ENV = _CFG["tts_env"]
 TTS_VOICES = _CFG["tts_voices"]
 
 # code, inside this repository
-CORE = ROOT / "core"                       # the shared LSNN / Speck library (snndec) and the chip tools
+SNNDEC = ROOT / "snndec"                   # the shared LSNN / Speck library
+CHIP = ROOT / "chip"                       # running the Speck SNNs on the chip: calibration, refits, bundle, benchmark
 SPEECH_SNN = ROOT / "speech" / "SNNDecoder"
 MOTOR = ROOT / "motor"
 AUDIO = ROOT / "audio"
@@ -59,7 +60,7 @@ FIGURES = ROOT / "figures"
 ALL = dict(ROOT=ROOT, WORKSPACE=WORKSPACE, AUDITORY_REPO=AUDITORY_REPO, AUDITORY_DATA=AUDITORY_DATA, SNN_RUNS=SNN_RUNS,
            RAW_AUDITORY=RAW_AUDITORY, MOTOR_DATA=MOTOR_DATA, MOTOR_RESULTS=MOTOR_RESULTS,
            MOTOR_LSNN_DATA=MOTOR_LSNN_DATA, OSCAR_MOTOR_DATA=OSCAR_MOTOR_DATA, OSCAR_HOME=OSCAR_HOME, OSCAR_SCRATCH=OSCAR_SCRATCH, TTS_ENV=TTS_ENV,
-           TTS_VOICES=TTS_VOICES, CORE=CORE,
+           TTS_VOICES=TTS_VOICES, SNNDEC=SNNDEC, CHIP=CHIP,
            SPEECH_SNN=SPEECH_SNN, MOTOR=MOTOR, AUDIO=AUDIO, FIGURES=FIGURES)
 
 if __name__ == "__main__":

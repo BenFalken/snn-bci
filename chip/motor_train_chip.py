@@ -5,7 +5,7 @@ The devkit's output spikes for a motor Speck SNN's TRAINING trials, for refittin
 The reset clears every neuron of every core used and waits --settle seconds (the output layer sits on core 0, which
 holds 64K neurons: 0.3 s was too short for speech's V2).
 
-    python experiments/chip/motor_train_chip.py --session SESSION_DIR --ckpt CKPT --scalers velocity_scalers.json \
+    python chip/motor_train_chip.py --session SESSION_DIR --ckpt CKPT --scalers velocity_scalers.json \
         --scale 3 --out train_chip_<session>.npz
 """
 
@@ -17,7 +17,7 @@ import time
 import numpy as np
 import torch
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from snndec import chip, data  # noqa: E402
 from snndec.convert import load  # noqa: E402
 

@@ -16,7 +16,7 @@ with a fixed spacing between delays (40 ms in every experiment) that doubles how
 
     budget   motor 480 (96 channels x 5 ... 8 x 60), audio 480 (96 x 5 ... 8 x 60), speech 512 (128 x 4 ... 8 x 64)
 
-    python experiments/speck_memory/plan.py --out RUNS_DIR --motor-root .../snn_datasets/bmi/indy/mua_8_group \
+    python chip/memory_sweep/plan.py --out RUNS_DIR --motor-root .../snn_datasets/bmi/indy/mua_8_group \
         --scalers .../velocity_scalers.json --audio-root .../pipeline_data/Neil/aSTG --speech-data .../derived/snnData
 
 writes RUNS_DIR/plan_<experiment>_<A|B>.jsonl.

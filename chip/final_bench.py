@@ -10,8 +10,8 @@ Energy: Intel RAPL package counters (/sys/class/powercap/intel-rapl:N, the 'pack
 the laptop's idle package power is measured before and after (the mean of the two), and a decoder's energy per output
 is (package energy over its run - idle power x run time) / outputs. The raw energy and mean power are kept too.
 
-    python experiments/chip/final_bench.py --out final_bench.json             (RAPL needs read access; see below)
-    python experiments/chip/final_bench.py --out x.json --only motor/lsnn --seconds 2
+    python chip/final_bench.py --out final_bench.json             (RAPL needs read access; see below)
+    python chip/final_bench.py --out x.json --only motor/lsnn --seconds 2
 
 RAPL counters are root-only on recent Linux kernels: run with sudo, or once per boot
     sudo chmod a+r /sys/class/powercap/intel-rapl/intel-rapl:*/energy_uj

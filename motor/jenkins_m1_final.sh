@@ -2,7 +2,7 @@
 # Motor (II): Jenkins's M1 array alone (96 channels, the standard Speck SNN with input delays, as indy and loco). Every
 # decoder on every session: Kalman, Wiener, LSTM, QRNN and the LSNN on this CPU, the Speck SNN on the devkit at each
 # session's own layer-1 threshold factor (chosen without labels on 20 TRAINING trials: snn-decoders
-# experiments/chip/motor_l1_sweep.py; the "jenkins_m1" lines of speck_l1_factors.txt), 3 ms per chip step.
+# chip/motor_l1_sweep.py; the "jenkins_m1" lines of speck_l1_factors.txt), 3 ms per chip step.
 #
 #   bash jenkins_m1_final.sh                 (devkit plugged in; results/final/jenkins_m1/, then the summary)
 #   bash jenkins_m1_final.sh 20090916        one session

@@ -4,11 +4,11 @@ Figure: energy and latency across the three experiments (data/efficiency.csv, da
     a-c  energy per output, estimated from operation counts (45 nm, on-chip memory; Kalman filters at their steady
          state); the Speck SNNs also measured on the chip by its power monitor (diamonds; static power included)
     d-f  compute time per output, every decoder on the Speck laptop's CPU, one thread (snn-decoders
-         experiments/chip/latency_all.py); the Speck SNNs on the chip (the host loop's wall time, its waits included),
+         chip/latency_all.py); the Speck SNNs on the chip (the host loop's wall time, its waits included),
          against the time between outputs (dashed: the real-time budget)
     g-i  fidelity against estimated energy per output (motor: monkey I sessions; audio: single days, the ones the
          Speck SNN was trained on). The Speck SNNs (diamonds): fidelity and energy both on the chip (audio: layer 1
-         threshold x4, snn-decoders experiments/chip/audio_chip.py)
+         threshold x4, chip/audio_chip.py)
 """
 
 from pathlib import Path

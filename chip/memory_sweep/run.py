@@ -1,7 +1,7 @@
 """
 Train and evaluate one run of a speck_memory plan (plan.py), then measure its memory:
 
-    python experiments/speck_memory/run.py RUNS_DIR/plan_motor_A.jsonl INDEX [INDEX ...] --root RUNS_DIR
+    python chip/memory_sweep/run.py RUNS_DIR/plan_motor_A.jsonl INDEX [INDEX ...] --root RUNS_DIR
 
 For each run: the experiment's Speck config (configs/<config>.yaml) with the run's channels, delays, readout and seed;
 trained with snndec.train (the experiment's own recipe); evaluated on the test split with the experiment's metric;
@@ -41,7 +41,7 @@ CHIP_VERIFIED = {(n_in, tuple([128, 256, 256] + out)) for n_in in (96, 480, 128,
 
 
 def build_config(row, root):
-    cfg = yaml.safe_load(open(f"{REPO}/configs/{row['config']}.yaml"))
+    cfg = yaml.safe_load(open(f"{REPO}/snndec/configs/{row['config']}.yaml"))
     m, exp = cfg['model'], row['experiment']
     cfg['train']['seed'] = row['seed']
     inp = m.setdefault('input', {})

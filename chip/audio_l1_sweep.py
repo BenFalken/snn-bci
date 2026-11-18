@@ -3,7 +3,7 @@ Layer-1 threshold scale for an audio Speck network, chosen without labels on the
 event-by-event firing in software (snndec.chip.run_events) at several scales, scored by agreement (correlation) with
 the trained network's own output; spectrogram r against the targets alongside, for reference.
 
-    python experiments/chip/audio_l1_sweep.py PIPELINE_DIR CKPT --scales 1 2 3 4 6 --out sweep.json
+    python chip/audio_l1_sweep.py PIPELINE_DIR CKPT --scales 1 2 3 4 6 --out sweep.json
 """
 
 import argparse
@@ -15,7 +15,7 @@ import time
 import numpy as np
 import torch
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from snndec import chip, data, tasks  # noqa: E402
 from snndec.convert import load  # noqa: E402
 from snndec.evaluate import recording_file  # noqa: E402

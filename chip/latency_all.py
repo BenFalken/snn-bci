@@ -13,7 +13,7 @@ kf is the steady-state Kalman filter (x <- A x + K (z - H x)); kf_full also reco
 spike_bmi's predict() does. speck_host is the host's share of a Speck decoder (input buffer and delay taps, and the
 readout); the chip's own time is measured on the devkit (batches 1 and 2).
 
-    python experiments/chip/latency_all.py --out latency.json
+    python chip/latency_all.py --out latency.json
 """
 
 import argparse
@@ -29,10 +29,10 @@ import torch
 import torch.nn as nn
 import yaml
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from snndec.model import SNNDecoder  # noqa: E402
 
-CONFIGS = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'configs')
+CONFIGS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'snndec', 'configs')
 
 
 def timeit(fn, seconds=2.0, warmup=30):

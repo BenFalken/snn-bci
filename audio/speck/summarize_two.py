@@ -5,9 +5,9 @@ correlation and the reference paper's per-utterance metric (median band_r), with
 Writes ~/Downloads/final_results/audio_two/summary.json, including the variant for the devkit: the one chosen on validation
 during training (run_two.sh), with every variant's chip-model test scores alongside for the record.
 
-    python experiments/audio_final/summarize_two.py
+    python audio/speck/summarize_two.py
 """
-import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[3]))
+import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[2]))
 from paths import WORKSPACE, AUDITORY_DATA, FIGURES  # noqa: E402  (the repository's paths.yaml)
 import csv
 import glob

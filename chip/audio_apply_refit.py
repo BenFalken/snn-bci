@@ -3,7 +3,7 @@ Decode a devkit run's Hidden 3 spikes (audio_chip.py --save-preds DIR -> DIR/chi
 refitted to the chip model on the training rows (audio_refit.py -> OUT/readout_event.npz), and save the test
 predictions next to the deployed ones as chip_refit.npy.
 
-    python experiments/chip/audio_apply_refit.py --ckpt words_P5_s11/model.pt --counts preds_s11/chip_counts.npz \
+    python chip/audio_apply_refit.py --ckpt words_P5_s11/model.pt --counts preds_s11/chip_counts.npz \
         --readout final_results/audio_refit/words_P5_s11/readout_event.npz --out final_results/audio_preds/words_P5_s11
 """
 import argparse
@@ -12,7 +12,7 @@ import sys
 
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from audio_refit import features  # noqa: E402
 from snndec.convert import load  # noqa: E402

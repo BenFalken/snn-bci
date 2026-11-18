@@ -1,14 +1,14 @@
 #!/bin/bash
 # Devkit bundle for the chosen two-network audio variant (summary.json), both monkeys x 3 seeds, readouts refitted and
 # applied live; $SNNBCI_WORKSPACE/speck_audio_two(.zip).
-source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 SD=$(cd "$(dirname "$0")/../.." && pwd); AD=$SNNBCI_AUDITORY_DATA
 OUT=$SNNBCI_WORKSPACE/final_results/audio_two; B=$SNNBCI_WORKSPACE/speck_audio_two
 V=$(python3 -c "import json; print(json.load(open('$OUT/summary.json'))['chosen'])")
 [ "$V" != None ] || { echo "no variant to bundle"; exit 1; }
-rm -rf $B; mkdir -p $B/code/experiments $B/data $B/results
-rsync -a --exclude __pycache__ $SD/snndec $SD/configs $B/code/; rsync -a --exclude __pycache__ $SD/experiments/chip $B/code/experiments/
+rm -rf $B; mkdir -p $B/code $B/data $B/results
+rsync -a --exclude __pycache__ $SD/snndec $B/code/; rsync -a --exclude __pycache__ $SD/chip $B/code/
 LINES=""
 for m in Neil Gomez; do for s in s11 s1337 s99; do
   r=${V}_$s; N=$OUT/${m}_$r; D=$B/data/${m}_$r; P=$AD/$m/aSTG/ALLWORDS_NOVEL_DAYNORM/pipeline
@@ -43,7 +43,7 @@ ALL="$LINES"
 for pair in \$ALL; do
   n=\${pair%%:*}; x=\${pair##*:}; d=data/\$n
   echo "== \$n, layer 1 x\$x"
-  \$PY -W ignore code/experiments/chip/audio_chip.py --data "\$d/pipeline=\$d/model.pt=\$d/readout_refit.npz" \\
+  \$PY -W ignore code/chip/audio_chip.py --data "\$d/pipeline=\$d/model.pt=\$d/readout_refit.npz" \\
       --layer1-scale \$x --out results/\$n.json --save-preds results/preds_\$n
 done
 echo "Done: send back the results/ folder."

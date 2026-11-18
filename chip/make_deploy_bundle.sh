@@ -1,21 +1,21 @@
 #!/bin/bash
 # Builds $SNNBCI_WORKSPACE/speck_deploy.zip: the FINAL Speck SNNs, run end to end on a Speck2f devkit with their final
 # readouts applied live (no post-processing step). Run ON THE MAC (it gathers checkpoints, readouts and data):
-#   bash experiments/chip/make_deploy_bundle.sh
+#   bash chip/make_deploy_bundle.sh
 # On the Speck laptop (conda env "speck": torch, sinabs, samna, numpy, pyyaml), devkit plugged in:
 #   unzip speck_deploy.zip && cd speck_deploy && bash run.sh check && bash run.sh all
-source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
+source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -euo pipefail
-REPO="$(cd "$(dirname "$0")/../.." && pwd)"
+REPO="$(cd "$(dirname "$0")/.." && pwd)"
 DL="$SNNBCI_WORKSPACE"
-SB="$DL/speechBCI-main/SNNDecoder"
+SB="$SNNBCI_SPEECH_SNN"
 T="$(mktemp -d)/speck_deploy"
 mkdir -p "$T"/{code,models,data,results}
 
 # ---- code: snn-decoders (audio, motor, the host benchmark) and the speech decoder package
-mkdir -p "$T/code/snn-decoders/experiments"
-rsync -a --exclude __pycache__ "$REPO/snndec" "$REPO/configs" "$T/code/snn-decoders/"
-rsync -a --exclude __pycache__ "$REPO/experiments/chip" "$T/code/snn-decoders/experiments/"
+mkdir -p "$T/code/snn-decoders"
+rsync -a --exclude __pycache__ "$REPO/snndec" "$T/code/snn-decoders/"
+rsync -a --exclude __pycache__ "$REPO/chip" "$T/code/snn-decoders/"
 mkdir -p "$T/code/speech"
 rsync -a --exclude __pycache__ --exclude configs "$SB/snnDecoder" "$T/code/speech/"
 mkdir -p "$T/code/speech/scripts"
@@ -85,7 +85,7 @@ if [ "$what" = audio ] || [ "$what" = all ]; then
   mkdir -p results/audio
   for m in Neil Gomez; do for s in s11 s1337 s99; do       # layer 1 x4 for all six (label-free, validation)
     d=models/audio/${m}_P5_$s
-    $PY -W ignore $SD/experiments/chip/audio_chip.py --data "$d/pipeline=$d/model.pt=$d/readout_refit.npz" \
+    $PY -W ignore $SD/chip/audio_chip.py --data "$d/pipeline=$d/model.pt=$d/readout_refit.npz" \
         --layer1-scale 4 --out results/audio/${m}_P5_$s.json --save-preds results/audio/preds_${m}_$s
   done; done
 fi
@@ -93,7 +93,7 @@ if [ "$what" = jenkins ] || [ "$what" = all ]; then
   mkdir -p results/jenkins
   for sf in 20090912:3 20090916:3 20090918:3 20090923:2; do
     S=sub-Jenkins_ses-${sf%:*}_behavior+ecephys
-    $PY -W ignore $SD/experiments/chip/motor_chip.py --session data/hkm/jenkins_m1/$S \
+    $PY -W ignore $SD/chip/motor_chip.py --session data/hkm/jenkins_m1/$S \
         --ckpt models/jenkins_m1/$S/best_model_weights.pth --scalers models/velocity_scalers.json --scale ${sf#*:} \
         --readout models/jenkins_m1/$S/readout_refit.npz --out results/jenkins/$S.json
   done
@@ -101,7 +101,7 @@ fi
 if [ "$what" = bench ] || [ "$what" = all ]; then
   mkdir -p results/bench
   # energy needs RAPL readable: sudo chmod a+r /sys/class/powercap/intel-rapl/intel-rapl:*/energy_uj
-  SPEECH_SPECK=V2C $PY -W ignore $SD/experiments/chip/final_bench.py --only speech/speck_host \
+  SPEECH_SPECK=V2C $PY -W ignore $SD/chip/final_bench.py --only speech/speck_host \
       --out results/bench/speech_V2C_host.json
 fi
 echo "done: send back the results/ folder"

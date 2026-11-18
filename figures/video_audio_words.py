@@ -102,7 +102,7 @@ def main():
     targets = np.load(paths.pipeline / "window_targets_test.npy")
     preds = {n: np.load(paths.pipeline / f"{dec}_predict_test.npy") for n, dec in lanes if n != "speck"}
     # the chip's Hidden 3 spikes read by the readout refitted to the chip's firing on the training stream (the final
-    # audio Speck SNN; experiments/chip/audio_refit.py + audio_apply_refit.py)
+    # audio Speck SNN; chip/audio_refit.py + audio_apply_refit.py)
     if a.speck_preds is None and a.dataset == "ALLWORDS_NOVEL_DAYNORM":
         a.speck_preds = (WORKSPACE / f"results_audio_novel/preds_{a.subject}_{a.speck_seed}/"
                          f"{a.subject}_P5_{a.speck_seed}/chip_refit.npy")

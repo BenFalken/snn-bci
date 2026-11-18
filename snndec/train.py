@@ -2,9 +2,9 @@
 One trainer for every experiment and design; each experiment keeps its own recipe, written out in its config
 (configs/*.yaml):
 
-    python -m snndec.train configs/motor_lsnn.yaml --data SESSION_DIR --scalers velocity_scalers.json --out DIR
-    python -m snndec.train configs/audio_speck.yaml --data PIPELINE_DIR --out DIR
-    python -m snndec.train configs/speech_lsnn.yaml --data SNNDATA_DIR --out DIR
+    python -m snndec.train snndec/configs/motor_lsnn.yaml --data SESSION_DIR --scalers velocity_scalers.json --out DIR
+    python -m snndec.train snndec/configs/audio_speck.yaml --data PIPELINE_DIR --out DIR
+    python -m snndec.train snndec/configs/speech_lsnn.yaml --data SNNDATA_DIR --out DIR
 
 Config:
     experiment: motor | audio | speech

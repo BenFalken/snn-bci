@@ -1,7 +1,7 @@
 """
 Collect the speck_memory runs into one table, and summarize them.
 
-    python experiments/speck_memory/collect.py --root RUNS_DIR --out results.csv [--memory memory.csv]
+    python chip/memory_sweep/collect.py --root RUNS_DIR --out results.csv [--memory memory.csv]
 
 results.csv: one row per run (experiment, unit, variant, readout, channels, delays, span_ms, inputs, seed, the test
 metric, chip mapping, minutes). memory.csv: the silence response per run (lag_ms, value). Prints, per experiment,

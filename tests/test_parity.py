@@ -12,7 +12,7 @@ import os
 import sys
 import tempfile
 import warnings
-import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[2]))
+import sys as _s; from pathlib import Path as _P; _s.path.insert(0, str(_P(__file__).resolve().parents[1]))
 from paths import WORKSPACE, AUDITORY_REPO, SPEECH_SNN, SNN_RUNS  # noqa: E402  (the repository's paths.yaml)
 
 import numpy as np

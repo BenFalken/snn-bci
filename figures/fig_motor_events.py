@@ -18,7 +18,7 @@ and is checked against it.
     python fig_motor_events.py      -> figures/fig_motor_events.{pdf,svg,png}
 """
 
-from repo_paths import WORKSPACE, CORE  # noqa: E402  (the repository's paths.yaml)
+from repo_paths import WORKSPACE, ROOT, CHIP  # noqa: E402  (the repository's paths.yaml)
 import json
 import sys
 from pathlib import Path
@@ -30,9 +30,9 @@ import torch
 import style
 
 HERE = Path(__file__).parent
-SNNDEC = CORE
+SNNDEC = ROOT
 sys.path.insert(0, str(SNNDEC))
-sys.path.insert(0, str(SNNDEC / "experiments/chip"))
+sys.path.insert(0, str(CHIP))
 from snndec import chip, data  # noqa: E402
 from snndec.convert import load  # noqa: E402
 from motor_l1_sweep import decode  # noqa: E402

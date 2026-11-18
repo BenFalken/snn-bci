@@ -14,7 +14,7 @@ from either source:
 the ridge strength chosen by leave-trials-out cross-validation within the training trials; then applied once to the
 devkit's test output (the final run's speck_counts) and scored against the trained readout's RMSE on the same rows.
 
-    python experiments/chip/jenkins_refit.py --session SESSION_DIR --ckpt CKPT --scalers velocity_scalers.json \
+    python chip/jenkins_refit.py --session SESSION_DIR --ckpt CKPT --scalers velocity_scalers.json \
         --arrays final_v2/jenkins_m1/sessions/<session>_arrays.npz --scale 3 [--train-chip counts.npz] --out OUT.json
 """
 
@@ -26,7 +26,7 @@ import sys
 import numpy as np
 import torch
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from snndec import chip, data  # noqa: E402
 from snndec.convert import load  # noqa: E402
 

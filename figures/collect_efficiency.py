@@ -25,7 +25,7 @@ One efficiency table for the three experiments: data/efficiency.csv, one row per
              CPU thread
 """
 
-from repo_paths import WORKSPACE, AUDITORY_REPO, CORE, SNN_RUNS  # noqa: E402  (the repository's paths.yaml)
+from repo_paths import WORKSPACE, AUDITORY_REPO, ROOT, CHIP, SNN_RUNS  # noqa: E402  (the repository's paths.yaml)
 import json
 import sys
 import time
@@ -38,7 +38,7 @@ import torch
 HERE = Path(__file__).parent
 MOTOR = WORKSPACE / "results/final/indy"
 AUDIO_REPO = AUDITORY_REPO
-SNNDEC = CORE
+SNNDEC = ROOT
 AUDIO_DAYS = ["07_19_11", "07_20_10", "07_31_13", "08_03_10", "08_06_13"]
 SPEECH = WORKSPACE / "speechBCI-main/figures/inference_final/efficiency_final.json"
 SPEECH_ROWS = {"Kalman filter per session": "kf", "Wiener filter (160 ms)": "wf", "LSTM 2x1024, 96 ep": "lstm",
@@ -220,7 +220,7 @@ def speech_rows():
     return out
 
 
-LAPTOP = HERE / "data" / "laptop"                     # the Speck laptop's results (snn-decoders experiments/chip)
+LAPTOP = HERE / "data" / "laptop"                     # the Speck laptop's results (snn-decoders chip)
 
 
 def laptop_overrides(df):

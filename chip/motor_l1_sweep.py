@@ -4,7 +4,7 @@ software (snndec.chip.run_events) at several scales, scored by agreement with th
 (correlation of decoded velocities), with the RMSE alongside for reference. Also the discretized network stepped as in
 training (run_software), which isolates quantization from event-by-event firing.
 
-    python experiments/chip/motor_l1_sweep.py SESSION_DIR CKPT --scalers velocity_scalers.json \
+    python chip/motor_l1_sweep.py SESSION_DIR CKPT --scalers velocity_scalers.json \
         --scales 0.5 0.75 1 1.5 2 3 --trials 5 --out sweep.json
 """
 
@@ -17,7 +17,7 @@ import time
 import numpy as np
 import torch
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from snndec import chip, data  # noqa: E402
 from snndec.convert import load  # noqa: E402
 

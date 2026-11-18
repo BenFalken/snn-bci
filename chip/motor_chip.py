@@ -8,7 +8,7 @@ the host, live, two ways:
                <session>_readout.npz: the same smoothing, each axis's share per neuron and its log total, from a few
                past steps, through a ridge-fitted linear map), the deployed readout for Jenkins
 
-    python experiments/chip/motor_chip.py --session SESSION_DIR --ckpt CKPT --scalers velocity_scalers.json \
+    python chip/motor_chip.py --session SESSION_DIR --ckpt CKPT --scalers velocity_scalers.json \
         --scale 3 [--readout <session>_readout.npz] [--nochip] --out results/<session>.json
 
 --nochip runs the chip model in software (snndec.chip.run_events) instead of the devkit. Scores: RMSE (mm/s, over
@@ -23,7 +23,7 @@ import time
 import numpy as np
 import torch
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from snndec import chip, data  # noqa: E402
 from snndec.convert import load  # noqa: E402

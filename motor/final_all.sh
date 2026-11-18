@@ -5,7 +5,7 @@
 # Speck runs with hidden layer 1's threshold scaled per session (speck_l1_factors.txt). The chip applies a step's
 # input events one at a time, where training summed the step first, so layer 1 over-fires. Each factor was chosen
 # without labels, on 20 TRAINING trials per session: the scale whose event-by-event output in software agrees best
-# (correlation) with the trained network's own output (snn-decoders experiments/chip/motor_l1_sweep.py). Test trials
+# (correlation) with the trained network's own output (chip/motor_l1_sweep.py). Test trials
 # play no part in the choice. Every network is hard reset.
 #
 #   bash final_all.sh [subject ...]       default: indy loco jenkins
