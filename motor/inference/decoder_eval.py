@@ -377,7 +377,8 @@ def training_loss_check(preds, trials, checkpoint, experiment):
     if experiment != 'hkm' and len(trials) != 1:
         return None
     test_loss = float(np.mean([np.sqrt(np.mean((p - t['velocity']) ** 2)) for p, t in zip(preds, trials)]))
-    best = checkpoint.get('best_loss')
+    # selected on validation (--val-frac): the checkpoint stores its one test score separately
+    best = checkpoint.get('test_loss_at_best', checkpoint.get('best_loss'))
     check = {'test_loss': test_loss, 'checkpoint_best_loss': None if best is None else float(best),
              'relative_difference': None if not best else abs(test_loss - best) / abs(best)}
     if best is None:

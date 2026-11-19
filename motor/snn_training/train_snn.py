@@ -37,9 +37,15 @@ several spikes drive the chip far harder than training assumed. The
 setting is saved with the checkpoint, and inference applies the same.
 
 Outputs in --checkpoint-dir, with exp_name = bmi_{neuron_type}_{reset_type}:
-    best_model_weights.pth                   lowest test loss so far
+    best_model_weights.pth                   lowest monitored loss so far (validation with --val-frac,
+                                             else test)
     checkpoint_{exp_name}_epoch{N}.pth       every --checkpoint-interval epochs
     final_model_{exp_name}.pth               written when training ends
+
+Model selection (--val-frac): with --val-frac f > 0, the chronologically last f of the training trials (after a
+one-trial gap) are held out as a validation split. The validation loss then picks the best checkpoint and drives the
+learning-rate schedule and early stopping, and the test split is scored once, on the selected checkpoint, at the end
+(stored in it as test_loss_at_best). With f = 0 (the default, as the original runs) the test loss does all three.
     training_curves_{exp_name}.png, summary_{exp_name}.txt
 
 Architecture (--arch): "snn" (default) is the feedforward SNN above
@@ -188,6 +194,10 @@ def parse_arguments():
                            "binarizes the same way)")
     data.add_argument("--batch-size", type=int, default=20)
     data.add_argument("--num-workers", type=int, default=20)
+    data.add_argument("--val-frac", type=float, default=0.0,
+                      help="Hold out the last fraction of the training trials (after a one-trial gap) as a "
+                           "validation split for model selection, the LR schedule and early stopping; the "
+                           "test split is then scored only once, at the end")
     data.add_argument("--train-data-min", type=float, default=None,
                       help="Use only the first N minutes of training trials")
     data.add_argument("--velocity-lo", type=float, default=None,
@@ -385,6 +395,26 @@ def build_loaders(args, experiment, subject):
 
     trial_timesteps = train_loader.dataset[0][1].shape[0]
     print(f"First train trial: {trial_timesteps} timesteps ({trial_timesteps * STEP_MS:.0f} ms)")
+    val_loader = None
+    if args.val_frac > 0 and args.train_data_min is not None:
+        raise ValueError("--val-frac and --train-data-min together are not supported")
+    if args.val_frac > 0:
+        full = train_loader.dataset
+        n = len(full)
+        n_val = max(1, int(round(args.val_frac * n)))
+        n_fit = n - n_val - 1                               # one trial's gap between the two blocks
+        if n_fit < 1:
+            raise ValueError(f"--val-frac {args.val_frac} leaves no training trials (of {n})")
+        val_set = Subset(full, range(n - n_val, n))
+        val_lengths = {full.trial_length(i) for i in range(n - n_val, n)}
+        val_loader = DataLoader(val_set, batch_size=min(args.batch_size, n_val) if len(val_lengths) == 1 else 1,
+                                shuffle=False, drop_last=False, num_workers=train_loader.num_workers,
+                                pin_memory=train_loader.pin_memory, collate_fn=train_loader.collate_fn)
+        train_loader = DataLoader(Subset(full, range(n_fit)), batch_size=min(train_loader.batch_size, n_fit), shuffle=True,
+                                  drop_last=train_loader.drop_last, num_workers=train_loader.num_workers,
+                                  pin_memory=train_loader.pin_memory, collate_fn=train_loader.collate_fn)
+        print(f"--val-frac {args.val_frac:g}: training on trials 0-{n_fit - 1}, validating on the last {n_val} "
+              f"({n - n_val}-{n - 1}); the test split is scored once, at the end")
     if args.train_data_min is not None:
         n_trials = n_trials_for_minutes(train_loader.dataset, args.train_data_min)
         print(f"--train-data-min {args.train_data_min:g}: first {n_trials} training trial(s)")
@@ -401,13 +431,13 @@ def build_loaders(args, experiment, subject):
                              num_workers=test_loader.num_workers, pin_memory=test_loader.pin_memory,
                              collate_fn=test_loader.collate_fn)
 
-    for name, loader in (("train", train_loader), ("test", test_loader)):
+    for name, loader in (("train", train_loader), ("test", test_loader)) + ((("val", val_loader),) if val_loader else ()):
         if len(loader) == 0:
             raise ValueError(f"{name} loader has no batches ({len(loader.dataset)} trials, "
                              f"batch_size={loader.batch_size})")
     print(f"Dataset: {len(train_loader.dataset)} train trials, {len(test_set)} test trials "
           f"(test batch size {test_batch_size})")
-    return train_loader, test_loader
+    return train_loader, val_loader, test_loader
 
 
 def build_model(args, experiment, num_input_channels, device):
@@ -520,7 +550,8 @@ def main():
     print(f"Batch size: {args.batch_size} | lr: {args.lr} | epochs: {args.epochs} | "
           f"binarized input: {args.binarize_input}")
 
-    train_loader, test_loader = build_loaders(args, experiment, subject)
+    train_loader, val_loader, test_loader = build_loaders(args, experiment, subject)
+    monitor_loader, monitor_name = (val_loader, "val") if val_loader is not None else (test_loader, "test")
     input_shape = test_loader.dataset[0][1].shape[1:]
     model_module, model = build_model(args, experiment, input_shape[0], device)
 
@@ -588,9 +619,9 @@ def main():
             use_amp=args.use_amp, channel_lasso_weight=args.channel_lasso_weight,
             spike_rate_weight=args.spike_rate_weight, spike_rate_targets=spike_rate_targets,
             log_interval=args.log_interval, verbose=args.verbose, desc=f"Epoch {epoch + 1} [train]")
-        test_loss, test_metrics = run_epoch(
-            model, test_loader, criterion, device, scale, args.loss_eps,
-            verbose=args.verbose, desc=f"Epoch {epoch + 1} [test]")
+        test_loss, test_metrics = run_epoch(                 # the monitored split: validation if held out
+            model, monitor_loader, criterion, device, scale, args.loss_eps,
+            verbose=args.verbose, desc=f"Epoch {epoch + 1} [{monitor_name}]")
         train_losses.append(train_loss)
         test_losses.append(test_loss)
 
@@ -604,11 +635,11 @@ def main():
 
         epoch_time = time.time() - epoch_start
         print(f"Epoch {epoch + 1}/{args.epochs} ({epoch_time:.1f}s) | train {train_loss:.5f} | "
-              f"test {test_loss:.5f} | velocity error {test_metrics['velocity_error']:.5f} | "
+              f"{monitor_name} {test_loss:.5f} | velocity error {test_metrics['velocity_error']:.5f} | "
               f"spike rate {test_metrics['spike_rate']:.4f} | lr {train_metrics['learning_rate']:.6f}"
               + (f" | skipped {train_metrics['skipped_updates']:.0%} of updates (non-finite gradient)"
                  if train_metrics['skipped_updates'] else ""))
-        print(f"  spikes per neuron per timestep by layer: test "
+        print(f"  spikes per neuron per timestep by layer: {monitor_name} "
               f"[{' '.join(f'{r:.3f}' for r in test_metrics['layer_rates'])}], train "
               f"[{' '.join(f'{r:.3f}' for r in train_metrics['layer_rates'])}]"
               + (f", train penalty {train_metrics['spike_rate_penalty']:.4f}"
@@ -620,7 +651,7 @@ def main():
                 return out
             wandb.log({"epoch": epoch + 1, "epoch_time": epoch_time,
                        **{f"train/{k}": v for k, v in flat(train_metrics).items()},
-                       **{f"test/{k}": v for k, v in flat(test_metrics).items()}}, step=epoch)
+                       **{f"{monitor_name}/{k}": v for k, v in flat(test_metrics).items()}}, step=epoch)
 
         if delay_params:
             m = model.input_delay_pos
@@ -649,7 +680,24 @@ def main():
             break
 
     training_time = time.time() - training_start
-    print(f"\nTraining finished in {training_time / 60:.1f} min; best test loss {best_loss:.5f}")
+    print(f"\nTraining finished in {training_time / 60:.1f} min; best {monitor_name} loss {best_loss:.5f}")
+    test_at_best = None
+    best_path = os.path.join(args.checkpoint_dir, "best_model_weights.pth")
+    if val_loader is not None and os.path.isfile(best_path):
+        # the test split's only use: one score of the checkpoint the validation split chose
+        best = torch.load(best_path, map_location=device, weights_only=False)
+        current = {k: v.detach().clone() for k, v in model.state_dict().items()}
+        # weights only: the neurons' state buffers are shaped by the last batch (load_model_weights skips them)
+        model_module.load_model_weights(model, best["model_state_dict"], neuron_type=args.neuron_type,
+                                        source_description=best_path)
+        test_at_best, _ = run_epoch(model, test_loader, criterion, device, scale, args.loss_eps,
+                                    verbose=args.verbose, desc="test (selected checkpoint)")
+        model_module.load_model_weights(model, current, neuron_type=args.neuron_type,
+                                        source_description="the last epoch's weights")
+        best.update({"test_loss_at_best": test_at_best, "selection": "validation", "val_frac": args.val_frac})
+        torch.save(best, best_path)
+        print(f"Test loss of the checkpoint chosen on validation (epoch {best.get('epoch', -1) + 1}): "
+              f"{test_at_best:.5f}")
     final_path = os.path.join(args.checkpoint_dir, f"final_model_{exp_name}.pth")
     save_checkpoint(model, optimizer, epoch, test_losses[-1] if test_losses else float("nan"),
                     final_path, additional_info=checkpoint_info(is_final=True))
@@ -658,7 +706,9 @@ def main():
                          title=f"Training Progress - {exp_name}", lr_history=lr_history)
     with open(os.path.join(args.checkpoint_dir, f"summary_{exp_name}.txt"), "w") as f:
         f.write(f"Experiment: {exp_name}\nFinal epoch: {epoch + 1}\n"
-                f"Best test loss: {best_loss:.5f}\nTraining time: {training_time / 60:.1f} minutes\n"
+                f"Best {monitor_name} loss: {best_loss:.5f}\n"
+                + (f"Test loss at that checkpoint: {test_at_best:.5f}\n" if test_at_best is not None else "")
+                + f"Training time: {training_time / 60:.1f} minutes\n"
                 f"Arguments: {vars(args)}\n")
     if args.wandb:
         wandb.run.summary.update({"best_test_loss": best_loss, "total_training_time": training_time})

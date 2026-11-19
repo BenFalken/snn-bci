@@ -57,6 +57,18 @@ esac
 FINETUNE_ROOT="${CHECKPOINT_BASE}/${POOL_KIND}_finetuned_binarized_soft"
 PER_SESSION_ROOT="${CHECKPOINT_BASE}/per_session_binarized"
 
+# apply_val_frac: with VAL_FRAC set (e.g. 0.1), train with a validation split for model selection (train_snn.py
+# --val-frac) and write to checkpoint directories ending in _val, so the original (test-selected) runs are kept.
+# Pretrained checkpoints (pretrain_dir) are read from their original directories: pretraining never sees the
+# held-out session.
+apply_val_frac() {
+    [ -n "${VAL_FRAC:-}" ] || return 0
+    TRAIN_ARGS+=(--val-frac "$VAL_FRAC")
+    FINETUNE_ROOT="${FINETUNE_ROOT}_val"
+    PER_SESSION_ROOT="${PER_SESSION_ROOT}_val"
+    MODEL_DESC="${MODEL_DESC}, selected on the last ${VAL_FRAC} of the training trials"
+}
+
 # select_model pooled_pretrain|pooled|per_session -> the network and training
 # controls (pooled_pretrain: the pooled network with hard reset).
 # Epochs are maxima (early stopping); hkm epochs take about an hour per
@@ -243,6 +255,7 @@ select_model() {
             "${LSNN_FLAGS[@]}"
         )
         MODEL_DESC="$1: LSNN hidden=${HIDDEN_DIMS[*]} ${LSNN_FLAGS[*]:-(recurrent, 90% adaptive)}, readout from every layer, 2 readout stages, batch=${BATCH_SIZE} epochs<=${EPOCHS}"
+        case "$1" in *_pretrain) ;; *) apply_val_frac ;; esac
         return
     fi
     TAU_SYN_ARGS=()
@@ -269,6 +282,7 @@ select_model() {
         "${EXTRA_ARGS[@]}"
     )
     MODEL_DESC="$1: hidden=${HIDDEN_DIMS[*]} reset=${RESET_TYPE} thresholds=${THRESHOLDS[*]} tau_syn=${TAU_SYN[*]:-none}${EXTRA_ARGS[*]:+ ${EXTRA_ARGS[*]}} batch=${BATCH_SIZE} epochs<=${EPOCHS}"
+    case "$1" in *_pretrain) ;; *) apply_val_frac ;; esac
 }
 
 # Pretraining pool and checkpoint directory; per held-out session with LOSO=1.
