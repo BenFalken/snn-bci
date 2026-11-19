@@ -4,7 +4,7 @@ channel's activity relates in time to what the decoder reconstructs.
 
 For every channel, a linear encoding model
     rate(t) = b0 + b1 z1(t + tau) + b2 z2(t + tau) + b3 z3(t + tau)
-is fitted by least squares at every offset tau in -600..600 ms and scored by R^2 (tau > 0: the channel's activity
+is fitted by least squares at every offset tau in -1,200..1,200 ms and scored by R^2 (tau > 0: the channel's activity
 precedes the target; tau < 0: it follows it). Three regressors, as motor's (vx, vy, speed), so the R^2 scales match:
     audio   z = the top 3 principal components of the heard sound's log-mel spectrogram (128 bands, 40 ms frames;
             components fitted on the same training portion). Per recording day, the first 80% of the continuous
@@ -34,7 +34,7 @@ from scipy.ndimage import gaussian_filter1d, uniform_filter1d
 from repo_paths import AUDITORY_DATA, WORKSPACE  # noqa: E402  (the repository's paths.yaml)
 
 OUT = WORKSPACE / "lag_tuning"
-MAX_LAG_MS, SMOOTH_MS, MIN_R2 = 600.0, 40.0, 0.02
+MAX_LAG_MS, SMOOTH_MS, MIN_R2 = 1200.0, 40.0, 0.02
 HIGHPASS_S = 5.0   # a centred moving average this long is removed from rates and regressors (no lag shift)
 AUDIO_DAYS = {"Neil": ["07_19_11", "07_20_10", "07_31_13", "08_03_10", "08_06_13"],
               "Gomez": ["04_04_15", "04_05", "04_09_10", "04_12_13"]}

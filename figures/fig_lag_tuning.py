@@ -24,7 +24,7 @@ from repo_paths import WORKSPACE  # noqa: E402  (the repository's paths.yaml)
 
 HERE = Path(__file__).parent
 LAG = WORKSPACE / "lag_tuning"
-XLIM = 600
+XLIM = 1200
 ROWS = {  # experiment: (title, example session, the Speck SNN's input delays in ms, as offsets)
     "motor": ("Motor (I): hand velocity", "indy_20160921_01", [0, 40, 100, 200]),
     "audio": ("Audio: heard sound", "Neil_07_31_13", [320, 160, 80, 40, 0, -40, -80, -160, -320]),
@@ -73,7 +73,8 @@ def row(axes, exp, data, title, example, delays, draft):
     ax = axes[1]
     peaks = np.array([c["peak_lag_ms"] for _, chs, _ in data.values() for c in chs])
     n_all = sum(n for *_, n in data.values())
-    edges = np.arange(-XLIM - bin_ms / 2, XLIM + bin_ms, bin_ms) if bin_ms >= 40 else np.arange(-610, 611, 20)
+    w = max(bin_ms, 20.0) * (1 if bin_ms >= 40 else 2)                 # 40 ms histogram bins everywhere
+    edges = np.arange(-XLIM - w / 2, XLIM + w, w)
     ax.hist(peaks, bins=edges, color=style.MUTED, alpha=0.8)
     taps(ax, delays)
     q1, med, q3 = np.percentile(peaks, [25, 50, 75])
