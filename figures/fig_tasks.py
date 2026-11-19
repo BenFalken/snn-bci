@@ -44,12 +44,16 @@ def blob(ax, pts, **kw):
     ax.add_patch(PathPatch(MPath(verts, codes), **kw))
 
 
+_N = {"monkey": 0}
+
+
 def monkey(ax, x, y, s=1.0, arm_to=None):
-    pg.monkey(ax, x, y, s, reach_to=arm_to)
+    _N["monkey"] += 1
+    pg.monkey(ax, x, y, s, reach_to=arm_to, name=f"monkey{_N['monkey']}")
 
 
 def person(ax, x, y, s=1.0):
-    pg.person(ax, x, y, s)
+    pg.person(ax, x, y, s, name="person", brain_site="6v", site_color=COL["speech"])
 
 
 def screen(ax, x, y, w, h):
@@ -59,8 +63,10 @@ def screen(ax, x, y, w, h):
 
 def brain(ax, x, y, s, human, site, color, label):
     """A lateral view of the left hemisphere (front to the right) with the array's site marked."""
-    mx, my = pg.brain(ax, x, y, s, human=human)(site)
-    ax.add_patch(Rectangle((mx - .07 * s, my - .07 * s), .14 * s, .14 * s, fc=color, ec="white", lw=0.6, zorder=8))
+    mx, my = pg.brain(ax, x, y, s, human=human, name=f"brain_{label.split()[0].lower()}_{site}")(site)
+    r = Rectangle((mx - .07 * s, my - .07 * s), .14 * s, .14 * s, fc=color, ec="white", lw=0.6, zorder=8)
+    r.set_gid(f"array_{site}")
+    ax.add_patch(r)
     ax.text(x, y - (0.98 if human else 0.88) * s, label, ha="center", va="top", fontsize=6.2, color=INK)
 
 
@@ -113,7 +119,7 @@ def task_speech(ax, sentence):
     words = sentence.split()
     ax.text(1.66, 0.35, " ".join(words[:3]) + "\n" + " ".join(words[3:]), ha="center", va="center", fontsize=5.4,
             color="white", zorder=3, linespacing=1.3)
-    person(ax, 0.45, 0.0, 0.95)
+    person(ax, 0.42, 0.17, 1.05)
     ax.add_patch(FancyBboxPatch((0.9, -0.32), 0.62, 0.22, boxstyle="round,pad=0.02,rounding_size=0.08", fc="white",
                                 ec=COL["speech"], lw=0.8, zorder=3))
     ax.text(1.21, -0.21, "attempts", ha="center", va="center", fontsize=5.6, color=COL["speech"], style="italic",
