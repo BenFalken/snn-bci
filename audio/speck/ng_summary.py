@@ -19,7 +19,7 @@ from paths import WORKSPACE  # noqa: E402
 FINAL = WORKSPACE / "final_results"
 SEEDS = ["s1337", "s11"]
 VARIANTS = {"P5": ("audio_novel", "P5_{s}"), "NG2": ("audio_ng", "NG2_centre_ema1_deriv_{s}"),
-            "NG4": ("audio_ng", "NG4_centre_ema1_deriv_{s}"), "NG10": ("audio_ng", "NG10_centre_ema1_deriv_{s}")}
+            "NG4": ("audio_ng", "NG4_centre_ema1_deriv_{s}")}   # NG10 dropped 2026-11-19 (runs_speck_ng.txt)
 
 
 def score(monkey, variant, split):
