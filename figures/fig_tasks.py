@@ -109,9 +109,9 @@ def task_audio(ax):
 
 
 def task_speech(ax, sentence):
-    screen(ax, 1.02, 0.05, 1.42, 0.6)
+    screen(ax, 0.98, 0.05, 1.36, 0.6)
     words = sentence.split()
-    ax.text(1.73, 0.35, " ".join(words[:3]) + "\n" + " ".join(words[3:]), ha="center", va="center", fontsize=5.4,
+    ax.text(1.66, 0.35, " ".join(words[:3]) + "\n" + " ".join(words[3:]), ha="center", va="center", fontsize=5.4,
             color="white", zorder=3, linespacing=1.3)
     person(ax, 0.45, 0.0, 0.95)
     ax.add_patch(FancyBboxPatch((0.9, -0.32), 0.62, 0.22, boxstyle="round,pad=0.02,rounding_size=0.08", fc="white",
