@@ -18,6 +18,7 @@ import numpy as np
 from matplotlib.patches import Arc, Circle, Ellipse, FancyArrowPatch, FancyBboxPatch, PathPatch, Polygon, Rectangle
 from matplotlib.path import Path as MPath
 
+import pictograms as pg
 import style
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -44,31 +45,11 @@ def blob(ax, pts, **kw):
 
 
 def monkey(ax, x, y, s=1.0, arm_to=None):
-    """A seated macaque, facing right: body, head, ears, face; one arm reaching to arm_to (or resting)."""
-    blob(ax, [(x - .34 * s, y - .95 * s), (x + .30 * s, y - .95 * s), (x + .30 * s, y - .1 * s), (x, y + .05 * s),
-              (x - .36 * s, y - .2 * s)], fc=FUR, ec=INK, lw=0.6, zorder=2)
-    ax.add_patch(Circle((x - .2 * s, y + .27 * s), .09 * s, fc=FUR, ec=INK, lw=0.6, zorder=3))      # ear
-    ax.add_patch(Circle((x, y + .3 * s), .26 * s, fc=FUR, ec=INK, lw=0.6, zorder=4))                # head
-    ax.add_patch(Ellipse((x + .1 * s, y + .26 * s), .3 * s, .3 * s, fc=SKIN, ec="none", zorder=5))   # face
-    ax.add_patch(Circle((x + .14 * s, y + .33 * s), .022 * s, fc=INK, ec="none", zorder=6))          # eye
-    ax.add_patch(Ellipse((x + .2 * s, y + .19 * s), .14 * s, .1 * s, fc="#e6bfa5", ec="none", zorder=6))  # muzzle
-    sx, sy = x + .14 * s, y - .25 * s                                                               # shoulder
-    end = arm_to if arm_to is not None else (x + .32 * s, y - .62 * s)
-    mid = ((sx + end[0]) / 2, (sy + end[1]) / 2 - .06 * s)
-    ax.plot([sx, mid[0], end[0]], [sy, mid[1], end[1]], color=INK, lw=3.4 * s, solid_capstyle="round", zorder=7)
-    ax.plot([sx, mid[0], end[0]], [sy, mid[1], end[1]], color=FUR, lw=2.4 * s, solid_capstyle="round", zorder=8)
-    ax.add_patch(Circle(end, .05 * s, fc=SKIN, ec=INK, lw=0.5, zorder=9))                           # hand
+    pg.monkey(ax, x, y, s, reach_to=arm_to)
 
 
 def person(ax, x, y, s=1.0):
-    """A seated participant facing right, head and shoulders."""
-    blob(ax, [(x - .42 * s, y - .95 * s), (x + .36 * s, y - .95 * s), (x + .3 * s, y - .25 * s), (x, y - .1 * s),
-              (x - .36 * s, y - .3 * s)], fc="#7a8fb0", ec=INK, lw=0.6, zorder=2)
-    ax.add_patch(Ellipse((x, y + .32 * s), .44 * s, .52 * s, fc=SKIN, ec=INK, lw=0.6, zorder=4))
-    blob(ax, [(x - .22 * s, y + .38 * s), (x - .05 * s, y + .62 * s), (x + .2 * s, y + .55 * s),
-              (x + .02 * s, y + .48 * s)], fc="#5a4636", ec="none", zorder=5)                        # hair
-    ax.add_patch(Circle((x + .12 * s, y + .36 * s), .022 * s, fc=INK, ec="none", zorder=6))
-    ax.add_patch(Arc((x + .14 * s, y + .17 * s), .1 * s, .06 * s, theta1=200, theta2=340, color=INK, lw=0.6, zorder=6))
+    pg.person(ax, x, y, s)
 
 
 def screen(ax, x, y, w, h):
@@ -76,23 +57,11 @@ def screen(ax, x, y, w, h):
                                 lw=0.6, zorder=1))
 
 
-def brain(ax, x, y, s, human, mark, color, label):
-    """A lateral brain outline (left hemisphere, front to the right) with the array's site marked."""
-    if human:
-        pts = [(-.95, .05), (-.7, .55), (-.1, .78), (.55, .62), (.92, .25), (.85, -.1), (.45, -.2), (.3, -.45),
-               (-.15, -.55), (-.6, -.42), (-.92, -.25)]
-    else:
-        pts = [(-.9, .0), (-.6, .45), (0, .6), (.6, .42), (.9, .12), (.78, -.12), (.4, -.18), (.2, -.42),
-               (-.25, -.48), (-.7, -.32)]
-    blob(ax, [(x + px * s, y + py * s) for px, py in pts], fc="#efe4e4", ec=INK, lw=0.7, zorder=2)
-    # central and lateral sulci
-    cs = [(.05, .62), (.0, .3), (-.06, -.02)] if not human else [(.05, .74), (.0, .4), (-.05, .02)]
-    ax.plot([x + p[0] * s for p in cs], [y + p[1] * s for p in cs], color="#b6a3a3", lw=0.8, zorder=3)
-    ls = [(.55, -.12), (.1, -.05), (-.45, -.18)] if not human else [(.55, -.14), (.1, -.06), (-.5, -.2)]
-    ax.plot([x + p[0] * s for p in ls], [y + p[1] * s for p in ls], color="#b6a3a3", lw=0.8, zorder=3)
-    mx, my = x + mark[0] * s, y + mark[1] * s
-    ax.add_patch(Rectangle((mx - .07 * s, my - .07 * s), .14 * s, .14 * s, fc=color, ec="white", lw=0.6, zorder=5))
-    ax.text(x, y - (.72 if human else .64) * s, label, ha="center", va="top", fontsize=6.2, color=INK)
+def brain(ax, x, y, s, human, site, color, label):
+    """A lateral view of the left hemisphere (front to the right) with the array's site marked."""
+    mx, my = pg.brain(ax, x, y, s, human=human)(site)
+    ax.add_patch(Rectangle((mx - .07 * s, my - .07 * s), .14 * s, .14 * s, fc=color, ec="white", lw=0.6, zorder=8))
+    ax.text(x, y - (0.98 if human else 0.88) * s, label, ha="center", va="top", fontsize=6.2, color=INK)
 
 
 def speaker(ax, x, y, s):
@@ -127,7 +96,7 @@ def task_motor2(ax):
     ax.add_patch(FancyArrowPatch((cx + .06, cy), (cx + .34, cy), arrowstyle="-|>", mutation_scale=6, color="#9fb4ff",
                                  lw=0.8, zorder=4))
     monkey(ax, 0.35, 0.05, 0.95, arm_to=(1.25, 0.1))
-    ax.text(1.1, -1.0, "reach from the centre to a cued target", ha="center", va="top", fontsize=6.2, color=INK)
+    ax.text(1.1, -1.0, "reach from the center to a cued target", ha="center", va="top", fontsize=6.2, color=INK)
 
 
 def task_audio(ax):
@@ -140,9 +109,9 @@ def task_audio(ax):
 
 
 def task_speech(ax, sentence):
-    screen(ax, 1.15, 0.05, 1.15, 0.6)
+    screen(ax, 1.02, 0.05, 1.42, 0.6)
     words = sentence.split()
-    ax.text(1.725, 0.35, " ".join(words[:3]) + "\n" + " ".join(words[3:]), ha="center", va="center", fontsize=5.4,
+    ax.text(1.73, 0.35, " ".join(words[:3]) + "\n" + " ".join(words[3:]), ha="center", va="center", fontsize=5.4,
             color="white", zorder=3, linespacing=1.3)
     person(ax, 0.45, 0.0, 0.95)
     ax.add_patch(FancyBboxPatch((0.9, -0.32), 0.62, 0.22, boxstyle="round,pad=0.02,rounding_size=0.08", fc="white",
@@ -241,10 +210,10 @@ def main():
     style.apply()
     z = np.load(WORKSPACE / "speech_rebuild/derived/snnData/t12.2022.06.14/train.npz")
     sentence = "".join(chr(c) for c in z["transcriptions"][0] if c > 0)
-    cols = [("motor1", "Motor (I)", "monkeys I, L", task_motor1, False, (.18, .42), "M1 array, 96 channels"),
-            ("motor2", "Motor (II)", "monkey J", task_motor2, False, (.18, .42), "M1 array, 96 channels"),
-            ("audio", "Audio", "monkeys N, G", task_audio, False, (.25, -.27), "aSTG array, 96 channels"),
-            ("speech", "Speech", "participant T12", lambda ax: task_speech(ax, sentence), True, (.4, .05),
+    cols = [("motor1", "Motor (I)", "monkeys I, L", task_motor1, False, "M1", "M1 array, 96 channels"),
+            ("motor2", "Motor (II)", "monkey J", task_motor2, False, "M1", "M1 array, 96 channels"),
+            ("audio", "Audio", "monkeys N, G", task_audio, False, "aSTG", "aSTG array, 96 channels"),
+            ("speech", "Speech", "participant T12", lambda ax: task_speech(ax, sentence), True, "6v",
              "area 6v, 128 electrodes")]
     W, H = 183.0, 112.0
     fig = plt.figure(figsize=(W * style.MM, H * style.MM))
@@ -256,13 +225,13 @@ def main():
                  color=COL[kind])
         fig.text((x0 + cw / 2) / W, 1 - 7 / H, who, ha="center", va="top", fontsize=6.2, color=MUTED)
         top = A(x0 + 2, 11, cw - 4, 34)
-        top.set_xlim(-0.2, 2.45)
+        top.set_xlim(-0.45, 2.45)
         top.set_ylim(-1.2, 1.05)
         draw(top)
         mid = A(x0 + 9, 47, cw - 18, 24)
         mid.set_xlim(-1.15, 1.15)
         mid.set_ylim(-1.0, 0.95)
-        brain(mid, 0, 0.05, 0.92 if human else 0.8, human, mark, COL[kind], alabel)
+        brain(mid, 0, 0.08, 0.80, human, mark, COL[kind], alabel)
         for a in (top, mid):
             a.set_aspect("equal")
             a.axis("off")
