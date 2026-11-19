@@ -1,0 +1,163 @@
+[
+ {
+  "experiment": "motor1",
+  "metric": "cc",
+  "a": "lsnn",
+  "b": "qrnn",
+  "n": 45,
+  "median_difference": 0.05383818840091681,
+  "a_better": 45,
+  "W": 0.0,
+  "p": 5.684341886080802e-14
+ },
+ {
+  "experiment": "motor1",
+  "metric": "cc",
+  "a": "lsnn",
+  "b": "lstm",
+  "n": 45,
+  "median_difference": 0.06640289962544788,
+  "a_better": 45,
+  "W": 0.0,
+  "p": 5.684341886080802e-14
+ },
+ {
+  "experiment": "motor1",
+  "metric": "cc",
+  "a": "speck",
+  "b": "lstm",
+  "n": 45,
+  "median_difference": -0.006764809542565531,
+  "a_better": 18,
+  "W": 339.0,
+  "p": 0.04375653834745208
+ },
+ {
+  "experiment": "motor1",
+  "metric": "cc",
+  "a": "speck",
+  "b": "wf",
+  "n": 45,
+  "median_difference": 0.08290845817299763,
+  "a_better": 44,
+  "W": 14.0,
+  "p": 6.252776074688882e-12
+ },
+ {
+  "experiment": "motor1",
+  "metric": "cc",
+  "a": "speck",
+  "b": "kf",
+  "n": 45,
+  "median_difference": 0.1298387088211298,
+  "a_better": 44,
+  "W": 1.0,
+  "p": 1.1368683772161603e-13
+ },
+ {
+  "experiment": "motor2",
+  "metric": "cc",
+  "a": "lsnn",
+  "b": "qrnn",
+  "n": 4,
+  "median_difference": 0.042927079780687105,
+  "a_better": 4
+ },
+ {
+  "experiment": "motor2",
+  "metric": "cc",
+  "a": "speck",
+  "b": "lstm",
+  "n": 4,
+  "median_difference": 0.005291425784871351,
+  "a_better": 3
+ },
+ {
+  "experiment": "audio",
+  "metric": "band_r",
+  "a": "lsnn",
+  "b": "wf",
+  "n": 79,
+  "median_difference": 0.0394879677918491,
+  "a_better": 63,
+  "W": 381.0,
+  "p": 4.6399350650361605e-09
+ },
+ {
+  "experiment": "audio",
+  "metric": "band_r",
+  "a": "lsnn",
+  "b": "lstm",
+  "n": 79,
+  "median_difference": -0.031200272102452353,
+  "a_better": 24,
+  "W": 791.0,
+  "p": 0.00011530562195579268
+ },
+ {
+  "experiment": "audio",
+  "metric": "band_r",
+  "a": "lsnn",
+  "b": "gru",
+  "n": 79,
+  "median_difference": -0.03289622434296524,
+  "a_better": 25,
+  "W": 829.0,
+  "p": 0.00024237097596237217
+ },
+ {
+  "experiment": "audio",
+  "metric": "band_r",
+  "a": "speck",
+  "b": "wf",
+  "n": 79,
+  "median_difference": -0.002847556871170609,
+  "a_better": 39,
+  "W": 1510.0,
+  "p": 0.732279499182149
+ },
+ {
+  "experiment": "audio",
+  "metric": "band_r",
+  "a": "speck",
+  "b": "speck_float",
+  "n": 79,
+  "median_difference": -0.029652941244958098,
+  "a_better": 14,
+  "W": 332.0,
+  "p": 1.066921529477841e-09
+ },
+ {
+  "experiment": "speech",
+  "metric": "per",
+  "a": "lsnn",
+  "b": "paper_rnn",
+  "n": 600,
+  "median_difference": -0.05,
+  "a_better": 122,
+  "W": 23590.5,
+  "p": 5.1592329053828215e-34
+ },
+ {
+  "experiment": "speech",
+  "metric": "per",
+  "a": "lsnn",
+  "b": "lstm",
+  "n": 600,
+  "median_difference": -0.03448275862068967,
+  "a_better": 153,
+  "W": 30032.5,
+  "p": 8.203451127250156e-21
+ },
+ {
+  "experiment": "speech",
+  "metric": "per",
+  "a": "speck",
+  "b": "speck_float",
+  "n": 600,
+  "median_difference": 0.0,
+  "a_better": 235,
+  "W": 52627.5,
+  "p": 0.4905938714517416
+ }
+]
