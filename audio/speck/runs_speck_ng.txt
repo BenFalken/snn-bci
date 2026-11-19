@@ -1,0 +1,12 @@
+# EXPLORATORY (2026-11-19), not a final model: "next-generation Speck" audio networks. Each is P5's exact recipe
+# (runs_speck_P5.txt: window centred on the target frame, one EMA readout stage, frame-to-frame loss) with only the
+# input budget and the layer widths grown, as a chip with larger cores would allow (all 96 channels; P5 uses 48):
+#   NG2    96 x 9 taps (P5's)        = 864 inputs   192-384-256    ~0.34 M chip weights (2.2x P5; the audio LSNN: 0.29 M)
+#   NG4    96 x 17 (the whole window) = 1,632       256-512-384    ~0.75 M (4.9x)
+#   NG10   96 x 17                    = 1,632       384-1024-512   ~1.54 M (10x)
+NG2_centre_ema1_deriv_s1337 | audio_speck | model.input.n_channels=96 model.input.n_delays=0 model.readout.stages=1 train.deriv_weight=1.0 model.input.delays=[0,4,6,7,8,9,10,12,16] model.layers.hidden=[192,384,256] train.seed=1337
+NG2_centre_ema1_deriv_s11 | audio_speck | model.input.n_channels=96 model.input.n_delays=0 model.readout.stages=1 train.deriv_weight=1.0 model.input.delays=[0,4,6,7,8,9,10,12,16] model.layers.hidden=[192,384,256] train.seed=11
+NG4_centre_ema1_deriv_s1337 | audio_speck | model.input.n_channels=96 model.input.n_delays=0 model.readout.stages=1 train.deriv_weight=1.0 model.input.delays=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16] model.layers.hidden=[256,512,384] train.seed=1337
+NG4_centre_ema1_deriv_s11 | audio_speck | model.input.n_channels=96 model.input.n_delays=0 model.readout.stages=1 train.deriv_weight=1.0 model.input.delays=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16] model.layers.hidden=[256,512,384] train.seed=11
+NG10_centre_ema1_deriv_s1337 | audio_speck | model.input.n_channels=96 model.input.n_delays=0 model.readout.stages=1 train.deriv_weight=1.0 model.input.delays=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16] model.layers.hidden=[384,1024,512] train.seed=1337
+NG10_centre_ema1_deriv_s11 | audio_speck | model.input.n_channels=96 model.input.n_delays=0 model.readout.stages=1 train.deriv_weight=1.0 model.input.delays=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16] model.layers.hidden=[384,1024,512] train.seed=11

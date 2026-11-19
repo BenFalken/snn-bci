@@ -1,0 +1,27 @@
+{
+ "source": "Intel Loihi 2 technology brief: up to 128 neuron cores per chip; per core up to 128 KB synaptic memory and 8,192 neurons",
+ "assumptions": "dense 8-bit weights, 1 or 2 bytes per synapse; neuron state not counted",
+ "tasks": {
+  "motor": {
+   "neurons": 514,
+   "synapses": 222208,
+   "weight_MB": 0.222208,
+   "cores_8bit": 3,
+   "cores_2x": 5
+  },
+  "audio": {
+   "neurons": 640,
+   "synapses": 286720,
+   "weight_MB": 0.28672,
+   "cores_8bit": 3,
+   "cores_2x": 5
+  },
+  "speech": {
+   "neurons": 2089,
+   "synapses": 3491840,
+   "weight_MB": 3.49184,
+   "cores_8bit": 28,
+   "cores_2x": 55
+  }
+ }
+}
