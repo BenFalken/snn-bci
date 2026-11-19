@@ -8,6 +8,8 @@ truth so far (the renderer of video_audio.py).
 A word epoch holds the spoken word twice; the clip is the 1.6 s around the epoch's loudest moment.
 
     python3 video_audio_words.py [--ann lstm_rnn] [--words 8] [--output figures/video_audio_words.mp4]
+    python3 video_audio_words.py --all --within --lanes wf,speck --subject Neil --dataset ALLWORDS_NOVEL_DAYNORM
+        only the chosen lanes (here the Wiener filter and Speck), for listening side by side
     python3 video_audio_words.py --all --within --output figures/video_audio_words_all.mp4
         every test word, GRU, LSTM, LSNN and Speck lanes, each scored by spectral match within the word's
         sound (silence excluded, as the fidelity figure's panel c), on the clip around the epoch's first utterance
@@ -34,6 +36,8 @@ from video_audio import g, PipelinePaths, START, HERE, style
 DATASET = "ALLWORDS_VERIFIED_DAYNORM"
 ANN = {"lstm_rnn": "lstm", "gru_rnn": "gru", "simple_rnn": "simple_rnn", "dense_nn": "dense_nn"}
 CLIP = 40                                             # frames (40 ms) per clip
+LANE_FILES = {"gru": "gru_rnn", "lstm": "lstm_rnn", "lsnn": "lsnn", "wf": "wiener_filter", "wc": "wiener_cascade",
+              "speck": "speck_snn"}                   # lane -> the pipeline's <name>_predict_test.npy (speck: chip)
 
 
 SYLLABLES = {"two": 1, "zoo": 1, "moo": 1, "cool": 1, "good": 1, "tree": 1, "fuel": 1, "north": 1,
@@ -88,6 +92,9 @@ def main():
                     help="which seed of the words Speck SNN's chip run plays in the Speck lane")
     pa.add_argument("--subject", default="Neil", help="Neil or Gomez (2026-11-18: the expanded cohorts)")
     pa.add_argument("--dataset", default=DATASET)
+    pa.add_argument("--lanes", default=None,
+                    help="comma-separated lanes after the truth, from " + ",".join(LANE_FILES) +
+                         " (default: the ANN(s), the LSNN and Speck)")
     pa.add_argument("--speck-preds", default=None, help="the Speck lane's test predictions (default: the 20-word "
                     "cohort's; for ALLWORDS_NOVEL_DAYNORM, results_audio_novel/preds_<subject>_<seed>/.../chip_refit.npy)")
     a = pa.parse_args()
@@ -96,11 +103,17 @@ def main():
     style.LABEL["speck"] = "Speck"
     style.LABEL["gru"] = "GRU"
     style.LABEL["lsnn"] = "LSNN"
+    style.LABEL["wf"] = "Wiener filter"
     paths = PipelinePaths(str(va.AUDITORY_DATA), a.subject, "aSTG", a.dataset)
-    lanes = ([("gru", "gru_rnn"), ("lstm", "lstm_rnn")] if a.within else [(ANN[a.ann], a.ann)]) + \
-        [("lsnn", "lsnn"), ("speck", "speck_snn")]
+    if a.lanes:
+        lanes = [(n, LANE_FILES[n]) for n in a.lanes.split(",")]
+    else:
+        lanes = ([("gru", "gru_rnn"), ("lstm", "lstm_rnn")] if a.within else [(ANN[a.ann], a.ann)]) + \
+            [("lsnn", "lsnn"), ("speck", "speck_snn")]
     targets = np.load(paths.pipeline / "window_targets_test.npy")
     preds = {n: np.load(paths.pipeline / f"{dec}_predict_test.npy") for n, dec in lanes if n != "speck"}
+    for n, v in preds.items():
+        assert len(v) == len(targets), f"{n}: {len(v)} test rows, the targets have {len(targets)}"
     # the chip's Hidden 3 spikes read by the readout refitted to the chip's firing on the training stream (the final
     # audio Speck SNN; chip/audio_refit.py + audio_apply_refit.py)
     if a.speck_preds is None and a.dataset == "ALLWORDS_NOVEL_DAYNORM":
