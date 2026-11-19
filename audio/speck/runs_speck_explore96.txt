@@ -1,0 +1,13 @@
+# EXPLORATORY (2026-11-18), not a final model: the audio Speck SNN with every channel and only the central delays.
+# Motivation: the chip-budget sweep (figures/data/results.csv) peaks at 96 channels x 5 delays for audio and motor, and
+# the lag analysis (fig_lag_tuning) puts audio's information within +-80 ms of the sound, where P5's outer taps (+-320
+# ms) see 12-17% of the peak. Each variant is P5 (runs_speck_P5.txt) with only the channels and delays changed:
+#   X96D5   all 96 channels x frames 6..10 of the 17-frame window = -80..+80 ms around its centre (480 chip inputs)
+#   X96D3   all 96 channels x frames 7..9 = -40..+40 ms (288 chip inputs)
+# Same seeds as P5. P5 itself: 48 channels x frames [0,4,6,7,8,9,10,12,16] = -320..+320 ms (432 chip inputs).
+X96D5_centre_ema1_deriv_s1337 | audio_speck | model.input.n_channels=96 model.input.n_delays=0 model.input.delays=[6,7,8,9,10] model.readout.stages=1 train.deriv_weight=1.0 train.seed=1337
+X96D5_centre_ema1_deriv_s11 | audio_speck | model.input.n_channels=96 model.input.n_delays=0 model.input.delays=[6,7,8,9,10] model.readout.stages=1 train.deriv_weight=1.0 train.seed=11
+X96D5_centre_ema1_deriv_s99 | audio_speck | model.input.n_channels=96 model.input.n_delays=0 model.input.delays=[6,7,8,9,10] model.readout.stages=1 train.deriv_weight=1.0 train.seed=99
+X96D3_centre_ema1_deriv_s1337 | audio_speck | model.input.n_channels=96 model.input.n_delays=0 model.input.delays=[7,8,9] model.readout.stages=1 train.deriv_weight=1.0 train.seed=1337
+X96D3_centre_ema1_deriv_s11 | audio_speck | model.input.n_channels=96 model.input.n_delays=0 model.input.delays=[7,8,9] model.readout.stages=1 train.deriv_weight=1.0 train.seed=11
+X96D3_centre_ema1_deriv_s99 | audio_speck | model.input.n_channels=96 model.input.n_delays=0 model.input.delays=[7,8,9] model.readout.stages=1 train.deriv_weight=1.0 train.seed=99
