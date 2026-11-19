@@ -26,7 +26,8 @@ checked against it:
            Budget: the speech sweep's 512 inputs: 256 x 2, 128 x 4, 64 x 8, 32 x 16, 16 x 32.
 Writes <workspace>/linear_profile/<experiment>.json.
 
-    python3 collect_linear_profile.py motor | audio | speech | speech-extend   (the last: speech spans to 1.2 s)
+    python3 collect_linear_profile.py motor | motor-full | audio | speech | speech-extend
+    (motor-full: motor's memory and breadth from the full sessions; speech-extend: speech spans to 1.2 s)
 """
 import json
 import os
@@ -119,6 +120,48 @@ def motor_unit(session):
         res["breadth"][C] = run(rank[:C], 5)[0]
     for C, D in BUDGET:
         res["budget"][f"{C}x{D}"] = run(rank[:C], D)[0]
+    return res
+
+
+def motor_full(session, Ds=MEMORY_D, Cs=BREADTH_C):
+    """Motor's memory and breadth curves from the session's full recording (the motor lag analysis's data: the first
+    88% of the session, 20 ms bins), not the sweep's 42 s training sets, on which longer windows overfit. Split in
+    time: 75% training, 12.5% validation, 12.5% test (all within the decoders' own training portion). Taps: 40 ms of
+    counts (two bins) ending d*40 ms before the decoded bin. Score: R^2 of hand velocity (mean of x and y)."""
+    sys.path.insert(0, str(MOTOR / "snn_training"))
+    from channel_lag_tuning import load_session
+    rates, v = load_session(str(WORKSPACE / "spike_bmi_lsnn_data/processed/bmi/indy/mua" / f"{session}.h5"),
+                            20.0, 0.0, 0.88)
+    x = rates.T                                                                   # (T, 96) counts per 20 ms
+    T = len(x)
+    a1, a2 = int(T * 0.75), int(T * 0.875)
+    c = np.cumsum(np.vstack([np.zeros((1, x.shape[1])), x]), axis=0)
+
+    def taps(channels, D):
+        cols = []
+        for d in range(D):
+            end = np.arange(T) + 1 - 2 * d
+            hi, lo = np.clip(end, 0, T), np.clip(end - 2, 0, T)
+            cols.append((c[hi] - c[lo])[:, channels])
+        return np.hstack(cols)
+
+    def r2(y, p):
+        return float(np.mean(1 - ((y - p) ** 2).sum(0) / ((y - y.mean(0)) ** 2).sum(0)))
+
+    def run(channels, D):
+        X = taps(channels, D)
+        P, m, a = fit_score(X[:a1], v[:a1], X[a1:a2], v[a1:a2], X[a2:], r2)
+        return r2(v[a2:], P), m
+
+    res = {"memory": {}, "breadth": {}}
+    allc = list(range(x.shape[1]))
+    for D in Ds:
+        res["memory"][D], m5 = run(allc, D)
+        if D == 5:
+            w = np.linalg.norm(m5.coef(ALPHAS[len(ALPHAS) // 2]).reshape(5, len(allc), -1), axis=(0, 2))
+            rank = [int(i) for i in np.argsort(-w)]
+    for C in Cs:
+        res["breadth"][C] = run(rank[:C], 5)[0]
     return res
 
 
@@ -311,6 +354,16 @@ def main():
         return
     exp = sys.argv[1]
     OUT.mkdir(parents=True, exist_ok=True)
+    if exp == "motor-full":
+        res = {}
+        for u in MOTOR_UNITS:
+            if not (WORKSPACE / "spike_bmi_lsnn_data/processed/bmi/indy/mua" / f"{u}.h5").is_file():
+                print(f"motor-full {u}: no full recording here, skipped", flush=True)
+                continue
+            res[u] = motor_full(u)
+            json.dump(res, open(OUT / "motor_full.json", "w"), indent=1)
+            print(f"motor-full {u}: R2 no history {res[u]['memory'][1]:.3f}, 1.2 s {res[u]['memory'][31]:.3f}", flush=True)
+        return
     units = {"motor": MOTOR_UNITS, "audio": AUDIO_DAYS, "speech": SPEECH_UNITS}[exp]
     fn = {"motor": motor_unit, "audio": audio_unit, "speech": speech_unit}[exp]
     res = {}
