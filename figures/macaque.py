@@ -154,9 +154,8 @@ def monkey(ax, x, y, s=1.0, reach_to=None, z=2, name="monkey"):
     pelvis = _ellipse((-0.05, 0.50), 1.30, 1.05, 10)
     abdomen = _capsule((0.0, 0.70), (0.25, 1.75), 0.50, 0.55)
     ribcage = _ellipse((0.35, 2.10), 1.20, 1.55, -18)
-    shoulder_mass = Point(SHOULDER).buffer(0.46, 32)
-    neck = _capsule(SHOULDER + (0.05, 0.05), NECK, 0.38, 0.30)        # short: the head sits on the shoulders
-    body = _smooth(unary_union([pelvis, abdomen, ribcage, shoulder_mass, neck]), 0.10)
+    neck = _capsule((0.62, 2.50), NECK, 0.30, 0.27)                   # just a neck: no extra mass behind it
+    body = _smooth(unary_union([pelvis, abdomen, ribcage, neck]), 0.10)
 
     thigh = _capsule(HIP, KNEE, 0.44, 0.27)
     shank = _capsule(KNEE, ANKLE, 0.24, 0.14)
