@@ -58,7 +58,10 @@ activate_env() {
     [ -x "$PYTHON" ] || { echo "ERROR: no python at $PYTHON (conda env ${CONDA_ENV:-speechBCI} missing?)" >&2; exit 1; }
     export PATH="$(dirname "$PYTHON"):$PATH"
     export PYTHONUNBUFFERED=1   # log lines appear as they happen, not in 8 KB blocks
-    echo "python: $PYTHON ($("$PYTHON" --version 2>&1))"
+    # this repository's snnDecoder (speech/) before any copy installed in the environment (an editable install of an
+    # older checkout would otherwise be imported by `python -m snnDecoder.train`)
+    export PYTHONPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)${PYTHONPATH:+:$PYTHONPATH}"
+    echo "python: $PYTHON ($("$PYTHON" --version 2>&1)); snnDecoder from $("$PYTHON" -c 'import snnDecoder, os; print(os.path.dirname(snnDecoder.__file__))' 2>/dev/null)"
     export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-1}
     export OPENBLAS_NUM_THREADS=${SLURM_CPUS_PER_TASK:-1}
     export MKL_NUM_THREADS=${SLURM_CPUS_PER_TASK:-1}
