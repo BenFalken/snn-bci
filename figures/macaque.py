@@ -33,8 +33,8 @@ FEMUR, TIBIA, FOOT = 1.30, 1.25, 0.78
 SEAT_Y, GROUND_Y = 0.0, -0.12
 HIP = np.array([0.10, 0.40])
 SHOULDER = np.array([0.55, 2.70])
-NECK = np.array([0.95, 3.05])
-HEAD_C = np.array([1.30, 3.45])            # centre of the 1 H head
+NECK = np.array([0.80, 2.92])
+HEAD_C = np.array([1.02, 3.28])            # centre of the 1 H head: on the shoulders, carried slightly forward
 KNEE = HIP + FEMUR * np.array([np.cos(np.radians(38)), np.sin(np.radians(38))])
 ANKLE = KNEE + TIBIA * np.array([np.cos(np.radians(-82)), np.sin(np.radians(-82))])
 ANKLE[1] = max(ANKLE[1], GROUND_Y + 0.13)
@@ -155,9 +155,8 @@ def monkey(ax, x, y, s=1.0, reach_to=None, z=2, name="monkey"):
     abdomen = _capsule((0.0, 0.70), (0.25, 1.75), 0.50, 0.55)
     ribcage = _ellipse((0.35, 2.10), 1.20, 1.55, -18)
     shoulder_mass = Point(SHOULDER).buffer(0.46, 32)
-    neck = _capsule(SHOULDER + (0.05, 0.10), NECK, 0.40, 0.30)
-    throat = _capsule(SHOULDER + (0.25, -0.05), HEAD_C + (-0.05, -0.42), 0.36, 0.26)   # fills under the jaw
-    body = _smooth(unary_union([pelvis, abdomen, ribcage, shoulder_mass, neck, throat]), 0.10)
+    neck = _capsule(SHOULDER + (0.05, 0.05), NECK, 0.38, 0.30)        # short: the head sits on the shoulders
+    body = _smooth(unary_union([pelvis, abdomen, ribcage, shoulder_mass, neck]), 0.10)
 
     thigh = _capsule(HIP, KNEE, 0.44, 0.27)
     shank = _capsule(KNEE, ANKLE, 0.24, 0.14)
