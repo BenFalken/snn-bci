@@ -84,9 +84,6 @@ def mem_line(ax, x, y, w, shade=None, window=None, word=None):
 def core_box(ax, x, y, w, h):
     box(ax, x, y, w, h, "white", ec=LSNN, lw=0.7, r=1.8, z=2)
     txt(ax, x + 2.5, y + 1.6, "One network for every task", size=7.2, weight="bold")
-    txt(ax, x + 2.5, y + 5.2, "integrate-and-fire neurons in two recurrent layers, read out by leaky, non-spiking "
-                              "output neurons; it trains stably thanks to brakes: soft reset, at most 3 spikes\nper "
-                              "step, a bounded membrane and unit-gain filters", size=5.3, color=MUTED)
     panels = [("recurrent layers", "each neuron\nfeeds the others\nat the next step"),
               ("90% adaptive, 10% not", "a fixed random\n90% of each\nlayer adapts"),
               ("adaptive threshold", "rises at each\nspike, relaxes\nover 500 ms"),
@@ -94,8 +91,8 @@ def core_box(ax, x, y, w, h):
     pw = (w - 6) / 4
     for k, (head, sub) in enumerate(panels):
         px = x + 3 + k * pw
-        txt(ax, px, y + 11.0, head, size=5.6, weight="bold", color=LSNN_D)
-        gx, gy, gw, gh = px + 0.5, y + 14.4, (h - 16.0) if k < 2 else pw * 0.5, h - 16.0
+        txt(ax, px, y + 6.0, head, size=5.6, weight="bold", color=LSNN_D)
+        gx, gy, gw, gh = px + 0.5, y + 9.4, (h - 11.0) if k < 2 else pw * 0.5, h - 11.0
         if k == 0:
             di.recurrent_ring(ax, gx, gy, gw, gh)
         elif k == 1:
@@ -141,7 +138,7 @@ def main():
     end_demands = draw_header(ax)
 
     sy = end_demands + 4.0
-    cy, ch = sy + 2.5, 31.0
+    cy, ch = sy + 2.5, 26.0
     rows, y = {}, cy + ch + 5.5
     for k, h in (("in", 7.0), ("net", 22.0), ("mem", 11.6), ("read", 15.5), ("train", 15.0)):
         rows[k] = (y, h)
@@ -149,10 +146,9 @@ def main():
     sh = y + 0.4 - sy
     box(ax, 0.5, sy, W - 1.0, sh, LSNN_T, ec=LSNN_T, r=2.5, z=0)
     txt(ax, 1.2, sy + 2.2, "LSNN", size=8.2, weight="bold", color=LSNN)
-    txt(ax, 1.2, sy + 6.0, "on a CPU,\nfree of\nhardware\nlimits", size=5.4, color=MUTED)
     core_box(ax, GUT, cy, W - GUT - 1.5, ch)
-    labels = {"in": ("Input", ""), "net": ("Network", "loops =\nrecurrence"), "mem": ("Memory", "inside the\nnetwork"),
-              "read": ("Readout", ""), "train": ("Training", "")}
+    labels = {"in": ("Input", ""), "net": ("Network", ""), "mem": ("Memory", ""), "read": ("Readout", ""),
+              "train": ("Training", "")}
     for k, (a, b) in labels.items():
         y0 = rows[k][0]
         txt(ax, 1.2, y0 + 0.2, a, size=6.0, weight="bold")
@@ -193,10 +189,10 @@ def main():
             di.day_gains(ax, x + 2.0, y0, CW - 4.0, 7.0)
         items(ax, x + 2.0, y0 + 8.6, [c["ttxt"]], LSNN, size=5.3)
     end = sy + sh
-    txt(ax, GUT, end + 3.0, "Every choice answers a property of the task. The LSNN keeps one design and changes only "
-                            "its size, timing, readout and training; its memory lives inside\nthe network, so it "
-                            "needs no host-side delays or traces and no calibration.", size=6.0, style_="italic")
-    print("layout bottom (mm):", round(end + 10.5, 1), "of", H)
+    Hn = end + 1.5                                       # the figure ends with the band (no closing note)
+    fig.set_size_inches(W * style.MM, Hn * style.MM)
+    ax.set_ylim(Hn, 0)
+    print("layout bottom (mm):", round(Hn, 1))
     style.save(fig, HERE / "figures" / "fig_lsnn_design")
 
 

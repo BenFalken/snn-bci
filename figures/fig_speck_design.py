@@ -302,14 +302,11 @@ def draw_header(ax):
     tt = np.linspace(0, 1, 60)
     ax.plot(ox + 27.6 + 7 * tt, oy + oh / 2 - 1.8 * np.sin(2 * np.pi * 1.3 * tt) * np.exp(-tt), color=INK,
             lw=0.7, zorder=4)
-    txt(ax, ox + 38.0, oy + 2.0, "A spiking decoder", size=8.4, weight="bold")
-    txt(ax, ox + 38.0, oy + 6.2, "binned spikes from a cortical array, through\nintegrate-and-fire neurons, "
-                                 "to behaviour", size=5.9, color=MUTED)
+    txt(ax, ox + 38.0, oy + oh / 2, "A spiking decoder", size=8.4, weight="bold", va="center")
 
     # ---- demands
-    dy, dh = 20.0, 28.5
+    dy, dh = 20.0, 22.5
     txt(ax, 1.2, dy + 1.2, "What the\ntask\ndemands", size=6.3, weight="bold")
-    txt(ax, 1.2, dy + 11.4, "numbered: every\nchoice below\ncarries the\nnumber it\nanswers", size=5.1, color=MUTED)
     bus = oy + oh + 2.2
     ax.plot([ox + ow / 2] * 2, [oy + oh, bus], color=FAINT, lw=0.7, zorder=2)
     ax.plot([X(0) + CW / 2, X(2) + CW / 2], [bus, bus], color=FAINT, lw=0.7, zorder=2)
@@ -318,8 +315,7 @@ def draw_header(ax):
         arrow(ax, x + CW / 2, bus, x + CW / 2, dy - 0.3)
         box(ax, x, dy, CW, dh, DEM_T, r=1.8, z=2)
         txt(ax, x + 2.2, dy + 1.8, name, size=7.8, weight="bold")
-        txt(ax, x + 2.2, dy + 5.5, what, size=5.5, color=MUTED)
-        items(ax, x + 2.0, dy + 12.0, [(k + 1, f) for k, f in enumerate(facts)], INK, size=5.8)
+        items(ax, x + 2.0, dy + 6.2, [(k + 1, f) for k, f in enumerate(facts)], INK, size=5.8)
 
     return dy + dh
 
@@ -333,27 +329,21 @@ def main():
     ax.set_ylim(H, 0)
     ax.axis("off")
 
-    end_demands = draw_header(ax)
-
+    # the task demands are drawn once, at the top of the LSNN figure; the badges here refer to them
     # ---- Speck band
-    sy = end_demands + 4.0
-    rows, y = {}, sy + 16.0
-    for k, h in (("bud", 10.0), ("enc", 8.4), ("mem", 12.6), ("chip", 26.0), ("read", 15.5), ("cal", 9.4),
+    sy = 1.0
+    rows, y = {}, sy + 9.0
+    for k, h in (("bud", 10.0), ("enc", 8.4), ("mem", 12.6), ("chip", 21.5), ("read", 15.5), ("cal", 5.0),
                  ("day", 3.0)):
         rows[k] = (y, h)
         y += h + 1.6
     sh = y + 0.4 - sy
     box(ax, 0.5, sy, W - 1.0, sh, SPECK_T, r=2.5, z=0)
     txt(ax, 1.2, sy + 2.2, "Speck SNN", size=8.2, weight="bold", color=SPECK_D)
-    txt(ax, 1.2, sy + 6.0, "on one\nSpeck2f chip", size=5.4, color=MUTED)
-    txt(ax, GUT, sy + 2.6, "The same decisions, answered for each task", size=7.2, weight="bold")
-    txt(ax, GUT, sy + 6.2, "Read each card top to bottom. The deployed network is drawn as columns of neurons and "
-                           "on the chip’s nine cores, each labelled with its weight\nmemory and filled by the share "
-                           "its layer uses. Memory, graded values and the final decoding live on the host.",
-        size=5.6, color=MUTED)
-    gl = dict(bud=("Input budget", "at most 512\nper network"), enc=("Encoding", "0/1 events"),
-              mem=("Memory", "from the host"), chip=("On the chip", "layers, and the\ncores they fill"),
-              read=("Host readout", ""), cal=("Calibration", "input and output\nends (Figs 2, 3)"), day=("Across days", ""))
+    for i, (name, _, _) in enumerate(TASKS):          # the task names (the demands are in the LSNN figure)
+        txt(ax, X(i) + 2.2, sy + 2.4, name, size=7.2, weight="bold")
+    gl = dict(bud=("Input budget", ""), enc=("Encoding", ""), mem=("Memory", ""), chip=("On the chip", ""),
+              read=("Host readout", ""), cal=("Calibration", ""), day=("Across days", ""))
     for k, (a, b) in gl.items():
         y0 = rows[k][0]
         txt(ax, 1.2, y0 + 0.2, a, size=6.0, weight="bold")
@@ -387,12 +377,11 @@ def main():
         y0 = rows["mem"][0]
         tline(ax, x + 2.0, y0 + 4.3, CW - 4.0, s["taps"], shade=s["shade"], traces=s["traces"], ahead=s["ahead"])
         badge(ax, x + 3.0, y0 + 8.9, s["mn"])
-        txt(ax, x + 4.9, y0 + 7.8, s["mtxt"], size=5.5, color=MUTED)
+        txt(ax, x + 4.9, y0 + 7.8, s["mtxt"], size=5.5)
         # on the chip: the network, and where it sits
         y0, h0 = rows["chip"]
-        topology(ax, x + 1.6, y0 + 0.2, 26.0, h0 - 7.4, s["nets"], s["n_in"], s.get("read", "last"))
+        topology(ax, x + 1.6, y0 + 0.2, 26.0, h0 - 2.4, s["nets"], s["n_in"], s.get("read", "last"))
         core_map(ax, x + CW - 18.6, y0 + 1.2, s["cores"])
-        txt(ax, x + 2.0, y0 + h0 - 5.6, s["ctxt"], size=5.2, color=MUTED)
         # readout: a picture, then what it does
         y0 = rows["read"][0]
         if i == 0:
@@ -414,12 +403,8 @@ def main():
         y0 = rows["cal"][0]
         di.dial(ax, x + 4.0, y0 + 2.6, r=1.9)
         txt(ax, x + 7.2, y0 + 0.3, "layer 1 " + s["cal"], size=6.2, weight="bold", color=SPECK_D)
-        if s["cal2"]:
-            txt(ax, x + 7.2, y0 + 3.4, s["cal2"], size=4.9, color=MUTED)
         di.weights(ax, x + CW / 2 + 3.0, y0 + 0.4, 4.4, 4.2, seed=2)
         txt(ax, x + CW / 2 + 8.4, y0 + 0.3, s["cal3"], size=5.6, weight="bold", color="#2a7f62")
-        txt(ax, x + 2.0, y0 + 6.4, "set once in software, on training data; fixed for every run", size=4.9,
-            color=MUTED)
         # across days / sessions
         y0 = rows["day"][0]
         n3, t3 = s["extra"]
@@ -428,11 +413,10 @@ def main():
 
     # ---- the rule
     end = sy + sh
-    txt(ax, GUT, end + 3.0, "Every choice answers a property of the task. The Speck SNN keeps the chip’s rules and moves "
-                            "what the chip cannot hold (memory, graded\nvalues, the final decoding) to the host, as far as "
-                            "each task needs; two calibrations on training data then fit it to the chip.", size=6.0,
-        style_="italic")
-    print("layout bottom (mm):", round(end + 10.5, 1), "of", H)
+    Hn = end + 1.5                                       # the figure ends with the band (no header, no closing note)
+    fig.set_size_inches(W * style.MM, Hn * style.MM)
+    ax.set_ylim(Hn, 0)
+    print("layout bottom (mm):", round(Hn, 1))
     style.save(fig, HERE / "figures" / "fig_speck_design")
 
 

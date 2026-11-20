@@ -212,15 +212,13 @@ def main():
     c_ax.legend(fontsize=5.5, frameon=False, loc="upper left")
 
     band(126, "THE TWO CALIBRATIONS · set once on training data; the chip's weights never change", cp.STEP1)
-    d, e, f = A(18, 137, 42, 32), A(76, 137, 42, 32), A(131, 137, 50, 32)
+    d, f = A(18, 137, 62, 32), A(110, 137, 70, 32)       # the label-free sweep and the readout refit (no label panel)
     cp.panel_sweep(d, "agree")
-    cp.panel_sweep(e, "acc")
     cp.panel_gains(f)
     d.set_title("Input end: threshold, no labels", loc="left")
-    e.set_title("Checked against labels", loc="left")
     f.set_title("Output end: readout refit", loc="left")
     for ax, l, x, y in ((axa[(0, len(names) - 1)], "a", -0.36, 1.45), (axb0, "b", -0.25, 1.55),
-                        (c_ax, "c", -0.24, 1.06), (d, "d", -0.38, 1.05), (e, "e", -0.34, 1.05), (f, "f", -0.08, 1.05)):
+                        (c_ax, "c", -0.24, 1.06), (d, "d", -0.26, 1.05), (f, "e", -0.08, 1.05)):
         ax.text(x, y, l, transform=ax.transAxes, fontsize=9, fontweight="bold", va="bottom")
     style.save(fig, HERE / "figures" / "fig_calibration")
     print(f"wrote figures/fig_calibration; monkey J {R['session']}, x{k:g}, "

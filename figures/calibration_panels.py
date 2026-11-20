@@ -121,7 +121,7 @@ def panel_sweep(ax, which):
         ax.set_ylabel("agreement with the trained network (r)")
         ax.set_title("Chosen without labels", loc="left")
         for lab, c, ls in (("Jenkins, 4 sessions", C_MOTOR, "-"), ("audio, 2 monkeys × 3 seeds", C_AUDIO, "-"),
-                           ("speech V2+C", C_SPEECH, "-")):
+                           ("speech", C_SPEECH, "-")):
             ax.plot([], [], ls=ls, color=c, label=lab)
         ax.plot([], [], "o", color=INK, ms=3, label="label-free choice")
         ax.legend(loc="lower right", frameon=False, fontsize=5.3, handlelength=1.6, borderaxespad=0.1)
@@ -226,7 +226,7 @@ def panel_example(axes, z, meta):
 def panel_gains(ax):
     W1 = json.load(open(R19 / "W1/refit.json"))
     rows = [
-        ("speech V2+C\n(real chip, 680 sentences)", (1 - 0.4952) / (1 - 0.4435), (1 - 0.4396) / (1 - 0.4435), C_SPEECH, True),
+        ("speech\n(real chip, 680 sentences)", (1 - 0.4952) / (1 - 0.4435), (1 - 0.4396) / (1 - 0.4435), C_SPEECH, True),
         # 2026-11-18 expanded cohorts (collect_audio_novel.py): mean within-word spectral match, 3 seeds, real chip
         ("audio, monkey N\n(real chip, 44 words)", 0.5977 / 0.6436, 0.6280 / 0.6436, C_AUDIO, True),
         ("audio, monkey G\n(real chip, 35 words)", 0.5997 / 0.6257, 0.6401 / 0.6257, C_AUDIO, True),
