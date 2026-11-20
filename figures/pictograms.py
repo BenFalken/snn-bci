@@ -263,3 +263,8 @@ def brain(ax, x, y, s=1.0, human=False, z=2, name="brain", alpha=1.0, folds=True
         sul("lunate", [(-0.66, 0.36), (-0.72, 0.10), (-0.70, -0.14)], 0.008, 0.65, 2)
         sites = {"M1": (0.08, 0.40), "aSTG": (0.30, -0.13)}
     return lambda site: f.P([sites[site]])[0]
+
+
+# The macaque is now constructed from anatomy (macaque.py: proportions -> skeleton -> volumes -> silhouette, in the
+# mockup's flat style); it replaces the hand-placed monkey above.
+from macaque import monkey  # noqa: E402,F401,F811
