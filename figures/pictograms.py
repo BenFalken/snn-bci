@@ -75,59 +75,89 @@ def _limb_outline(joints, widths):
 
 
 # ------------------------------------------------------------------------------------------------------------ macaque
+# The macaque follows the user's mockup (2026-11-19): no outlines, flat warm tans, thin darker accent strokes only at
+# the face's edge, cheek, jaw and brow, a spiky crest swept back, a large glossy eye with two highlights, a concave
+# forehead-to-snout profile with a mouth notch, a half-round ear cut by a straight edge with a dark lower rim, and
+# partly angular forms. Coordinates are in the mockup's pixel space (x right, y down), mapped to the local frame.
+M_FUR, M_FACE, M_EAR, M_ACCENT, M_RIM, M_FUR_DARK = "#d09a7b", "#e3c2ab", "#d9aa8f", "#bf8a6b", "#4a3a30", "#bb8565"
+_K = 1.55 / 1100                                       # mockup pixels -> local units
+
+
+def _px(pts, dx=0.0, dy=0.0):
+    return [((u - 300 + dx) * _K, (420 - v - dy) * _K) for u, v in pts]
+
+
 def monkey(ax, x, y, s=1.0, reach_to=None, z=2, name="monkey"):
-    """A slender seated macaque in side profile, facing right. reach_to: the fingertip in data coordinates (the
-    near arm reaching forward), or None (the near arm resting on the knee)."""
+    """A slender seated macaque in side profile, facing right, in the mockup's flat style. reach_to: the fingertip
+    in data coordinates (the near arm reaching forward), or None (the near arm resting on the knee)."""
+    from matplotlib.patches import Polygon
     f = Frame(ax, x, y, s, z, prefix=name)
-    tail = [(-0.30, -0.86), (-0.48, -0.96), (-0.64, -0.92), (-0.70, -0.84)]
-    f.line("tail", tail, LINE, lw=1.9 * s, dz=0)
-    f.line("tail_fill", tail, FUR_SHADE, lw=1.3 * s, dz=0.05)
-    f.shape("leg_far", [(-0.10, -0.62), (0.18, -0.58), (0.34, -0.80), (0.28, -0.92), (-0.12, -0.92)], FUR_SHADE,
-            ec=LINE, dz=0.5)
-    f.shape("body", [(-0.30, -0.90), (-0.33, -0.60), (-0.26, -0.30), (-0.10, -0.06), (0.06, 0.04), (0.18, -0.02),
-                     (0.17, -0.26), (0.10, -0.55), (0.10, -0.86), (-0.06, -0.93)], FUR, ec=LINE, dz=1)
-    f.shape("belly", [(0.02, -0.20), (0.13, -0.24), (0.09, -0.52), (0.04, -0.70), (-0.02, -0.50)], FUR_BELLY, dz=1.1)
-    f.shape("leg_near", [(-0.20, -0.66), (0.02, -0.52), (0.26, -0.52), (0.36, -0.62), (0.32, -0.80),
-                         (0.20, -0.90), (-0.18, -0.90)], FUR, ec=LINE, dz=1.5)
-    f.shape("foot", [(0.16, -0.86), (0.36, -0.84), (0.47, -0.89), (0.40, -0.935), (0.16, -0.935)], HAND,
-            ec=LINE, dz=1.6)
-    f.shape("neck", [(-0.04, -0.04), (0.04, 0.10), (0.20, 0.13), (0.30, 0.06), (0.26, -0.04), (0.14, -0.08)],
-            FUR, ec=LINE, dz=2.4)
-    hx, hy = 0.21, 0.19                                                   # head: round skull, flat face, large ear
-    H = lambda pts: [(u + hx, v + hy) for u, v in pts]
-    f.shape("head", H([(-0.20, 0.02), (-0.16, 0.16), (-0.04, 0.23), (0.10, 0.21), (0.20, 0.12), (0.22, -0.02),
-                       (0.15, -0.14), (0.02, -0.19), (-0.12, -0.15)]), FUR, ec=LINE, dz=2.5)
-    f.shape("face", H([(0.02, 0.13), (0.09, 0.16), (0.16, 0.13), (0.205, 0.05), (0.215, -0.04), (0.18, -0.11),
-                       (0.10, -0.14), (0.04, -0.10), (0.00, -0.01)]), FACE, dz=2.6)
-    f.shape("face_shade", H([(0.02, -0.02), (0.08, -0.06), (0.15, -0.06), (0.19, -0.09), (0.12, -0.135),
-                             (0.05, -0.11)]), FACE_SHADE, dz=2.65)
-    f.ellipse("ear", (hx - 0.10, hy + 0.01), 0.10, 0.13, EAR, ec=LINE, dz=2.7)
-    f.ellipse("ear_inner", (hx - 0.095, hy + 0.01), 0.05, 0.075, EAR_IN, dz=2.75)
-    f.ellipse("eye", (hx + 0.115, hy + 0.035), 0.050, 0.056, "#2a1d16", dz=2.8)
-    f.ellipse("eye_highlight", (hx + 0.125, hy + 0.05), 0.016, 0.016, "white", dz=2.85)
-    f.line("brow", H([(0.075, 0.085), (0.115, 0.10), (0.155, 0.085)]), FACE_SHADE, lw=0.8 * s, dz=2.82)
-    f.ellipse("nose", (hx + 0.195, hy - 0.035), 0.018, 0.013, "#8a5d45", dz=2.85)
-    f.line("mouth", H([(0.19, -0.085), (0.165, -0.095), (0.14, -0.088)]), "#a77558", lw=0.5, dz=2.85)
-    sh = np.array([0.08, -0.10])                                          # the near arm, slender, small hand
+
+    def poly(part, pts, fc, dz):
+        return f._add(Polygon(f.P(pts), closed=True, fc=fc, ec="none", zorder=z + dz), part)
+
+    acc = lambda part, pts, lw=0.9, color=M_ACCENT, dz=3.0: f.line(part, _px(pts), color, lw=lw * s, dz=dz)
+    # tail, far leg, body, near leg, foot
+    f.line("tail", _px([(110, 1060), (0, 1112), (-110, 1100), (-185, 1035), (-205, 950)]), M_FUR, lw=3.2 * s, dz=0)
+    f.shape("leg_far", _px([(150, 960), (330, 930), (470, 960), (500, 1040), (420, 1100), (160, 1105)]),
+            M_FUR_DARK, dz=0.5)
+    poly("body", _px([(150, 545), (185, 515), (430, 580), (452, 690), (418, 830), (405, 960), (350, 1062), (170, 1092),
+                      (108, 1010), (112, 880), (148, 720)]), M_FUR, dz=1)
+    acc("chest", [(448, 700), (424, 820), (410, 940)], lw=0.8, dz=1.2)
+    f.shape("leg_near", _px([(95, 975), (260, 905), (455, 890), (525, 935), (515, 1005), (330, 1055),
+                             (120, 1090)]), M_FUR, dz=1.5)
+    acc("thigh", [(215, 945), (345, 905), (470, 900), (518, 942), (510, 995)], lw=0.8, dz=1.6)
+    f.shape("foot", _px([(430, 1060), (560, 1062), (650, 1090), (640, 1118), (440, 1118)]), M_FACE, dz=1.7)
+    # head: fur with the crest, then the face, ear, eye and accents (the mockup's outline, traced)
+    poly("head", _px([(165, 553), (185, 483), (160, 445), (85, 355), (72, 290), (90, 230), (130, 170), (160, 135),
+                      (215, 58), (195, 112), (290, 32), (258, 82), (370, 25), (330, 68), (478, 28), (420, 62),
+                      (552, 47), (480, 72), (605, 82), (510, 100), (540, 130), (575, 220), (620, 300), (625, 350),
+                      (620, 470), (595, 503), (540, 500), (495, 515), (462, 545), (447, 580), (440, 625),
+                      (300, 590)]), M_FUR, dz=2.5)
+    f.shape("face", _px([(380, 225), (400, 170), (440, 125), (490, 100), (530, 115), (540, 135), (545, 190),
+                         (570, 250), (610, 285), (655, 300), (662, 340), (655, 372), (632, 395), (620, 430),
+                         (622, 470), (605, 498), (560, 500), (510, 490), (475, 465), (458, 425), (462, 385),
+                         (480, 352), (440, 342), (400, 310), (383, 265)]), M_FACE, dz=2.6)
+    acc("face_edge", [(378, 228), (382, 282), (412, 324), (472, 352)])
+    acc("cheek", [(476, 358), (456, 405), (471, 463)])
+    acc("jaw", [(442, 598), (462, 545), (520, 506), (592, 500)])
+    acc("brow", [(488, 146), (456, 152), (441, 182), (437, 236)], lw=0.8)
+    th = np.radians(np.linspace(78, 312, 30))
+    ear = [(245 + 62 * np.cos(t), 340 - 62 * np.sin(t)) for t in th]
+    poly("ear", _px(ear), M_EAR, dz=2.7)
+    rim = [(245 + 63 * np.cos(t), 340 - 63 * np.sin(t)) for t in np.radians(np.linspace(178, 305, 16))]
+    f.line("ear_rim", _px(rim), M_RIM, lw=0.6 * s, dz=2.75)
+    (ex, ey), = _px([(486, 212)])
+    f.ellipse("eye", (ex, ey), 80 * _K, 118 * _K, "black", dz=2.8)
+    (hx1, hy1), (hx2, hy2) = _px([(501, 190), (474, 235)])
+    f.ellipse("eye_highlight", (hx1, hy1), 34 * _K, 36 * _K, "white", dz=2.85)
+    f.ellipse("eye_highlight_small", (hx2, hy2), 17 * _K, 18 * _K, "white", dz=2.85)
+    # the near arm: slender, angular, with a light hand
+    sh = np.array(_px([(330, 690)])[0])
     if reach_to is None:
-        joints = [sh, sh + (0.10, -0.24), sh + (0.24, -0.40)]
-        hand_dir = np.array([1.0, -0.35])
+        joints = [sh, np.array(_px([(400, 845)])[0]), np.array(_px([(520, 925)])[0])]
+        hand_dir = np.array([1.0, -0.45])
     else:
         tip = (np.asarray(reach_to, float) - (x, y)) / s
         v = tip - sh
         L = np.hypot(*v)
         u = v / L
         nrm = np.array([u[1], -u[0]])
-        wrist = sh + u * (L - 0.10)
-        elbow = sh + u * (L - 0.10) * 0.5 + nrm * 0.07
+        wrist = sh + u * (L - 0.085)
+        elbow = sh + u * (L - 0.085) * 0.5 + nrm * 0.05
         joints, hand_dir = [sh, elbow, wrist], u
-    f.shape("arm", _limb_outline(joints, [0.055, 0.042, 0.030]), FUR, ec=LINE, dz=4)
-    w = np.asarray(joints[-1], float)
+    arm = _limb_outline(joints, [0.045, 0.034, 0.026])
+    poly("arm", arm, M_FUR, dz=4)
+    J = np.asarray(joints)
+    edge = arm[:len(joints)]                                  # the arm's upper/back edge, as in the mockup's accents
+    f.line("arm_edge", [tuple(np.asarray(edge[0]) * 0.6 + np.asarray(edge[1]) * 0.4)] + edge[1:], M_ACCENT,
+           lw=0.8 * s, dz=4.1)
+    w = J[-1]
     hd = hand_dir / np.hypot(*hand_dir)
     hn = np.array([-hd[1], hd[0]])
-    hand = [w + 0.032 * hn, w + 0.05 * hd + 0.034 * hn, w + 0.075 * hd + 0.014 * hn, w + 0.105 * hd + 0.008 * hn,
-            w + 0.108 * hd - 0.006 * hn, w + 0.06 * hd - 0.028 * hn, w - 0.028 * hn]
-    f.shape("hand", [tuple(p) for p in hand], HAND, ec=LINE, dz=4.5)
+    hand = [w + 0.028 * hn, w + 0.045 * hd + 0.03 * hn, w + 0.06 * hd + 0.012 * hn, w + 0.09 * hd + 0.008 * hn,
+            w + 0.092 * hd - 0.006 * hn, w + 0.05 * hd - 0.024 * hn, w - 0.026 * hn]
+    f.shape("hand", [tuple(p) for p in hand], M_FACE, dz=4.5)
 
 
 # ------------------------------------------------------------------------------------------------------------- person
