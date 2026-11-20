@@ -521,6 +521,10 @@ MODELS = {
     'wiener_160ms': lambda n: WienerNet(n, taps=8),
     'kalman_80ms': lambda n: KalmanNet(n),
     'wiener_160ms_day': lambda n: WienerDayNet(n, taps=8),       # one filter per session
+    # linear decoders trained end to end with CTC over the RNN's 640 ms input window (speech's timescale is ~600 ms;
+    # 160 ms is too short): the linear floor under the chip network (2026-11-20)
+    'wiener_640ms': lambda n: WienerNet(n, taps=32),
+    'wiener_640ms_day': lambda n: WienerDayNet(n, taps=32),
     'kalman_80ms_day': lambda n: KalmanDayNet(n),
 }
 
@@ -580,7 +584,7 @@ def main():
     N_IN = int(train.parts[0].features[0].shape[1])      # 256 (derived/snnData) or 128 (snnDataTx1)
     model = MODELS[args.model](len(args.sessions)).to(device)
     n_params = sum(p.numel() for p in model.parameters())
-    n_core = n_params - sum(p.numel() for p in model.inp.parameters())
+    n_core = n_params - (sum(p.numel() for p in model.inp.parameters()) if hasattr(model, 'inp') else 0)
     rnn_recipe = args.recipe == 'rnn'
     args.lr = args.lr if args.lr is not None else (0.02 if rnn_recipe else 1e-3)
     args.weight_decay = args.weight_decay if args.weight_decay is not None else (1e-5 if rnn_recipe else 1e-3)
