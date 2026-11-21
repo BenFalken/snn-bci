@@ -18,14 +18,14 @@ DOUBLE = 183 * MM           # two columns
 CORE = ["kf", "wf", "lstm", "lsnn", "speck"]
 EXTRA = ["gru", "qrnn", "paper_rnn", "delaynet", "dense_nn", "simple_rnn", "wiener_cascade"]
 LABEL = {"kf": "Kalman filter", "wf": "Wiener filter", "lstm": "LSTM", "lsnn": "LSNN", "speck": "Speck SNN",
-         "gru": "GRU", "qrnn": "QRNN", "paper_rnn": "Paper RNN", "delaynet": "DelayNet", "dense_nn": "Dense NN",
+         "gru": "GRU", "aegru": "Autoencoder GRU", "qrnn": "QRNN", "paper_rnn": "Paper RNN", "delaynet": "DelayNet", "dense_nn": "Dense NN",
          "simple_rnn": "Simple RNN", "wiener_cascade": "Wiener cascade"}
 SHORT = {"kf": "KF", "wf": "WF", "lstm": "LSTM", "lsnn": "LSNN", "speck": "Speck",
-         "gru": "GRU", "qrnn": "QRNN", "paper_rnn": "Paper\nRNN", "delaynet": "DelayNet", "dense_nn": "DNN",
+         "gru": "GRU", "aegru": "AE-\nGRU", "qrnn": "QRNN", "paper_rnn": "Paper\nRNN", "delaynet": "DelayNet", "dense_nn": "DNN",
          "simple_rnn": "sRNN", "wiener_cascade": "WC"}
 COLOR = {"kf": "#56B4E9", "wf": "#009E73", "lstm": "#0072B2", "lsnn": "#D55E00", "speck": "#E69F00",
          # supplementary decoders: muted, so the core keeps the attention
-         "gru": "#7A9CC6", "qrnn": "#9C89B8", "paper_rnn": "#4D4D4D", "delaynet": "#C49A6C",
+         "gru": "#7A9CC6", "aegru": "#5f86b8", "qrnn": "#9C89B8", "paper_rnn": "#4D4D4D", "delaynet": "#C49A6C",
          "dense_nn": "#A0A0A0", "simple_rnn": "#8DB3A3", "wiener_cascade": "#B8B8B8"}
 HIGHLIGHT = {"lsnn", "speck"}
 

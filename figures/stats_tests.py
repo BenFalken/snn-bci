@@ -20,7 +20,7 @@ from scipy.stats import wilcoxon
 HERE = Path(__file__).resolve().parent
 LOWER_BETTER = {"rmse", "per"}
 COMPARISONS = [  # (experiment, metric, group or None for all, decoder a, decoder b)
-    ("motor1", "cc", None, "lsnn", "qrnn"), ("motor1", "cc", None, "lsnn", "lstm"),
+    ("motor1", "cc", None, "lsnn", "aegru"), ("motor1", "cc", None, "lsnn", "qrnn"), ("motor1", "cc", None, "lsnn", "lstm"),
     ("motor1", "cc", None, "speck", "lstm"), ("motor1", "cc", None, "speck", "wf"),
     ("motor1", "cc", None, "speck", "kf"),
     ("motor2", "cc", None, "lsnn", "qrnn"), ("motor2", "cc", None, "speck", "lstm"),
@@ -29,7 +29,7 @@ COMPARISONS = [  # (experiment, metric, group or None for all, decoder a, decode
     ("speech", "per", None, "lsnn", "paper_rnn"), ("speech", "per", None, "lsnn", "lstm"),
     ("speech", "per", None, "speck", "speck_float"),
 ]
-LABEL = {"lsnn": "LSNN", "qrnn": "QRNN", "lstm": "LSTM", "speck": "Speck (chip)", "wf": "Wiener filter",
+LABEL = {"aegru": "autoencoder GRU", "lsnn": "LSNN", "qrnn": "QRNN", "lstm": "LSTM", "speck": "Speck (chip)", "wf": "Wiener filter",
          "kf": "Kalman filter", "gru": "GRU", "speck_float": "Speck (software)", "paper_rnn": "paper RNN"}
 EXP = {"motor1": "Motor (I)", "motor2": "Motor (II)", "audio": "Audio", "speech": "Speech"}
 

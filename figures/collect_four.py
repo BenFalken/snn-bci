@@ -32,6 +32,9 @@ PER_TRIAL_NAMES = {"RNN": "paper_rnn", "GRU96": "gru", "LSTM96": "lstm", "LSNN":
 JENKINS_REFIT = FINAL / "jenkins_refit"         # the Jenkins Speck SNN's readout refitted in software (jenkins_refit.py)
 
 
+VAL = MOTOR.parent / "final_v3"           # validation-selected checkpoints (train_snn.py --val-frac), where scored
+
+
 def motor_rows(exp, subjects):
     rows = []
     for subj in subjects:
@@ -39,7 +42,18 @@ def motor_rows(exp, subjects):
         if not path.is_file():
             print(f"[{exp}] no {path}: left out")
             continue
+        val = VAL / subj / "combined_metrics.json"
+        val = json.load(open(val)) if val.is_file() else {}
+        gru = MOTOR / subj / "gru_metrics.json"           # the re-implemented GRUs (motor/gru_reference/score_gru.py)
+        gru = json.load(open(gru)) if gru.is_file() else {}
+        for session, g in gru.items():
+            if "aegru" in g:
+                m = g["aegru"]["seed_mean"]
+                rows.append((exp, subj, session, "aegru", "cc", (m["cc_x"] + m["cc_y"]) / 2))
+                rows.append((exp, subj, session, "aegru", "rmse", m["rmse"]))
         for session, decs in json.load(open(path)).items():
+            if "snn" in val.get(session, {}):              # the LSNN: its validation-selected checkpoint
+                decs = dict(decs, snn=val[session]["snn"])
             for k, v in decs.items():
                 if k in MOTOR_NAMES and v:
                     cc, rm = (v["cc_x"] + v["cc_y"]) / 2, v["rmse"]
