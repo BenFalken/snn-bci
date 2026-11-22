@@ -34,7 +34,7 @@ FINAL = WORKSPACE / "final_results"
 SEEDS = ["s1337", "s11", "s99"]                      # s99 added after the two-seed result
 SPECK = {"P5": ("audio_novel", "P5_{s}"), "FT1": ("audio_fine", "FT1_spikes_{s}"),
          "FT2": ("audio_fine", "FT2_spikes_daynorm_{s}")}
-LSNN = {"LS0": "LS0_stream40_{s}", "LS1": "LS1_fine_{s}"}
+LSNN = {"LS0": "LS0_stream40_{s}", "LS1": "LS1_fine_{s}", "LS2": "LS2_fine_ro20_{s}"}   # LS2: readout 20 ms
 
 
 def speck(monkey, v, key, split):
@@ -85,7 +85,8 @@ def word_scores(monkey, split):
             "P5 software": ("P5_{s}", f"refit/preds_software_refit{suf}.npy"),
             "FT1 chip": ("FT1_spikes_{s}", f"refit/preds_event_refit{suf}.npy"),
             "FT2 software": ("FT2_spikes_daynorm_{s}", f"refit/preds_software_refit{suf}.npy"),
-            "LS0": ("LS0_stream40_{s}", f"preds/{split}.npy"), "LS1": ("LS1_fine_{s}", f"preds/{split}.npy")}
+            "LS0": ("LS0_stream40_{s}", f"preds/{split}.npy"), "LS1": ("LS1_fine_{s}", f"preds/{split}.npy"),
+            "LS2": ("LS2_fine_ro20_{s}", f"preds/{split}.npy")}
     for name, (pat, f) in runs.items():
         r = []
         for s in SEEDS:
@@ -129,11 +130,12 @@ def main():
             base = lsnn(m, "LS0", split)
             for v in LSNN:
                 r = lsnn(m, v, split)
-                print(line(m, v, r, base if v != "LS0" else None))
+                print(line(m, v, r, base if v != "LS0" else None))    # (LS2's difference is also to LS0)
                 if split == "valid" and v == "LS1" and (len(r) < 2 or not base or np.mean(r) <= np.mean(base)):
                     ok["LS1"] = False
-    word_ok = {"FT1": True, "FT2": True, "LS1": True}
-    pairs = {"FT1": ("FT1 chip", "P5 chip"), "FT2": ("FT2 software", "P5 software"), "LS1": ("LS1", "LS0")}
+    word_ok = {"FT1": True, "FT2": True, "LS1": True, "LS2": True}
+    pairs = {"FT1": ("FT1 chip", "P5 chip"), "FT2": ("FT2 software", "P5 software"), "LS1": ("LS1", "LS0"),
+             "LS2": ("LS2", "LS1")}                    # LS2 (readout 20 ms) against LS1 (40 ms)
     for split in ["valid"] + (["test"] if a.show_test else []):
         print(f"\nThe paper's metric, per-word band r on {split} (median over words; mean over seeds)")
         for m in ("Neil", "Gomez"):

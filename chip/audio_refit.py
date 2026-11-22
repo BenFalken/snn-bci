@@ -32,11 +32,18 @@ from snndec.evaluate import recording_file  # noqa: E402
 RIDGES = [1e-4, 1e-3, 1e-2, 1e-1, 1.0, 10.0, 100.0]
 
 
-def features(model, spikes):
+def readout_decay(model, tau_factor=1.0):
+    """The EMA's decay per chip step: the trained one, or with its time constant x tau_factor (d -> d ** (1 / f))."""
+    d = float(torch.sigmoid(model.readout.decay_raw).mean())
+    return d ** (1.0 / tau_factor)
+
+
+def features(model, spikes, decay=None):
     """Hidden 3's spikes per chip step -> the readout's input per frame: one EMA per stage, normalized, sampled at
-    each frame's last step (as EMAReadout.step, then out_every)."""
+    each frame's last step (as EMAReadout.step, then out_every). decay: the EMA's decay per chip step (default: the
+    trained one; a refit with --tau-factor saves its own in readout_<kind>.npz)."""
     ro = model.readout
-    d = float(torch.sigmoid(ro.decay_raw).mean())
+    d = readout_decay(model) if decay is None else float(decay)
     u = spikes.astype(np.float64)
     for _ in range(ro.stages):
         e = np.empty_like(u)
@@ -70,6 +77,10 @@ def main():
     p.add_argument('--ckpt', required=True)
     p.add_argument('--scale', type=float, required=True, help="layer 1's threshold factor on the chip")
     p.add_argument('--out', required=True)
+    p.add_argument('--tau-factor', type=float, default=1.0, help="the readout EMA's time constant x this (refit only; "
+                   "the trained readout keeps its own)")
+    p.add_argument('--spikes-from', default=None, help='an earlier refit folder of the same network and scale: reuse '
+                   'its simulated spikes_{event,software}.npz instead of simulating again')
     a = p.parse_args()
     os.makedirs(a.out, exist_ok=True)
     torch.set_num_threads(1)
@@ -88,6 +99,8 @@ def main():
     spk = {}
     for kind in ('event', 'software'):
         f = os.path.join(a.out, f'spikes_{kind}.npz')
+        if a.spikes_from and not os.path.isfile(f):
+            f = os.path.join(a.spikes_from, f'spikes_{kind}.npz')
         if os.path.isfile(f):
             spk[kind] = np.load(f)['h3']
             continue
@@ -101,12 +114,13 @@ def main():
 
     lin = model.readout.linear
     W0, b0 = lin.weight.numpy().T, lin.bias.numpy()
-    res = {'ckpt': os.path.abspath(a.ckpt), 'scale': a.scale,
+    res = {'ckpt': os.path.abspath(a.ckpt), 'scale': a.scale, 'tau_factor': a.tau_factor,
            'r_float_test': tasks.mean_correlation(Y['test'], cut(y_float, 'test'))}
     preds = {'float': cut(y_float, 'test')}
     for kind in ('event', 'software'):
-        X = features(model, spk[kind])
-        trained = X @ W0 + b0
+        trained = features(model, spk[kind]) @ W0 + b0                     # the trained readout, its own decay
+        dec = readout_decay(model, a.tau_factor)
+        X = features(model, spk[kind], dec)
         res[f'r_{kind}_trained'] = {s: tasks.mean_correlation(Y[s], cut(trained, s)) for s in rows}
         best = None
         for lam in RIDGES:
@@ -118,7 +132,7 @@ def main():
         refit = X @ Wf + bf
         res[f'r_{kind}_refit'] = {s: tasks.mean_correlation(Y[s], cut(refit, s)) for s in rows}
         res[f'ridge_{kind}'] = lam
-        np.savez(os.path.join(a.out, f'readout_{kind}.npz'), W=Wf, b=bf)
+        np.savez(os.path.join(a.out, f'readout_{kind}.npz'), W=Wf, b=bf, decay=dec)
         preds[f'{kind}_trained'], preds[f'{kind}_refit'] = cut(trained, 'test'), cut(refit, 'test')
         preds[f'{kind}_trained_valid'], preds[f'{kind}_refit_valid'] = cut(trained, 'valid'), cut(refit, 'valid')
         print(f"{kind:8s} trained readout r valid {res[f'r_{kind}_trained']['valid']:.3f} test "

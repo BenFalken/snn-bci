@@ -53,7 +53,7 @@ def refit_decode(model, spikes, readout):
     (audio_refit.py -> readout_event.npz: the same smoothing, a refitted linear map), one output per frame."""
     from audio_refit import features
     r = np.load(readout)
-    return features(model, np.asarray(spikes)) @ r['W'] + r['b']
+    return features(model, np.asarray(spikes), r['decay'] if 'decay' in r.files else None) @ r['W'] + r['b']
 
 
 @torch.no_grad()

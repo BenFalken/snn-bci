@@ -27,7 +27,7 @@ def main():
     a = p.parse_args()
     model, _ = load(a.ckpt)
     z, r = np.load(a.counts), np.load(a.readout)
-    X = features(model, z['h3'])
+    X = features(model, z['h3'], r['decay'] if 'decay' in r.files else None)
     first, n = int(z['first_frame']), int(z['n_test'])
     pred = (X @ r['W'] + r['b'])[first:first + n]
     os.makedirs(a.out, exist_ok=True)
