@@ -1,5 +1,5 @@
 """
-EXPLORATORY: the spike-timing pilot (runs_fine_timing.txt) on VALIDATION, seeds s1337 and s11 (P5's calibrated seeds).
+EXPLORATORY: the spike-timing pilot (runs_fine_timing.txt) on VALIDATION, seeds s1337 and s11 (P5's calibrated seeds; s99 added later).
 
   Speck  FT1 (real 4 ms spikes, chip-ready): the chip model's event-driven output, readout refitted (r_event_refit),
          against P5's. FT2 (events weighted per day; not chip-ready as is): the software network, readout refitted
@@ -31,7 +31,7 @@ sys.path.insert(0, str(FIGURES))
 from collect_fidelity import fisher_mean_r  # noqa: E402
 
 FINAL = WORKSPACE / "final_results"
-SEEDS = ["s1337", "s11"]
+SEEDS = ["s1337", "s11", "s99"]                      # s99 added after the two-seed result
 SPECK = {"P5": ("audio_novel", "P5_{s}"), "FT1": ("audio_fine", "FT1_spikes_{s}"),
          "FT2": ("audio_fine", "FT2_spikes_daynorm_{s}")}
 LSNN = {"LS0": "LS0_stream40_{s}", "LS1": "LS1_fine_{s}"}

@@ -51,7 +51,7 @@ done
 # P5's refit again, with its own chosen factor, into audio_fine/<monkey>_P5_<seed> (its original folder is left as it
 # is): the refit now also saves validation predictions, which the per-word metric needs; its scores must reproduce
 for m in ${MONKEYS:-Neil Gomez}; do
-  for s in s1337 s11; do
+  for s in s1337 s11 s99; do
     N=$OUT/${m}_P5_$s; J=$SNNBCI_WORKSPACE/final_results/audio_novel/${m}_P5_$s/refit/refit.json
     [ -f "$N/refit/preds_event_refit_valid.npy" ] && continue
     k=$(python3 -c "import json; print(json.load(open('$J'))['scale'])")
