@@ -141,6 +141,36 @@ def trim(spans, n, pad_frames):
     return [tuple(x) for x in spans]
 
 
+def write_fine(args, out, split, stats, F, C, T, sub=10):
+    """The cohort's frames at 4 ms: for every epoch span [a, b) of a day, that day's features_4ms.npy rows
+    [a * sub, b * sub), reshaped to (frames, sub * channels). Written only if the rebuilt 40 ms files equal the
+    cohort's existing ones and the sub-bins sum back to its counts."""
+    for name, x in (("features.npy", F), ("features_counts_daynorm.npy", C), ("targets.npy", T)):
+        if not np.array_equal(np.load(out.pipeline / name), x):
+            raise SystemExit(f"the rebuilt {name} differs from {out.pipeline / name}: not the same cohort "
+                             "(check --include-novel / --keep-split-from / --name); nothing written")
+    fine_days = {}
+    raw, norm = [], []
+    for s in ("train", "valid", "test"):
+        for r, a, b in split[s]:
+            d = r["date"]
+            if d not in fine_days:
+                fine_days[d] = np.load(PipelinePaths(args.data_root, args.subject, args.region, d).pipeline
+                                       / "features_4ms.npy", mmap_mode="r")
+            x = np.asarray(fine_days[d][a * sub:b * sub], np.float32)          # (frames * sub, C)
+            m = len(x) // sub                                                  # as feats[a:b]: cut at the day's end
+            x = x.reshape(m, sub, -1)
+            raw.append(x.reshape(m, -1))
+            norm.append((x / stats[d][1][None]).reshape(m, -1))
+    raw, norm = np.concatenate(raw), np.concatenate(norm)
+    n, c = C.shape
+    assert np.allclose(norm.reshape(n, sub, c).sum(1), C, atol=1e-4), "4 ms sub-bins do not sum to the cohort's counts"
+    np.save(out.pipeline / "features_4ms_counts.npy", raw)
+    np.save(out.pipeline / "features_4ms_counts_daynorm.npy", norm)
+    print(f"wrote features_4ms_counts(.npy, _daynorm.npy) {raw.shape} to {out.pipeline}; the cohort's own files were "
+          "rebuilt identically and left as they were; every frame's sub-bins sum to its count")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--subject", required=True)
@@ -153,6 +183,11 @@ def main():
     ap.add_argument("--keep-split-from", default=None, help="an earlier cohort's prep/epochs.csv: its epochs keep "
                     "their split")
     ap.add_argument("--name", default=NAME)
+    ap.add_argument("--fine", action="store_true", help="EXPLORATORY spike-timing pilot: rebuild this cohort exactly "
+                    "(checked against its existing files, which are not rewritten) and write only its 4 ms inputs "
+                    "from each day's features_4ms.npy (audio/prepare_fine_bins.py): pipeline/features_4ms_counts.npy "
+                    "(raw crossings) and features_4ms_counts_daynorm.npy (divided by the day's 40 ms train SD), "
+                    "both (frames, 10 * channels), sub-bin-major within a frame")
     args = ap.parse_args()
 
     epochs, days = epochs_from_log(args)
@@ -217,6 +252,9 @@ def main():
     F, C, T = (np.concatenate(v).astype(np.float32) for v in (F, C, T))
 
     out = PipelinePaths(args.data_root, args.subject, args.region, args.name)
+    if args.fine:
+        write_fine(args, out, split, stats, F, C, T)
+        return
     np.save(out.pipeline / "features.npy", F)
     np.save(out.pipeline / "features_counts_daynorm.npy", C)
     np.save(out.pipeline / "targets.npy", T)

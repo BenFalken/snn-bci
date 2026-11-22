@@ -1,0 +1,20 @@
+# EXPLORATORY (2026-11-21), not a final model: real spike timing for audio. The paper's audio decoders see one spike
+# count per channel per 40 ms frame; the Speck SNN spreads that count over its ten 4 ms chip steps. Here each chip step
+# gets the threshold crossings that actually fell in its 4 ms (audio/prepare_fine_bins.py, then
+# build_word_dataset_daynorm.py --fine; the same cohort, frames and split, verified to sum back to the 40 ms counts).
+#   FT1  P5's exact recipe, input = real 4 ms spikes as 0/1 events (no per-day normalization; chip-ready)
+#   FT2  as FT1, each event weighted by 1 / its day's 40 ms SD (the per-day normalization; on a chip this needs
+#        layer-1 weights reloaded per day, so it is judged in software only)
+#   LS0  the LSNN streaming at 40 ms on its usual normalized features (the control for LS1: same batches)
+#   LS1  the LSNN streaming at 4 ms (ten steps per frame) on the day-normalized 4 ms counts; input noise scaled by
+#        1/sqrt(10) per step (offset by 1/10) so each 40 ms frame gets the noise LS0's frames get
+# LS1 is the slowest (~10x LS0's steps), so it is listed first.
+# name | config | --set overrides
+LS1_fine_s1337 | audio_lsnn | train.batches=chunks train.chunk_steps=150 train.burn_in=25 train.batch_size=16 train.coverage=4 data.input=counts data.features=features_4ms_counts_daynorm.npy model.input.encoding=fine model.input.substeps=10 model.input.binarize=false train.augment.white_noise_sd=0.316 train.augment.constant_offset_sd=0.02 train.seed=1337
+LS1_fine_s11 | audio_lsnn | train.batches=chunks train.chunk_steps=150 train.burn_in=25 train.batch_size=16 train.coverage=4 data.input=counts data.features=features_4ms_counts_daynorm.npy model.input.encoding=fine model.input.substeps=10 model.input.binarize=false train.augment.white_noise_sd=0.316 train.augment.constant_offset_sd=0.02 train.seed=11
+FT1_spikes_s1337 | audio_speck | model.input.n_delays=0 model.input.delays=[0,4,6,7,8,9,10,12,16] model.readout.stages=1 train.deriv_weight=1.0 data.features=features_4ms_counts.npy model.input.encoding=fine train.seed=1337
+FT1_spikes_s11 | audio_speck | model.input.n_delays=0 model.input.delays=[0,4,6,7,8,9,10,12,16] model.readout.stages=1 train.deriv_weight=1.0 data.features=features_4ms_counts.npy model.input.encoding=fine train.seed=11
+FT2_spikes_daynorm_s1337 | audio_speck | model.input.n_delays=0 model.input.delays=[0,4,6,7,8,9,10,12,16] model.readout.stages=1 train.deriv_weight=1.0 data.features=features_4ms_counts_daynorm.npy model.input.encoding=fine model.input.binarize=false train.seed=1337
+FT2_spikes_daynorm_s11 | audio_speck | model.input.n_delays=0 model.input.delays=[0,4,6,7,8,9,10,12,16] model.readout.stages=1 train.deriv_weight=1.0 data.features=features_4ms_counts_daynorm.npy model.input.encoding=fine model.input.binarize=false train.seed=11
+LS0_stream40_s1337 | audio_lsnn | train.batches=chunks train.chunk_steps=150 train.burn_in=25 train.batch_size=16 train.coverage=4 train.seed=1337
+LS0_stream40_s11 | audio_lsnn | train.batches=chunks train.chunk_steps=150 train.burn_in=25 train.batch_size=16 train.coverage=4 train.seed=11

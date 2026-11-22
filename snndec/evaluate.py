@@ -102,7 +102,10 @@ def main(argv=None):
     if a.experiment == 'motor':
         metrics, preds = evaluate_motor(model, a.data, a.scalers)
     elif a.experiment == 'audio':
-        mode = a.mode or ('recording' if model.spec['kind'] == 'speck' else info.get('mode', 'window'))
+        cfg = info.get('config') or {}
+        streamed = cfg.get('train', {}).get('batches') == 'chunks'           # an LSNN trained streaming
+        mode = a.mode or ('recording' if model.spec['kind'] == 'speck' or cfg.get('data', {}).get('input') == 'counts'
+                          else 'stream' if streamed else info.get('mode', 'window'))
         metrics, preds = evaluate_audio(model, a.data, mode, info.get('channels'), recording_file(info),
                                         (info.get('config') or {}).get('data', {}).get('past'))
     else:

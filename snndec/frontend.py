@@ -7,7 +7,10 @@ What the host does to the input before the first spiking layer, in this order:
     encoding       'none'; 'clip' (counts clipped to 1, the motor decoders' binarized input);
                    'threshold' (one event when value / threshold >= 1, straight-through gradient);
                    'spread' (substeps > 1: each step's count, in units of threshold, spread evenly over
-                   `substeps` steps; with binarize, at most one event per step)
+                   `substeps` steps; with binarize, at most one event per step);
+                   'fine' (substeps > 1: the input already carries each step's substeps, (N, T, substeps * C),
+                   sub-step-major, e.g. real 4 ms spike counts in 40 ms frames; with binarize, an event where a
+                   sub-step has any spike, otherwise its value as it is)
     event dropout  events dropped at random without rescaling (training only)
     input scale    a fixed factor per channel (folds into the first layer's weights on the chip)
     delays         the channels now and delays[k] steps earlier, side by side (copy-major); on the chip's side
@@ -28,10 +31,10 @@ class HostInput(nn.Module):
                  binarize: bool = True, event_dropout: float = 0.0, input_scale=None,
                  delays: Optional[Sequence[int]] = None):
         super().__init__()
-        if encoding not in ('none', 'clip', 'threshold', 'spread'):
-            raise ValueError(f"encoding must be 'none', 'clip', 'threshold' or 'spread', got {encoding!r}")
-        if (encoding == 'spread') != (substeps > 1):
-            raise ValueError("encoding 'spread' goes with substeps > 1, and only it")
+        if encoding not in ('none', 'clip', 'threshold', 'spread', 'fine'):
+            raise ValueError(f"encoding must be 'none', 'clip', 'threshold', 'spread' or 'fine', got {encoding!r}")
+        if (encoding in ('spread', 'fine')) != (substeps > 1):
+            raise ValueError("encodings 'spread' and 'fine' go with substeps > 1, and only they")
         self.channels = [int(c) for c in channels] if channels is not None else None
         if self.channels is not None:
             self.register_buffer('channel_index', torch.tensor(self.channels, dtype=torch.long), persistent=False)
@@ -47,6 +50,8 @@ class HostInput(nn.Module):
 
     def encode(self, x: torch.Tensor, day: Optional[int] = None) -> torch.Tensor:
         """(N, T, C) -> (N, T * substeps, n_in): everything but the delays."""
+        if self.encoding == 'fine':                                  # (N, T, K * C) -> (N, T * K, C)
+            x = x.reshape(x.shape[0], x.shape[1] * self.substeps, -1)
         if self.channels is not None:
             x = x.index_select(-1, self.channel_index)
         x = self.dropout(x)
@@ -59,6 +64,8 @@ class HostInput(nn.Module):
             x = u + (torch.clamp(torch.floor(u.detach()), 0, 1) - u).detach()
         elif self.encoding == 'spread':
             x = self.spread(x)
+        elif self.encoding == 'fine' and self.binarize:
+            x = (x > 0).to(x.dtype)
         if self.training and self.event_dropout > 0:
             x = x * (torch.rand_like(x) >= self.event_dropout)
         if self.input_scale is not None:

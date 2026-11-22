@@ -179,8 +179,10 @@ class Experiment:
             spec['n_outputs'] = self.windows['train'][1].shape[1]
         if self.kind == 'audio' and spec['kind'] == 'speck':
             X, Y = self.windows['train']
+            K = int(inp.get('substeps', 1)) if inp.get('encoding') == 'fine' else 1
+            frames = self.rec.reshape(len(self.rec), K, -1).sum(1) if K > 1 else self.rec   # 'fine': per-frame sums
             if inp.get('n_channels'):                              # in ranked order, as the original
-                inp['channels'] = data.audio_rank_channels(self.rec, X, Y)[:inp.pop('n_channels')]
+                inp['channels'] = data.audio_rank_channels(frames, X, Y)[:inp.pop('n_channels')]
             if inp.get('n_delays'):
                 top = inp.pop('delay_max', None) or self.W - 1
                 inp['delays'] = sorted({int(round(d)) for d in np.linspace(0, top, inp.pop('n_delays'))})
@@ -192,7 +194,9 @@ class Experiment:
                 with torch.no_grad():
                     u = probe.host.encode(torch.as_tensor(self.rec[:len(Y) + self.W - 1])[None])[0]
                 inp['input_scale'] = (1.0 / u.double().std(0, unbiased=False).clamp(min=1e-3)).tolist()
-            spec['n_channels'] = self.rec.shape[1]
+            spec['n_channels'] = frames.shape[1]
+        if self.kind == 'audio' and spec['kind'] == 'lsnn' and inp.get('encoding') == 'fine':
+            spec['n_channels'] = self.rec.shape[1] // int(inp['substeps'])     # streaming LSNN on 4 ms inputs
         return spec
 
     # ----- training batches and their loss
