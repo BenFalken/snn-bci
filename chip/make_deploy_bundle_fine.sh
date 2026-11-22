@@ -11,6 +11,11 @@ source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../snnbci_env.sh"
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 DL="$SNNBCI_WORKSPACE"; AD="$SNNBCI_AUDITORY_DATA"; CAL="$DL/final_results/audio_fine"
+# the readout's smoothing: the trained one, or the time constant chosen by the refit-only check (validation rule in
+# audio/speck/fine_readout_tau_summary.py; its decay travels in readout_refit.npz and audio_chip.py applies it live)
+TAU="${FT1_TAU_FACTOR:-$(cd "$REPO" && python3 audio/speck/fine_readout_tau_summary.py | sed -n 's/^FT1_TAU_FACTOR=//p')}"
+RF=refit; [ "$TAU" != 1 ] && RF=refit_tau$TAU
+echo "readout: time constant x$TAU ($RF)"
 T="$(mktemp -d)/speck_deploy_fine"
 mkdir -p "$T"/{code/snn-decoders,models/audio,data,results}
 rsync -a --exclude __pycache__ "$REPO/snndec" "$REPO/chip" "$T/code/snn-decoders/"
@@ -24,9 +29,9 @@ P='$P'; n={k: len(np.load(f'{P}/window_targets_{k}.npy', mmap_mode='r')) for k i
 json.dump({'n': n, 'W': int(np.load(f'{P}/window_features_train.npy', mmap_mode='r').shape[1])}, open('$Dp/lengths.json', 'w'))"
   for s in s11 s1337 s99; do
     R="$CAL/${m}_FT1_spikes_$s"; D="$T/models/audio/${m}_FT1_$s"; mkdir -p "$D"
-    [ -f "$R/refit/readout_event.npz" ] || { echo "not calibrated yet: $R"; exit 1; }
+    [ -f "$R/$RF/readout_event.npz" ] || { echo "not calibrated yet: $R/$RF"; exit 1; }
     cp "$SNNBCI_SNN_RUNS/audio_fine_$m/FT1_spikes_$s/best.pt" "$D/model.pt"
-    cp "$R/refit/readout_event.npz" "$D/readout_refit.npz"
+    cp "$R/$RF/readout_event.npz" "$D/readout_refit.npz"
     echo "${m}_FT1_$s $(python3 -c "import json; print(json.load(open('$R/sweep.json'))['chosen_scale'])")" >> "$T/models/audio/scales.txt"
   done
 done
