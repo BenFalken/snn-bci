@@ -45,7 +45,19 @@ for m in ${MONKEYS:-Neil Gomez}; do                           # the LSNNs, score
   for r in $(grep -v '^[[:space:]]*\(#\|$\)' $LIST | cut -d'|' -f1 | grep -E '^LS'); do
     C=$SNNBCI_SNN_RUNS/audio_fine_$m/$r/best.pt; N=$OUT/${m}_$r; mkdir -p "$N"
     [ -f "$C" ] && [ ! -s "$N/eval.txt" ] && python3 -W ignore -m snndec.evaluate audio "$C" \
-        --data "$AD/$m/aSTG/ALLWORDS_NOVEL_DAYNORM/pipeline" > "$N/eval.txt" 2>&1
+        --data "$AD/$m/aSTG/ALLWORDS_NOVEL_DAYNORM/pipeline" --save-predictions "$N/preds" > "$N/eval.txt" 2>&1
+  done
+done
+# P5's refit again, with its own chosen factor, into audio_fine/<monkey>_P5_<seed> (its original folder is left as it
+# is): the refit now also saves validation predictions, which the per-word metric needs; its scores must reproduce
+for m in ${MONKEYS:-Neil Gomez}; do
+  for s in s1337 s11; do
+    N=$OUT/${m}_P5_$s; J=$SNNBCI_WORKSPACE/final_results/audio_novel/${m}_P5_$s/refit/refit.json
+    [ -f "$N/refit/preds_event_refit_valid.npy" ] && continue
+    k=$(python3 -c "import json; print(json.load(open('$J'))['scale'])")
+    mkdir -p "$N"; python3 -W ignore chip/audio_refit.py --pipeline "$AD/$m/aSTG/ALLWORDS_NOVEL_DAYNORM/pipeline" \
+        --ckpt "$SNNBCI_SNN_RUNS/audio_novel_$m/P5_centre_ema1_deriv_$s/best.pt" --scale "$k" --out "$N/refit" > "$N/refit.log" 2>&1
+    echo "[P5 refit] $m $s x$k $(date +%H:%M)"
   done
 done
 python3 audio/speck/fine_timing_summary.py

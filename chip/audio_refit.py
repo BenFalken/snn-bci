@@ -11,7 +11,8 @@ only scored. The control does the same on the software network's spikes (run_sof
     python chip/audio_refit.py --pipeline DIR --ckpt words_P5_s11/model.pt --scale 4 --out OUT
 
 OUT/: spikes_{event,software}.npz (Hidden 3 per chip step, uint8), refit.json, readout_{event,software}.npz
-(W, b), preds_{float,event_trained,event_refit,software_refit}.npy (test rows). A devkit run's Hidden 3 counts
+(W, b), preds_{float,event_trained,event_refit,software_refit}.npy (test rows; the readouts' also as
+preds_<name>_valid.npy, validation rows). A devkit run's Hidden 3 counts
 (audio_chip.py --save-counts) can be decoded with readout_event.npz.
 """
 
@@ -119,6 +120,7 @@ def main():
         res[f'ridge_{kind}'] = lam
         np.savez(os.path.join(a.out, f'readout_{kind}.npz'), W=Wf, b=bf)
         preds[f'{kind}_trained'], preds[f'{kind}_refit'] = cut(trained, 'test'), cut(refit, 'test')
+        preds[f'{kind}_trained_valid'], preds[f'{kind}_refit_valid'] = cut(trained, 'valid'), cut(refit, 'valid')
         print(f"{kind:8s} trained readout r valid {res[f'r_{kind}_trained']['valid']:.3f} test "
               f"{res[f'r_{kind}_trained']['test']:.3f} | refit (ridge {lam:g}) valid "
               f"{res[f'r_{kind}_refit']['valid']:.3f} test {res[f'r_{kind}_refit']['test']:.3f}", flush=True)
