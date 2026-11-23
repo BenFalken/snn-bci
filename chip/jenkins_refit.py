@@ -77,7 +77,9 @@ def main():
     p.add_argument('--session', required=True)
     p.add_argument('--ckpt', required=True)
     p.add_argument('--scalers', required=True)
-    p.add_argument('--arrays', required=True, help="the final run's <session>_arrays.npz (speck_counts, y_true)")
+    p.add_argument('--arrays', default=None, help="the final run's <session>_arrays.npz (speck_counts, y_true), to score "
+                   "the refit on that run's test output; without it the readout is only fitted and saved (a later "
+                   "devkit run, motor_chip.py --readout, scores it live)")
     p.add_argument('--scale', type=float, required=True)
     p.add_argument('--train-chip', default=None, help='devkit spikes of the training trials (motor_train_chip.py)')
     p.add_argument('--lags', type=int, nargs='+', default=[0, 2, 4, 6])
@@ -100,11 +102,12 @@ def main():
         if tc is not None:
             src['chip'].append(tc[str(i)].astype(np.float64))
         ys.append(data.unscale_velocity(t.y, *scale))
-    z = np.load(a.arrays)
-    test_counts, y_test = z['speck_counts'].astype(np.float64), z['y_true'].astype(np.float64)
-    res = {'session': os.path.basename(a.session), 'scale': a.scale, 'lags': a.lags, 'train_trials': len(trials),
-           'rmse_chip_trained_readout': rmse(z['pred_speck'], y_test)}
-    sm_test = smooth(test_counts, d, stages)
+    res = {'session': os.path.basename(a.session), 'scale': a.scale, 'lags': a.lags, 'train_trials': len(trials)}
+    z = np.load(a.arrays) if a.arrays else None
+    if z is not None:
+        test_counts, y_test = z['speck_counts'].astype(np.float64), z['y_true'].astype(np.float64)
+        res['rmse_chip_trained_readout'] = rmse(z['pred_speck'], y_test)
+        sm_test = smooth(test_counts, d, stages)
     preds, params = {}, {}
     for name, counts in src.items():
         for lags in ([0], a.lags):
@@ -122,23 +125,26 @@ def main():
             lam = min(cv, key=cv.get)
             g = fit(np.vstack(Xs), np.vstack(Ys), lam)
             key = f"{name}_lags{'-'.join(map(str, lags))}"
-            pred = g(feats(sm_test, lags))
-            res[key] = {'ridge': lam, 'cv_rmse_train': cv[lam], 'rmse_chip_test': rmse(pred, y_test),
-                        'cc_x': float(np.corrcoef(pred[:, 0], y_test[:, 0])[0, 1]),
-                        'cc_y': float(np.corrcoef(pred[:, 1], y_test[:, 1])[0, 1])}
-            preds[key] = pred
+            res[key] = {'ridge': lam, 'cv_rmse_train': cv[lam]}
+            if z is not None:
+                pred = g(feats(sm_test, lags))
+                res[key].update(rmse_chip_test=rmse(pred, y_test), cc_x=float(np.corrcoef(pred[:, 0], y_test[:, 0])[0, 1]),
+                                cc_y=float(np.corrcoef(pred[:, 1], y_test[:, 1])[0, 1]))
+                preds[key] = pred
             params[key] = dict(**g.params, lags=np.array(lags), decay=d, stages=stages)
-            print(f"{res['session'][:30]} {key:18s} train CV {cv[lam]:6.2f} | chip test RMSE {res[key]['rmse_chip_test']:6.2f} "
-                  f"(trained readout {res['rmse_chip_trained_readout']:.2f})", flush=True)
+            print(f"{res['session'][:30]} {key:18s} train CV {cv[lam]:6.2f}" + (
+                f" | chip test RMSE {res[key]['rmse_chip_test']:6.2f} (trained readout {res['rmse_chip_trained_readout']:.2f})"
+                if z is not None else ""), flush=True)
     # the variant kept: the lower cross-validated error on the training trials (never the test score)
     keys = [k for k in res if isinstance(res[k], dict) and 'cv_rmse_train' in res[k] and k.startswith('chip' if tc is not None else 'sim')]
     best = min(keys, key=lambda k: res[k]['cv_rmse_train'])
     res['chosen'] = best
-    res['rmse_chip_trained_readout_cc'] = [float(np.corrcoef(z['pred_speck'][:, i], y_test[:, i])[0, 1]) for i in (0, 1)]
-    np.save(a.out.replace('.json', '_pred.npy'), preds[best].astype(np.float32))
+    if z is not None:
+        res['rmse_chip_trained_readout_cc'] = [float(np.corrcoef(z['pred_speck'][:, i], y_test[:, i])[0, 1]) for i in (0, 1)]
+        np.save(a.out.replace('.json', '_pred.npy'), preds[best].astype(np.float32))
     sdv = params[best]['sd']                         # the deployed readout (motor_chip.py --readout)
     np.savez(a.out.replace('.json', '_readout.npz'), **{**params[best], 'sd': np.where(np.isinf(sdv), 0.0, sdv)})
-    print(f"chosen on training CV: {best}: chip test RMSE {res[best]['rmse_chip_test']:.2f}")
+    print(f"chosen on training CV: {best}" + (f": chip test RMSE {res[best]['rmse_chip_test']:.2f}" if z is not None else ""))
     json.dump(res, open(a.out, 'w'), indent=1)
 
 
