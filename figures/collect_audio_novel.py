@@ -6,6 +6,12 @@ match (rho_word). Cohorts: pipeline_data/<Monkey>/aSTG/ALLWORDS_NOVEL_DAYNORM (N
 per word, on the real chip with the readout refitted to the chip model's spikes (results_audio_novel, devkit run of
 speck_audio_novel.zip); speck_float = the same networks in software; speck_chip_trained = chip with the trained readout.
 
+2026-11-23, the spike-timing re-orientation (audio/speck/runs_fine_timing.txt): the paper's audio spiking decoders now
+read real 4 ms threshold crossings. lsnn = LS1 (the LSNN streaming at 4 ms; 3 seeds averaged per word), speck = FT1 on
+the real chip (real 4 ms spikes, no per-day normalization; readout refitted to the chip model's spikes; devkit run of
+speck_deploy_fine.zip -> results_deploy_fine), speck_float / speck_chip_trained its software network / trained readout.
+The 40 ms versions stay as the comparison: lsnn_40 (the pipeline's windowed LSNN, as before), lsnn_40stream (LS0, the
+same streaming LSNN at 40 ms, the 4 ms run's control), speck_40 / speck_40_float (P5 on the chip / in software).
     python collect_audio_novel.py   -> data/audio_novel_fidelity.csv
 """
 from repo_paths import WORKSPACE, AUDITORY_DATA  # noqa: E402  (the repository's paths.yaml)
@@ -20,10 +26,13 @@ from collect_fidelity import align_raw, fisher_mean_r, sound_frames, spectral_r
 
 HERE = Path(__file__).parent
 AD = AUDITORY_DATA
-CHIP = WORKSPACE / "results_audio_novel"
+CHIP = WORKSPACE / "results_audio_novel"           # P5 (40 ms counts) on the devkit
+CHIP4 = WORKSPACE / "results_deploy_fine" / "audio"  # FT1 (real 4 ms spikes) on the devkit
+FINE = WORKSPACE / "final_results" / "audio_fine"    # the pilot's LSNN predictions (snndec.evaluate, streaming)
 SEEDS = ("s11", "s1337", "s99")
 NOVEL = {"bloop", "pop", "goop"}
-KINDS = {"speck": "chip_refit", "speck_float": "float", "speck_chip_trained": "chip"}
+KINDS = {"chip_refit": ("speck", "speck_40"), "float": ("speck_float", "speck_40_float"),
+         "chip": ("speck_chip_trained", None)}
 
 
 def rows_for(monkey):
@@ -36,8 +45,14 @@ def rows_for(monkey):
              if (pipe / f"{k}_predict_test.npy").is_file()}
     if "kf" in preds:                               # the Kalman filter's frame split, put on the window split's frames
         preds["kf"] = [align_raw(pipe, preds["kf"][0])]
-    for name, kind in KINDS.items():
-        preds[name] = [np.load(CHIP / f"preds_{monkey}_{s}/{monkey}_P5_{s}/{kind}.npy") for s in SEEDS]
+    if "lsnn" in preds:                              # the pipeline's windowed LSNN at 40 ms: now the comparison
+        preds["lsnn_40"] = preds.pop("lsnn")
+    for kind, (new, old) in KINDS.items():
+        preds[new] = [np.load(CHIP4 / f"preds_{monkey}_FT1_{s}/{monkey}/{kind}.npy") for s in SEEDS]
+        if old:
+            preds[old] = [np.load(CHIP / f"preds_{monkey}_{s}/{monkey}_P5_{s}/{kind}.npy") for s in SEEDS]
+    preds["lsnn"] = [np.load(FINE / f"{monkey}_LS1_fine_{s}/preds/test.npy") for s in SEEDS]
+    preds["lsnn_40stream"] = [np.load(FINE / f"{monkey}_LS0_stream40_{s}/preds/test.npy") for s in SEEDS]
     for d, ps in preds.items():
         assert all(len(p) == len(y) for p in ps), (monkey, d, [len(p) for p in ps], len(y))
     out = []

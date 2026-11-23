@@ -26,11 +26,13 @@ COMPARISONS = [  # (experiment, metric, group or None for all, decoder a, decode
     ("motor2", "cc", None, "lsnn", "qrnn"), ("motor2", "cc", None, "speck", "lstm"),
     ("audio", "band_r", None, "lsnn", "wf"), ("audio", "band_r", None, "lsnn", "lstm"), ("audio", "band_r", None, "lsnn", "gru"),
     ("audio", "band_r", None, "speck", "wf"), ("audio", "band_r", None, "speck", "speck_float"),
+    ("audio", "band_r", None, "lsnn", "lsnn_40stream"), ("audio", "band_r", None, "speck", "speck_40"),   # 4 ms vs 40 ms
     ("speech", "per", None, "lsnn", "paper_rnn"), ("speech", "per", None, "lsnn", "lstm"),
     ("speech", "per", None, "speck", "speck_float"),
 ]
 LABEL = {"aegru": "autoencoder GRU", "lsnn": "LSNN", "qrnn": "QRNN", "lstm": "LSTM", "speck": "Speck (chip)", "wf": "Wiener filter",
-         "kf": "Kalman filter", "gru": "GRU", "speck_float": "Speck (software)", "paper_rnn": "paper RNN"}
+         "kf": "Kalman filter", "gru": "GRU", "speck_float": "Speck (software)", "paper_rnn": "paper RNN",
+         "lsnn_40stream": "LSNN at 40 ms", "speck_40": "Speck at 40 ms (chip)"}
 EXP = {"motor1": "Motor (I)", "motor2": "Motor (II)", "audio": "Audio", "speech": "Speech"}
 
 
