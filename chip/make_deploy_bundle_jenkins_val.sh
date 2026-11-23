@@ -16,10 +16,10 @@ cp "$REPO/motor/snn_training/velocity_scalers.json" "$T/models/"
 for S in $(ls "$VAL/per_session_delay_binarized_val"); do
   k=$(awk -v s="$S" '$1 == "jenkins_m1" && $2 == s {print $3}' "$REPO/motor/speck_l1_factors_val.txt" | tail -1)
   [ -n "$k" ] || { echo "no factor for $S"; exit 1; }
-  mkdir -p "$T/models/$S" "$T/data/$S"
+  mkdir -p "$T/models/$S" "$T/data/hkm/jenkins_m1/$S"
   cp "$VAL/per_session_delay_binarized_val/$S/best_model_weights.pth" "$T/models/$S/"
   cp "$VAL/refit/${S}_readout.npz" "$T/models/$S/readout_refit.npz"
-  rsync -a "$SNNBCI_MOTOR_DATA/snn_datasets/hkm/jenkins_m1/mua/$S/test" "$T/data/$S/"
+  rsync -a "$SNNBCI_MOTOR_DATA/snn_datasets/hkm/jenkins_m1/mua/$S/test" "$T/data/hkm/jenkins_m1/$S/"
   echo "$S $k" >> "$T/models/sessions.txt"
 done
 cat > "$T/run.sh" <<'RUN'
@@ -34,7 +34,7 @@ if [ "${1:-}" = check ]; then
   exit 0
 fi
 while read -r S k; do
-  $PY -W ignore $SD/chip/motor_chip.py --session data/$S --ckpt models/$S/best_model_weights.pth \
+  $PY -W ignore $SD/chip/motor_chip.py --session data/hkm/jenkins_m1/$S --ckpt models/$S/best_model_weights.pth \
       --scalers models/velocity_scalers.json --scale "$k" --readout models/$S/readout_refit.npz --out results/$S.json
 done < models/sessions.txt
 echo "done: send back the results/ folder"
