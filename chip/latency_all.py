@@ -123,7 +123,9 @@ def snn(config, steps_per_output, **overrides):
     for k in ('n_channels', 'n_delays', 'input_norm', 'delay_max'):     # resolved from data at training time
         spec.get('input', {}).pop(k, None)
     model = SNNDecoder(spec).eval()
-    x = (torch.rand(steps_per_output, 1, spec['n_channels']) < 0.1).float()
+    inp = spec.get('input', {})
+    n_in = spec['n_channels'] * (int(inp.get('substeps', 1)) if inp.get('encoding') == 'fine' else 1)   # 'fine':
+    x = (torch.rand(steps_per_output, 1, n_in) < 0.1).float()          # each step carries its 4 ms sub-steps
     day = 0 if spec.get('n_days') else None
 
     @torch.no_grad()
@@ -139,7 +141,9 @@ def speck_host(config, steps_per_output, **overrides):
     _, model = snn(config, steps_per_output, **overrides)
     widths = model.widths
     st = {'host': model.host.init_state(), 'ro': model.readout.init_state(1, 'cpu')}
-    x = (torch.rand(steps_per_output, 1, model.spec['n_channels']) < 0.1).float()
+    inp = model.spec.get('input', {})
+    n_in = model.spec['n_channels'] * (int(inp.get('substeps', 1)) if inp.get('encoding') == 'fine' else 1)
+    x = (torch.rand(steps_per_output, 1, n_in) < 0.1).float()
     h = (torch.rand(1, widths[-1]) < 0.05).float()
 
     @torch.no_grad()

@@ -177,6 +177,9 @@ SPEECH_SPECK = {'R1': {}, 'R2': {'n_ch': 256, 'delays': (0,)}, 'R3': {'n_ch': 25
 def plan():
     audio_speck = {'input.channels': list(range(48)), 'input.delays': [0, 2, 4, 5, 7, 9, 11, 12, 14, 16],
                    'input.input_scale': [1.0] * 48}
+    fine_lsnn = {'input.encoding': 'fine', 'input.substeps': 10, 'input.binarize': False}
+    fine_speck = {'input.encoding': 'fine', 'input.channels': list(range(48)), 'input.delays': [0, 4, 6, 7, 8, 9, 10, 12, 16],
+                  'input.input_scale': [1.0] * 48, 'readout.stages': 1}
     hkm_speck = {'n_channels': 192, 'input.delays': [0, 25], 'readout.neutral': 0.5}
     return {
         'motor': {
@@ -206,6 +209,9 @@ def plan():
             'lstm': lambda: windowed(nn.LSTM(96, 1024, batch_first=True), nn.Linear(1024, 128), 17, 96),
             'lsnn': lambda: snn('audio_lsnn.yaml', 17)[0],              # each window from rest: 17 steps per output
             'speck_host': lambda: speck_host('audio_speck.yaml', 1, **audio_speck),
+            # 2026-11-23, the paper's audio decoders: real 4 ms spikes (audio/speck/runs_fine_timing.txt)
+            'lsnn4': lambda: snn('audio_lsnn.yaml', 1, **fine_lsnn)[0],    # streaming, 10 model steps per output
+            'speck_host4': lambda: speck_host('audio_speck.yaml', 1, **fine_speck),
         },
         'speech': {
             'interval_ms': 80,
