@@ -6,6 +6,7 @@
 # (chip/motor_l1_sweep.py; speck_l1_factors_val.txt). Every network is hard reset.
 #
 #   VAL_ROOT=/path/to/motor_val bash final_val.sh [subject ...]      default: indy loco jenkins_m1
+#   DECODERS=speck ...   only the Speck SNN on the chip (the others already scored elsewhere)
 #
 # VAL_ROOT holds lsnn_loso_finetuned_binarized_val/<session>/ and per_session_delay_binarized_val/<session>/ for every
 # subject (default: $SNNBCI_MOTOR_DATA/motor_val). Results: results/final_v3/<subject>/. Finished sessions are skipped.
@@ -15,7 +16,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 SUBJECTS=("$@"); [ ${#SUBJECTS[@]} -eq 0 ] && SUBJECTS=(indy loco jenkins_m1)
 FACTORS="$HERE/speck_l1_factors_val.txt"
 VAL_ROOT="${VAL_ROOT:-$SNNBCI_MOTOR_DATA/motor_val}"
-bash "$HERE/run_speck.sh" check
+case ",${DECODERS:-speck}," in *,speck,*) bash "$HERE/run_speck.sh" check ;; esac   # the devkit, if Speck runs
 cd "$HERE/sbatch_scripts"
 for SUBJ in "${SUBJECTS[@]}"; do
     EXP=bmi; [ "$SUBJ" = jenkins_m1 ] && EXP=hkm
@@ -28,7 +29,7 @@ for SUBJ in "${SUBJECTS[@]}"; do
         done
         echo; echo "################ $SUBJ, layer 1 threshold x$F: $(ls "$ONE" | wc -l | tr -d ' ') sessions ################"
         SPECK_H1_SCALE=$F DATA_ROOT="$SNNBCI_MOTOR_DATA" bash run_inference.sbatch --local "$EXP" "$SUBJ" \
-            DECODERS=kf,wf,lstm,qrnn,snn,speck \
+            DECODERS="${DECODERS:-kf,wf,lstm,qrnn,snn,speck}" \
             SNN_CHECKPOINT_ROOT="$ONE" SPECK_CHECKPOINT_ROOT="$VAL_ROOT/per_session_delay_binarized_val" \
             RESULTS_DIR="$OUT" SNN_LABEL="LSNN" SPECK_WAIT_TIME="${SPECK_WAIT_TIME:-0.003}"
     done
