@@ -114,6 +114,22 @@ def efficiency():
     v2 = v2c if v2c.is_file() else DL / "results_speck_deploy/bench/speech_V2_host.json"
     if v2.is_file():
         B["speech/speck_host"] = json.load(open(v2))["results"]["speech/speck_host"]
+    # 2026-11-23: the audio decoders re-measured in one session, twice (chip/final_bench.py --only audio --seconds 10 on the
+    # Speck laptop, incl. the 4 ms networks), averaged; the paper's audio LSNN and Speck host are now the 4 ms ones
+    runs = sorted(DL.glob("*/bench_audio_all_run*.json")) + sorted(DL.glob("*/results/bench_audio_all_run*.json"))
+    if runs:
+        R = [json.load(open(f))["results"] for f in runs]
+        B = {k: v for k, v in B.items() if not k.startswith("audio/")}
+        for key in R[0]:
+            if all(key in r for r in R):
+                B[key] = {**R[0][key], **{q: float(np.mean([r[key][q] for r in R]))
+                                          for q in ("median_ms", "p95_ms", "energy_uj", "energy_raw_uj", "power_w")}}
+        for new, old in (("audio/lsnn4", "audio/lsnn"), ("audio/speck_host4", "audio/speck_host")):
+            if new in B:
+                B[old.replace("audio/", "audio_40/")] = B.pop(old)       # the 40 ms versions, kept aside (not plotted)
+                B[old] = B.pop(new)
+        B = {k: v for k, v in B.items() if not k.startswith("audio_40/")}
+        print(f"audio latency/energy: mean of {len(runs)} benchmark runs ({', '.join(f.name for f in runs)})")
     out = []
     for key, r in B.items():
         exp, dec = key.split("/")
@@ -132,10 +148,17 @@ def efficiency():
                       ("jenkins_m1", "motor2")):
         e = json.load(open(MOTOR / subj / "efficiency_summary.json"))["laptop"]["speck"]
         chips[exp] = (1e3 * e["latency_s"], 1e6 * e["energy_j"], 1e3 * e["power_w"])
-    # 2026-11-18: the expanded-cohort networks on the devkit, both monkeys, 3 seeds each (results_audio_novel)
-    a = [v for f in sorted((DL / "results_audio_novel").glob("*_P5_*.json")) for v in json.load(open(f)).values()]
+    # 2026-11-23: the audio Speck SNN on real 4 ms spikes (FT1) on the devkit, both monkeys, 3 seeds each
+    a = [v for f in sorted((DL / "results_deploy_fine/audio").glob("*_FT1_*.json")) for v in json.load(open(f)).values()]
     chips["audio"] = (np.mean([v["latency_output_ms"] for v in a]), np.mean([v["energy_output_uj"] for v in a]),
                       np.mean([v["power_mw"] for v in a]))
+    # 2026-11-23: Motor (II)'s validation-selected Speck SNNs on the devkit (results_deploy_jenkins_val): the chip loop's
+    # time per 4 ms step, and its mean power x that time
+    jv = [json.load(open(f)) for f in sorted((DL / "results_deploy_jenkins_val").glob("sub-Jenkins_*.json"))]
+    if jv:
+        ms = float(np.mean([j["ms_per_step"] for j in jv]))
+        mw = float(np.mean([j["power_mw"] for j in jv]))
+        chips["motor2"] = (ms, mw * ms, mw)
     c = json.load(open(SPEECH_CHIP))["chip"]
     # the same rule as every other decoder: energy while computing the output = the chip's mean power over its loop x
     # the loop time per output (4 bins); not power x the whole 80 ms interval (speech_chip.py's

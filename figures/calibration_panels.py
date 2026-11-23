@@ -85,12 +85,12 @@ def panel_mechanism(ax_t, ax_c):
 # ------------------------------------------------------------------------------------------------ b, c: the sweep
 def sweeps():
     out = []
-    for f in sorted(L1.glob("jenkins_m1_*.json")):
+    for f in sorted((DL / "motor_val_jenkins/l1_sweep").glob("sub-Jenkins_*.json")):   # validation-selected networks
         d = json.load(open(f))
         r = {float(k): v for k, v in d["results"].items() if k.replace(".", "", 1).isdigit()}
         out.append(("Jenkins", C_MOTOR, "-", float(d["chosen_scale"]),
                     {k: v["agreement_r"] for k, v in r.items()}, {k: d["rmse_trained"] / v["rmse"] for k, v in r.items()}))
-    for f in sorted((DL / "final_results/audio_novel").glob("*_P5_*/sweep.json")):   # final audio: N and G, 3 seeds
+    for f in sorted((DL / "final_results/audio_fine").glob("*_FT1_spikes_*/sweep.json")):   # audio, real 4 ms spikes: N, G x 3
         d = json.load(open(f))
         r = {float(k): v for k, v in d["results"].items()}
         out.append(("audio", C_AUDIO, "-", float(d["chosen_scale"]),
@@ -227,10 +227,14 @@ def panel_gains(ax):
     W1 = json.load(open(R19 / "W1/refit.json"))
     rows = [
         ("speech\n(real chip, 680 sentences)", (1 - 0.4952) / (1 - 0.4435), (1 - 0.4396) / (1 - 0.4435), C_SPEECH, True),
-        # 2026-11-18 expanded cohorts (collect_audio_novel.py): mean within-word spectral match, 3 seeds, real chip
-        ("audio, monkey N\n(real chip, 44 words)", 0.5977 / 0.6436, 0.6280 / 0.6436, C_AUDIO, True),
-        ("audio, monkey G\n(real chip, 35 words)", 0.5997 / 0.6257, 0.6401 / 0.6257, C_AUDIO, True),
-        ("Jenkins M1\n(real chip, 4 sessions)", 52.79 / 70.68, 52.79 / 66.65, C_MOTOR, True),
+        # 2026-11-23, real 4 ms spikes (FT1, collect_audio_novel.py): mean within-word spectral match, 3 seeds, real chip,
+        # trained and refitted readout over the software network's (speck_chip_trained / speck / speck_float)
+        ("audio, monkey N\n(real chip, 44 words)", 0.6292 / 0.6461, 0.6457 / 0.6461, C_AUDIO, True),
+        ("audio, monkey G\n(real chip, 35 words)", 0.6389 / 0.6585, 0.6683 / 0.6585, C_AUDIO, True),
+        # validation-selected Jenkins networks (results_deploy_jenkins_val): mean chip RMSE, trained 64.69 and refitted
+        # 63.15, against the software network's 52.09 (test trials pooled, each from rest; this method gives 49.9 for an
+        # earlier network whose pipeline diagnosis gave 51.9, so both points sit ~4% low together; the gain is unaffected)
+        ("Jenkins M1\n(real chip, 4 sessions)", 52.09 / 64.69, 52.09 / 63.15, C_MOTOR, True),
     ]
     for i, (lab, a, b, c, real) in enumerate(rows):
         y = len(rows) - 1 - i

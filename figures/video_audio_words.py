@@ -97,6 +97,9 @@ def main():
                          " (default: the ANN(s), the LSNN and Speck)")
     pa.add_argument("--speck-preds", default=None, help="the Speck lane's test predictions (default: the 20-word "
                     "cohort's; for ALLWORDS_NOVEL_DAYNORM, results_audio_novel/preds_<subject>_<seed>/.../chip_refit.npy)")
+    pa.add_argument("--lsnn-preds", default=None, help="the LSNN lane's test predictions instead of the pipeline's "
+                    "(e.g. the 4 ms LSNN: final_results/audio_fine/<subject>_LS1_fine_<seed>/preds/test.npy)")
+    pa.add_argument("--note", default=None, help="text added to every clip's title (e.g. which networks are shown)")
     a = pa.parse_args()
     a.output = str(Path(a.output) if Path(a.output).is_absolute() else START / a.output)
     style.apply()
@@ -112,6 +115,8 @@ def main():
             [("lsnn", "lsnn"), ("speck", "speck_snn")]
     targets = np.load(paths.pipeline / "window_targets_test.npy")
     preds = {n: np.load(paths.pipeline / f"{dec}_predict_test.npy") for n, dec in lanes if n != "speck"}
+    if a.lsnn_preds and "lsnn" in preds:
+        preds["lsnn"] = np.load(a.lsnn_preds)
     for n, v in preds.items():
         assert len(v) == len(targets), f"{n}: {len(v)} test rows, the targets have {len(targets)}"
     # the chip's Hidden 3 spikes read by the readout refitted to the chip's firing on the training stream (the final
@@ -136,7 +141,8 @@ def main():
             audios[n], mels[n] = g.reconstruct_audio(preds[n][s:e], paths, f"paper_words_{i:02d}_{word}_{n}")
         m = min(len(truth_mel), *[len(v) for v in mels.values()])
         title = (f"Heard word: ‘{word}’   (monkey {a.subject[0]}, test utterance, day {date.replace('_', '/')}"
-                 + (", a novel word)" if word in ("bloop", "pop", "goop") else ")"))
+                 + (", a novel word" if word in ("bloop", "pop", "goop") else "")
+                 + (f"; {a.note}" if a.note else "") + ")")
         clips += va.render_word(word, {k: v[:m] for k, v in mels.items()}, truth_mel[:m], audios, tmp, i, title,
                                 scores=scores, score_label="spectral match within the word's sound" if scores else None)
         if scores:

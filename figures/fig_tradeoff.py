@@ -53,7 +53,14 @@ SPECK_PARAMS = {"motor1": (384 * 128 + 128 * 256 + 256 * 256 + 256 * 36, 0),
 SPECK_PARAMS["motor2"] = SPECK_PARAMS["motor1"]   # checked: 384-128-256-256-36, as indy
 # operation-count estimates the older table lacks (audio): Wiener cascade = Wiener + a cubic per band; simple RNN over
 # the 17-frame window, as the LSTM and GRU rows are counted
-EXTRA_EST = {("audio", "wiener_cascade"): energy_uj(17 * 96 * 128 + 128 * 3, 0),
+def _fine_lsnn():
+    """The audio LSNN on real 4 ms spikes (LS1): its op-count estimate (collect_fine_ops.py -> data/fine_ops.csv)."""
+    f = pd.read_csv(HERE / "data" / "fine_ops.csv").set_index("decoder")
+    return float(f.loc["LS1", "energy_uj"])
+
+
+EXTRA_EST = {("audio", "lsnn"): _fine_lsnn(),
+             ("audio", "wiener_cascade"): energy_uj(17 * 96 * 128 + 128 * 3, 0),
              ("audio", "simple_rnn"): energy_uj(17 * (96 * 1024 + 1024 * 1024) + 1024 * 128, 0)}
 
 

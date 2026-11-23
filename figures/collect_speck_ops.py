@@ -86,7 +86,8 @@ def audio():
     AD = AUDITORY_DATA
     SD = SNN_RUNS
     for monkey, seed in [(m, s) for m in ("Neil", "Gomez") for s in ("s11", "s1337", "s99")]:
-        model, info = load(str(SD / f"audio_novel_{monkey}/P5_centre_ema1_deriv_{seed}/best.pt"))
+        # 2026-11-23: the audio Speck SNN on real 4 ms spikes (FT1; audio/speck/runs_fine_timing.txt)
+        model, info = load(str(SD / f"audio_fine_{monkey}/FT1_spikes_{seed}/best.pt"))
         model.eval()
         pipe = AD / monkey / "aSTG/ALLWORDS_NOVEL_DAYNORM/pipeline"
         rec, W, n = data.audio_recording(str(pipe), recording_file(info))
@@ -103,7 +104,7 @@ def audio():
               f"spikes {np.round(r, 1)}")
     a, m = np.mean(rows, 0)
     return dict(experiment="audio", accs=a, macs=m, energy_uj=energy_uj(m, a), n=len(rows),
-                note="P5 on the expanded cohorts, monkeys N and G x 3 seeds, test stream; per 40 ms output = 10 chip steps")
+                note="FT1 (real 4 ms spikes) on the expanded cohorts, monkeys N and G x 3 seeds, test stream; per 40 ms output = 10 chip steps")
 
 
 def speech():
