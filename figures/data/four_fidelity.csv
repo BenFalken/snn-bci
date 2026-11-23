@@ -639,8 +639,8 @@ motor2,jenkins_m1,sub-Jenkins_ses-20090912_behavior+ecephys,qrnn,cc,0.9092779887
 motor2,jenkins_m1,sub-Jenkins_ses-20090912_behavior+ecephys,qrnn,rmse,56.73041534423828
 motor2,jenkins_m1,sub-Jenkins_ses-20090912_behavior+ecephys,lsnn,cc,0.9500609566919762
 motor2,jenkins_m1,sub-Jenkins_ses-20090912_behavior+ecephys,lsnn,rmse,42.61267229898162
-motor2,jenkins_m1,sub-Jenkins_ses-20090912_behavior+ecephys,speck,cc,0.8849349320392661
-motor2,jenkins_m1,sub-Jenkins_ses-20090912_behavior+ecephys,speck,rmse,64.33673912265881
+motor2,jenkins_m1,sub-Jenkins_ses-20090912_behavior+ecephys,speck,cc,0.8806809156701774
+motor2,jenkins_m1,sub-Jenkins_ses-20090912_behavior+ecephys,speck,rmse,63.033546052583134
 motor2,jenkins_m1,sub-Jenkins_ses-20090916_behavior+ecephys,kf,cc,0.5545600957158684
 motor2,jenkins_m1,sub-Jenkins_ses-20090916_behavior+ecephys,kf,rmse,186.6274952752546
 motor2,jenkins_m1,sub-Jenkins_ses-20090916_behavior+ecephys,wf,cc,0.6085417203365526
@@ -651,8 +651,8 @@ motor2,jenkins_m1,sub-Jenkins_ses-20090916_behavior+ecephys,qrnn,cc,0.9082023601
 motor2,jenkins_m1,sub-Jenkins_ses-20090916_behavior+ecephys,qrnn,rmse,58.079872131347656
 motor2,jenkins_m1,sub-Jenkins_ses-20090916_behavior+ecephys,lsnn,cc,0.9550662100462336
 motor2,jenkins_m1,sub-Jenkins_ses-20090916_behavior+ecephys,lsnn,rmse,42.22025407197718
-motor2,jenkins_m1,sub-Jenkins_ses-20090916_behavior+ecephys,speck,cc,0.8984105800346254
-motor2,jenkins_m1,sub-Jenkins_ses-20090916_behavior+ecephys,speck,rmse,61.519288262956614
+motor2,jenkins_m1,sub-Jenkins_ses-20090916_behavior+ecephys,speck,cc,0.9018199141909171
+motor2,jenkins_m1,sub-Jenkins_ses-20090916_behavior+ecephys,speck,rmse,58.63581444193557
 motor2,jenkins_m1,sub-Jenkins_ses-20090918_behavior+ecephys,kf,cc,0.532635646116483
 motor2,jenkins_m1,sub-Jenkins_ses-20090918_behavior+ecephys,kf,rmse,189.87607614137914
 motor2,jenkins_m1,sub-Jenkins_ses-20090918_behavior+ecephys,wf,cc,0.5830415931939386
@@ -663,8 +663,8 @@ motor2,jenkins_m1,sub-Jenkins_ses-20090918_behavior+ecephys,qrnn,cc,0.8831227082
 motor2,jenkins_m1,sub-Jenkins_ses-20090918_behavior+ecephys,qrnn,rmse,68.42509460449219
 motor2,jenkins_m1,sub-Jenkins_ses-20090918_behavior+ecephys,lsnn,cc,0.9418951364310827
 motor2,jenkins_m1,sub-Jenkins_ses-20090918_behavior+ecephys,lsnn,rmse,49.166797953306094
-motor2,jenkins_m1,sub-Jenkins_ses-20090918_behavior+ecephys,speck,cc,0.8590888592844506
-motor2,jenkins_m1,sub-Jenkins_ses-20090918_behavior+ecephys,speck,rmse,74.16414266682898
+motor2,jenkins_m1,sub-Jenkins_ses-20090918_behavior+ecephys,speck,cc,0.8940801388942157
+motor2,jenkins_m1,sub-Jenkins_ses-20090918_behavior+ecephys,speck,rmse,62.32992597153954
 motor2,jenkins_m1,sub-Jenkins_ses-20090923_behavior+ecephys,kf,cc,0.5737235460842973
 motor2,jenkins_m1,sub-Jenkins_ses-20090923_behavior+ecephys,kf,rmse,177.02198867161624
 motor2,jenkins_m1,sub-Jenkins_ses-20090923_behavior+ecephys,wf,cc,0.5974710958685983
@@ -675,8 +675,8 @@ motor2,jenkins_m1,sub-Jenkins_ses-20090923_behavior+ecephys,qrnn,cc,0.8978501892
 motor2,jenkins_m1,sub-Jenkins_ses-20090923_behavior+ecephys,qrnn,rmse,60.620635986328125
 motor2,jenkins_m1,sub-Jenkins_ses-20090923_behavior+ecephys,lsnn,cc,0.9414308629234518
 motor2,jenkins_m1,sub-Jenkins_ses-20090923_behavior+ecephys,lsnn,rmse,46.9239343441468
-motor2,jenkins_m1,sub-Jenkins_ses-20090923_behavior+ecephys,speck,cc,0.8817188992920928
-motor2,jenkins_m1,sub-Jenkins_ses-20090923_behavior+ecephys,speck,rmse,66.56800948245574
+motor2,jenkins_m1,sub-Jenkins_ses-20090923_behavior+ecephys,speck,cc,0.8639507074786799
+motor2,jenkins_m1,sub-Jenkins_ses-20090923_behavior+ecephys,speck,rmse,68.6201551328222
 audio,neil,victory_07_19_11_22,kf,band_r,0.3916716696632122
 audio,neil,victory_07_19_11_22,kf,rho_word,0.5821256868194999
 audio,neil,victory_07_19_11_22,wf,band_r,0.4300762563597267

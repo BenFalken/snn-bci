@@ -30,6 +30,7 @@ PER_TRIAL = FINAL / "perTrialPER_final_v2c.json"  # perTrialPER_final.json + V2+
 PER_TRIAL_NAMES = {"RNN": "paper_rnn", "GRU96": "gru", "LSTM96": "lstm", "LSNN": "lsnn", "SpeckV2C": "speck_float",
                    "SpeckChipV2C": "speck"}
 JENKINS_REFIT = FINAL / "jenkins_refit"         # the Jenkins Speck SNN's readout refitted in software (jenkins_refit.py)
+JENKINS_VAL = FINAL.parent / "results_deploy_jenkins_val"   # the validation-selected Jenkins Speck SNNs on the devkit
 
 
 VAL = MOTOR.parent / "final_v3"           # validation-selected checkpoints (train_snn.py --val-frac), where scored
@@ -58,7 +59,11 @@ def motor_rows(exp, subjects):
                 if k in MOTOR_NAMES and v:
                     cc, rm = (v["cc_x"] + v["cc_y"]) / 2, v["rmse"]
                     rf = JENKINS_REFIT / f"{session}.json"
-                    if k == "speck" and subj == "jenkins_m1" and rf.is_file():     # the final, refitted readout
+                    rv = JENKINS_VAL / f"{session}.json"
+                    if k == "speck" and subj == "jenkins_m1" and rv.is_file():     # validation-selected, on the chip,
+                        b = json.load(open(rv))["refitted"]                          # its refitted readout live
+                        cc, rm = (b["cc_x"] + b["cc_y"]) / 2, b["rmse"]
+                    elif k == "speck" and subj == "jenkins_m1" and rf.is_file():   # the final, refitted readout
                         r = json.load(open(rf))
                         b = r[r["chosen"]]
                         cc, rm = (b["cc_x"] + b["cc_y"]) / 2, b["rmse_chip_test"]

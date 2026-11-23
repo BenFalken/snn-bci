@@ -80,8 +80,8 @@
   "a": "speck",
   "b": "lstm",
   "n": 4,
-  "median_difference": 0.005291425784871351,
-  "a_better": 3
+  "median_difference": -0.0018880030436892459,
+  "a_better": 2
  },
  {
   "experiment": "audio",
