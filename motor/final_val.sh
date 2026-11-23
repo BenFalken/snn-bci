@@ -23,14 +23,18 @@ for SUBJ in "${SUBJECTS[@]}"; do
     OUT="$SNNBCI_MOTOR_RESULTS/final_v3/$SUBJ"
     # one pass per factor, over the sessions that use it (sessions = those with an LSNN checkpoint)
     for F in $(awk -v s="$SUBJ" '$1 == s {print $3}' "$FACTORS" | sort -u); do
+        # this pass's sessions only, for both networks: the chip diagnosis at the end of each pass walks the Speck
+        # folder it is given, so a folder holding other subjects' or other factors' sessions would derail it
         ONE="$SNNBCI_MOTOR_RESULTS/final_v3/_lsnn_${SUBJ}_x$F"; rm -rf "$ONE"; mkdir -p "$ONE"
+        SPK="$SNNBCI_MOTOR_RESULTS/final_v3/_speck_${SUBJ}_x$F"; rm -rf "$SPK"; mkdir -p "$SPK"
         for S in $(awk -v s="$SUBJ" -v f="$F" '$1 == s && $3 == f {print $2}' "$FACTORS"); do
             cp -r "$VAL_ROOT/lsnn_loso_finetuned_binarized_val/$S" "$ONE/$S"
+            cp -r "$VAL_ROOT/per_session_delay_binarized_val/$S" "$SPK/$S"
         done
         echo; echo "################ $SUBJ, layer 1 threshold x$F: $(ls "$ONE" | wc -l | tr -d ' ') sessions ################"
         SPECK_H1_SCALE=$F DATA_ROOT="$SNNBCI_MOTOR_DATA" bash run_inference.sbatch --local "$EXP" "$SUBJ" \
             DECODERS="${DECODERS:-kf,wf,lstm,qrnn,snn,speck}" \
-            SNN_CHECKPOINT_ROOT="$ONE" SPECK_CHECKPOINT_ROOT="$VAL_ROOT/per_session_delay_binarized_val" \
+            SNN_CHECKPOINT_ROOT="$ONE" SPECK_CHECKPOINT_ROOT="$SPK" \
             RESULTS_DIR="$OUT" SNN_LABEL="LSNN" SPECK_WAIT_TIME="${SPECK_WAIT_TIME:-0.003}"
     done
 done
