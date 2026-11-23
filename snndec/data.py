@@ -22,6 +22,16 @@ from typing import List, Optional
 
 import numpy as np
 
+try:                                  # pickles written under NumPy 2 name numpy._core; NumPy 1 calls it numpy.core
+    import numpy._core  # noqa: F401
+except ImportError:                   # (the Speck laptop's environment): alias it so those pickles still load
+    import sys as _sys
+    import numpy.core as _core
+    _sys.modules['numpy._core'] = _core
+    for _m in ('multiarray', 'numeric', '_multiarray_umath'):
+        if hasattr(_core, _m):
+            _sys.modules[f'numpy._core.{_m}'] = getattr(_core, _m)
+
 
 @dataclass
 class Trial:
