@@ -51,7 +51,7 @@ def topology(ax, x, y, w, h, n_in, hidden, n_out, lab):
     di.read_arrow(ax, (cx[3], yb), (cx[3], yc + hs[3] / 2), color=LSNN, lw=0.7)
 
 
-def mem_line(ax, x, y, w, shade=None, window=None, word=None):
+def mem_line(ax, x, y, w, shade=None, window=None, word=None, ahead=None):
     f = lambda t: x + w * (t - T0) / (T1 - T0)
     ax.plot([f(T0), f(T1)], [y, y], color=FAINT, lw=0.6, zorder=3)
     for t, s in ((-1.2, "−1.2 s"), (-0.8, "−0.8"), (-0.4, "−0.4"), (0.0, "0")):
@@ -66,6 +66,9 @@ def mem_line(ax, x, y, w, shade=None, window=None, word=None):
                                alpha=0.65 * (1 - k / n) + 0.08, zorder=3))
     if window is None:
         txt(ax, f(-reach), y - 2.3, "inside the network", size=4.7, color=LSNN_D, va="bottom")
+        if ahead:                                      # a continuous reader whose output lags its target frame
+            ax.add_patch(Rectangle((f(0), y - 1.9), f(ahead) - f(0), 1.3, fc="#e3e6ec", ec="none", zorder=2))
+            txt(ax, f(ahead), y - 2.3, "look-ahead", size=4.7, color=MUTED, ha="right", va="bottom")
     else:
         txt(ax, f(-reach) - 0.8, y - 2.4, "memory ends\nat the window", size=4.5, color=LSNN_D, ha="right",
             va="center")
@@ -114,11 +117,11 @@ COLS = [
          mtxt=(1, "filters and recurrence span the lead"),
          read=("velocity", 2), rtxt=(2, "both layers → two leaky stages\n→ a smooth velocity every 4 ms"),
          train="loso", ttxt=(3, "pre-trained on the other sessions, then\nfine-tuned per session (37.3 → 32.0 mm/s)")),
-    dict(inp=[(3, "96 channels, counts z-scored per day:\nthe largest gain of any change")],
-         topo=(96, [256, 256], 128, "bands"), net=[(0, "2 × 256")], mem=dict(window=(-0.32, 0.32)),
-         mtxt=(1, "the reference 17-frame window, one\nstep per 40 ms frame, read from rest"),
+    dict(inp=[(3, "96 channels, real spike times at 4 ms,\nscaled by each day’s spread")],
+         topo=(96, [256, 256], 128, "bands"), net=[(0, "2 × 256")], mem=dict(ahead=0.32),
+         mtxt=(1, "reads the recording continuously:\nten 4 ms steps per 40 ms output"),
          read=("spectrum", 1), rtxt=(2, "both layers → one leaky stage\n→ 128 graded bands per frame"),
-         train="noise", ttxt=(0, "squared error on the windows, with noise,\noffset and dropout; chosen on validation")),
+         train="noise", ttxt=(0, "squared error on 6 s stretches, with noise,\noffset and dropout; chosen on validation")),
     dict(inp=[(2, "256 features (crossings and spike-band\npower), 20 ms steps")],
          topo=(256, [1024, 1024], 41, "classes"), net=[(1, "2 × 1,024:\nwidth matters\nhere")], mem=dict(word=0.5),
          mtxt=(1, "recurrence and filters to 1.3 s\ncarry a word"),

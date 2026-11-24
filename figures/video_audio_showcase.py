@@ -113,6 +113,8 @@ def main():
     pa.add_argument("--multi-first", type=int, default=0, metavar="N",
                     help="open with N clips of multi-syllable words (2+ syllables), the utterances the Speck lane decodes "
                          "best (at most 2 per word; longest words first), then every one-syllable word's best utterance")
+    pa.add_argument("--plain-titles", action="store_true", help="leave the selection note out of each clip's title "
+                    "(state how the clips were chosen wherever the video is shown)")
     pa.add_argument("--speck-first", action="store_true", help="order the words by how far the Speck lane is ahead of "
                     "the other lanes' mean on the clip (its strongest first) instead of by syllables")
     a = pa.parse_args()
@@ -174,7 +176,7 @@ def main():
         k = min(len(truth_mel), *[len(v) for v in mels.values()])
         novel = word in ("bloop", "pop", "goop")
         title = (f"Heard word: ‘{word}’   (monkey {m[0]}, day {date.replace('_', '/')}"
-                 + (", a novel word" if novel else "") + f"; {why}"
+                 + (", a novel word" if novel else "") + ("" if a.plain_titles else f"; {why}")
                  + (f"; 4 ms lanes: LSNN {SEEDS_SHOWN[m]['lsnn4']}, Speck {SEEDS_SHOWN[m]['speck4']}, the median seeds"
                     if a.fine else "")
                  + (f"; LSNN and Speck (chip) on 4 ms spikes, median seeds {SEEDS_SHOWN[m]['lsnn']} / {SEEDS_SHOWN[m]['speck']}"
