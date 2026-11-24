@@ -7,6 +7,9 @@
 #       --snn LSNN=/path/final_model_speech_iaf_soft.pth --snn SpeckR3=/path/best_model_weights.pth \
 #       --logits SpeckChip=/path/chip_logits.npz --out /path/perTrialPER.json
 #
+#--saveLogits DIR also writes each decoder's logits, DIR/<NAME>_logits.npz keyed <session>/<trial> (valid bins
+#only, blank last as in every decoder here), for scripts/ngram_lm.py.
+#
 #Writes {"keys": [<session>/<trial>], "sessions": [...], "true": [sentence], "phonemes": [n],
 #        "<NAME>": {"per": pooled PER, "edits": [per-sentence edit distance]}}; per-sentence PER = edits / phonemes.
 import argparse
@@ -26,6 +29,7 @@ if __name__ == '__main__':
     parser.add_argument('--rnnDir', default=None, help='default <baseDir>/derived/rnns/baselineRelease')
     parser.add_argument('--snnDataDir', default=None, help='default <baseDir>/derived/snnData')
     parser.add_argument('--partition', default='test')
+    parser.add_argument('--saveLogits', default=None, help='directory: also save each decoder\'s logits as NAME_logits.npz')
     parser.add_argument('--out', required=True)
     args = parser.parse_args()
 
@@ -47,6 +51,14 @@ if __name__ == '__main__':
             true.append(asciiToText(part.transcriptions[i])); labels.append(part.labels[i])
     result = {'keys': keys, 'sessions': sessions, 'true': true, 'phonemes': [int(len(l)) for l in labels]}
     nPh = np.asarray(result['phonemes'])
+
+    def save_logits(name, out):
+        if args.saveLogits:
+            os.makedirs(args.saveLogits, exist_ok=True)
+            lg, n = out['logits'], np.asarray(out['logitLengths']).astype(int)
+            assert len(lg) == len(keys), f'{name}: {len(lg)} logit rows, expected {len(keys)}'
+            np.savez_compressed(os.path.join(args.saveLogits, f'{name}_logits.npz'),
+                                **{k: np.asarray(lg[i][:n[i]], dtype=np.float32) for i, k in enumerate(keys)})
 
     def add(name, edits):
         edits = [int(e) for e in edits]
@@ -73,6 +85,7 @@ if __name__ == '__main__':
         assert rnnTrue == true, 'the RNN was evaluated on different trials (or in a different order)'
         assert list(map(int, rnnOut['trueSeqLengths'])) == result['phonemes'], 'RNN phoneme counts differ'
         add('RNN', rnnOut['editDistances'])
+        save_logits('RNN', rnnOut)
 
     from snnDecoder.inference import snn_inference
     for name, ckpt in (s.split('=', 1) for s in args.snn):
@@ -80,6 +93,7 @@ if __name__ == '__main__':
         sTrue = [asciiToText(out['transcriptions'][x, :]) for x in range(out['transcriptions'].shape[0])]
         assert sTrue == true, f'{name} was evaluated on different trials (or in a different order)'
         add(name, out['editDistances'])
+        save_logits(name, out)
 
     from snnDecoder.inference import gru_inference
     for name, path in (s.split('=', 1) for s in args.gru):
@@ -87,6 +101,7 @@ if __name__ == '__main__':
         gTrue = [asciiToText(out['transcriptions'][x, :]) for x in range(out['transcriptions'].shape[0])]
         assert gTrue == true, f'{name} was evaluated on different trials (or in a different order)'
         add(name, out['editDistances'])
+        save_logits(name, out)
 
     for name, path in (s.split('=', 1) for s in args.logits):
         z = np.load(path)
