@@ -109,6 +109,9 @@ def main():
                     "and {seed} (default: its chip model)")
     pa.add_argument("--fine-seed", default=None, choices=["s1337", "s11", "s99"],
                     help="one seed for both 4 ms lanes (default: each network's median seed per monkey)")
+    pa.add_argument("--no-novel", action="store_true", help="leave out the novel words (bloop, pop, goop)")
+    pa.add_argument("--speck-first", action="store_true", help="order the words by how far the Speck lane is ahead of "
+                    "the other lanes' mean on the clip (its strongest first) instead of by syllables")
     a = pa.parse_args()
     a.output = a.output or ("figures/video_audio_showcase_final.mp4" if a.final else
                             "figures/video_audio_showcase_4ms.mp4" if a.fine else "figures/video_audio_showcase.mp4")
@@ -124,6 +127,8 @@ def main():
     best = {}                                          # word -> (mean score, subject, date, s, e, mask, scores)
     for m, (paths, y, preds) in data.items():
         for word, date, wa, wb in vw.test_words(paths, 0, every=True):
+            if a.no_novel and word in ("bloop", "pop", "goop"):
+                continue
             s, e, mask = vw.first_utterance(y, wa, wb, vw.CLIP)
             if mask.sum() < 3:
                 continue
@@ -133,7 +138,11 @@ def main():
             if word not in best or mean > best[word][0]:
                 best[word] = (mean, m, date, s, e, mask, sc)
     tag = "4ms" if a.fine else ""                  # the intermediate files apart from the original's
-    order = sorted(best, key=lambda w: (vw.SYLLABLES.get(w, 9), w))
+    if a.speck_first:                                  # the Speck lane's lead over the others' mean, largest first
+        lead = {w: best[w][6]["speck"] - np.mean([v for n, v in best[w][6].items() if n != "speck"]) for w in best}
+        order = sorted(best, key=lambda w: -lead[w])
+    else:
+        order = sorted(best, key=lambda w: (vw.SYLLABLES.get(w, 9), w))
     print(f"{len(order)} words, one utterance each:")
     tmp = tempfile.mkdtemp(prefix="paper_audio_showcase_")
     clips = []
