@@ -7,6 +7,7 @@ Result (2026-11-24, samna 0.48): last-layer spikes per step 48.85 (ours, reset t
 reset, at most one spike per event); per-frame count correlation 0.989; ours 0.6 s, specksim 14.5 s. With specksim's
 reset rule our loop gives 57.41 spikes per step (correlation 0.996): the reset rule explains the difference.
 """
+import sys, time, os, json, numpy as np, torch
 sys.path.insert(0, os.getcwd()); sys.path.insert(0, os.path.join(os.getcwd(), 'chip'))
 from snndec.convert import load
 from snndec import chip, data
