@@ -30,7 +30,8 @@ PER_TRIAL = FINAL / "perTrialPER_final_v2c.json"  # perTrialPER_final.json + V2+
 PER_TRIAL_NAMES = {"RNN": "paper_rnn", "GRU96": "gru", "LSTM96": "lstm", "LSNN": "lsnn", "SpeckV2C": "speck_float",
                    "SpeckChipV2C": "speck"}
 JENKINS_REFIT = FINAL / "jenkins_refit"         # the Jenkins Speck SNN's readout refitted in software (jenkins_refit.py)
-JENKINS_VAL = FINAL.parent / "results_deploy_jenkins_val"   # the validation-selected Jenkins Speck SNNs on the devkit
+JENKINS_VAL = FINAL.parent / "results_deploy_jenkins_val"
+SPECK_VAL = FINAL.parent / "results_snn_bci_laptop" / "motor" / "final_v3"   # Motor (I) Speck, validation-selected   # the validation-selected Jenkins Speck SNNs on the devkit
 
 
 VAL = MOTOR.parent / "final_v3"           # validation-selected checkpoints (train_snn.py --val-frac), where scored
@@ -45,6 +46,8 @@ def motor_rows(exp, subjects):
             continue
         val = VAL / subj / "combined_metrics.json"
         val = json.load(open(val)) if val.is_file() else {}
+        spk = SPECK_VAL / subj / "combined_metrics.json"   # the validation-selected Speck SNNs on the devkit (laptop)
+        spk = json.load(open(spk)) if spk.is_file() else {}
         gru = MOTOR / subj / "gru_metrics.json"           # the re-implemented GRUs (motor/gru_reference/score_gru.py)
         gru = json.load(open(gru)) if gru.is_file() else {}
         for session, g in gru.items():
@@ -55,6 +58,8 @@ def motor_rows(exp, subjects):
         for session, decs in json.load(open(path)).items():
             if "snn" in val.get(session, {}):              # the LSNN: its validation-selected checkpoint
                 decs = dict(decs, snn=val[session]["snn"])
+            if "speck" in spk.get(session, {}):            # the Speck SNN: its validation-selected checkpoint, on the chip
+                decs = dict(decs, speck=spk[session]["speck"])
             for k, v in decs.items():
                 if k in MOTOR_NAMES and v:
                     cc, rm = (v["cc_x"] + v["cc_y"]) / 2, v["rmse"]

@@ -122,9 +122,8 @@ def main():
         return draw
     def fidelity_with_aegru(ax, exp, _):
         fig_four.use(exp, fid, combined=False)
-        if exp == "motor1" and (fid.decoder == "aegru").any():      # the re-implemented state of the art, beside the QRNN
-            decs = list(fig_final.SETS[exp][0])
-            decs.insert(decs.index("qrnn") + 1, "aegru")
+        if exp == "motor1" and (fid.decoder == "aegru").any():      # the re-implemented state of the art: a reference
+            decs = [d for d in fig_final.SETS[exp][0] if d != "aegru"] + ["aegru"]   # too, but set apart (no code)
             fig_final.SETS[exp] = (decs,) + tuple(fig_final.SETS[exp][1:])
         fig_final.fidelity(ax, exp, fid, False)
     grid("fig_results_fidelity", fidelity_with_aegru, fid, h=150)

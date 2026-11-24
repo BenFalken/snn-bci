@@ -3,17 +3,6 @@
   "experiment": "motor1",
   "metric": "cc",
   "a": "lsnn",
-  "b": "aegru",
-  "n": 45,
-  "median_difference": 0.022744612763595295,
-  "a_better": 38,
-  "W": 92.0,
-  "p": 1.378222691528208e-07
- },
- {
-  "experiment": "motor1",
-  "metric": "cc",
-  "a": "lsnn",
   "b": "qrnn",
   "n": 45,
   "median_difference": 0.03248918079000507,
@@ -38,10 +27,10 @@
   "a": "speck",
   "b": "lstm",
   "n": 45,
-  "median_difference": -0.006764809542565531,
-  "a_better": 18,
-  "W": 339.0,
-  "p": 0.04375653834745208
+  "median_difference": -0.020420923269233282,
+  "a_better": 10,
+  "W": 124.0,
+  "p": 1.833954286212247e-06
  },
  {
   "experiment": "motor1",
@@ -49,10 +38,10 @@
   "a": "speck",
   "b": "wf",
   "n": 45,
-  "median_difference": 0.08290845817299763,
-  "a_better": 44,
-  "W": 14.0,
-  "p": 6.252776074688882e-12
+  "median_difference": 0.07323428852349911,
+  "a_better": 41,
+  "W": 159.0,
+  "p": 1.967516800505109e-05
  },
  {
   "experiment": "motor1",
@@ -60,10 +49,21 @@
   "a": "speck",
   "b": "kf",
   "n": 45,
-  "median_difference": 0.1298387088211298,
-  "a_better": 44,
-  "W": 1.0,
-  "p": 1.1368683772161603e-13
+  "median_difference": 0.1064044762463554,
+  "a_better": 41,
+  "W": 97.0,
+  "p": 2.1330163235688815e-07
+ },
+ {
+  "experiment": "motor1",
+  "metric": "cc",
+  "a": "lsnn",
+  "b": "aegru",
+  "n": 45,
+  "median_difference": 0.022744612763595295,
+  "a_better": 38,
+  "W": 92.0,
+  "p": 1.378222691528208e-07
  },
  {
   "experiment": "motor2",

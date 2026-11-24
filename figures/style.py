@@ -21,7 +21,7 @@ LABEL = {"kf": "Kalman filter", "wf": "Wiener filter", "lstm": "LSTM", "lsnn": "
          "gru": "GRU", "aegru": "Autoencoder GRU", "qrnn": "QRNN", "paper_rnn": "Paper RNN", "delaynet": "DelayNet", "dense_nn": "Dense NN",
          "simple_rnn": "Simple RNN", "wiener_cascade": "Wiener cascade"}
 SHORT = {"kf": "KF", "wf": "WF", "lstm": "LSTM", "lsnn": "LSNN", "speck": "Speck",
-         "gru": "GRU", "aegru": "AE-\nGRU", "qrnn": "QRNN", "paper_rnn": "Paper\nRNN", "delaynet": "DelayNet", "dense_nn": "DNN",
+         "gru": "GRU", "aegru": "AE-GRU\nre-impl.", "qrnn": "QRNN", "paper_rnn": "Paper\nRNN", "delaynet": "DelayNet", "dense_nn": "DNN",
          "simple_rnn": "sRNN", "wiener_cascade": "WC"}
 COLOR = {"kf": "#56B4E9", "wf": "#009E73", "lstm": "#0072B2", "lsnn": "#D55E00", "speck": "#E69F00",
          # supplementary decoders: muted, so the core keeps the attention

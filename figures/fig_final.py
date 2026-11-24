@@ -46,6 +46,11 @@ def tick(d, big):
     return lab.replace(" ", "\n", 1) if (big and " " in lab) else style.SHORT[d].replace("\n", " ") if not big else lab
 
 
+# decoders shown apart from the rest: references we could only re-implement from their papers (no code; not the code
+# base the other decoders share), drawn after a divider with dashed outlines and hollow points
+SET_APART = {"aegru"}
+
+
 def fidelity(ax, exp, fid, big):
     decs, metric, ylabel, higher, groups, unit, _ = SETS[exp]
     f = fid[(fid.experiment == exp) & (fid.metric == metric)]
@@ -54,15 +59,22 @@ def fidelity(ax, exp, fid, big):
     for i, d in enumerate(decs):
         v = f[f.decoder == d].value.to_numpy()
         hl = d in style.HIGHLIGHT
+        apart = d in SET_APART
+        ls = (0, (3, 2)) if apart else "-"
         ax.boxplot(v, positions=[i], widths=0.6, showfliers=False, patch_artist=True,
-                   boxprops=dict(facecolor="none", edgecolor=style.COLOR[d], linewidth=lw if hl else lw * 0.55),
+                   boxprops=dict(facecolor="none", edgecolor=style.COLOR[d], linewidth=lw if hl else lw * 0.55,
+                                 linestyle=ls),
                    medianprops=dict(color=style.COLOR[d], linewidth=lw * 1.2),
-                   whiskerprops=dict(color=style.COLOR[d], linewidth=lw * 0.55),
+                   whiskerprops=dict(color=style.COLOR[d], linewidth=lw * 0.55, linestyle=ls),
                    capprops=dict(color=style.COLOR[d], linewidth=lw * 0.55))
         for g, mk in groups.items():
             vg = f[(f.decoder == d) & (f.group == g)].value.to_numpy()
-            ax.scatter(i + rng.uniform(-0.2, 0.2, len(vg)), vg, s=s_dot, marker=mk, color=style.COLOR[d], alpha=0.55,
-                       linewidths=0, zorder=3)
+            if apart:
+                ax.scatter(i + rng.uniform(-0.2, 0.2, len(vg)), vg, s=s_dot, marker=mk, facecolor="none",
+                           edgecolor=style.COLOR[d], alpha=0.7, linewidths=0.5, zorder=3)
+            else:
+                ax.scatter(i + rng.uniform(-0.2, 0.2, len(vg)), vg, s=s_dot, marker=mk, color=style.COLOR[d], alpha=0.55,
+                           linewidths=0, zorder=3)
         ax.text(i, 1.01, f"{np.median(v):.2f}", transform=ax.get_xaxis_transform(), ha="center", va="bottom",
                 fontsize=fs, fontweight="bold" if hl else "normal")
         if d == "speck":
@@ -78,6 +90,12 @@ def fidelity(ax, exp, fid, big):
         if d in style.HIGHLIGHT:
             t.set_fontweight("bold")
     ax.set_xlim(-0.6, len(decs) - 0.1)
+    first_apart = next((i for i, d in enumerate(decs) if d in SET_APART), None)
+    if first_apart is not None:                      # the divider, and what sets those decoders apart
+        ax.axvline(first_apart - 0.5, color=style.MUTED, lw=0.6, ls=(0, (2, 2)), zorder=1)
+        ax.text(first_apart + (len(decs) - first_apart - 1) / 2, 0.035, "re-implemented\nfrom its paper",
+                transform=ax.get_xaxis_transform(), ha="center", va="bottom", fontsize=fs * 0.8, color=style.MUTED,
+                style="italic")
     ax.set_ylabel(ylabel + ("" if higher else " (lower is better)"))
     if not higher:
         ax.invert_yaxis()
