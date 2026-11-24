@@ -199,7 +199,7 @@ def run_events(network, events: np.ndarray, threshold_scale=(1.0,)) -> np.ndarra
     """The chip's event-by-event dynamics in software: within each step the input events (in address order) reach
     layer 1 one at a time; each adds its 8-bit weights to the membranes, every neuron at or above threshold fires
     once at that moment and resets to zero (hard reset; with soft reset it fires once per threshold it holds and
-    subtracts each, as speech's chip run confirmed), the membrane is floored at min_v_mem, and the spikes reach
+    subtracts each), the membrane is floored at min_v_mem, and the spikes reach
     the next layer in the order they fired. Unlike run_software (and training), a step's input is never summed
     before firing, so dense input loses the charge above threshold at every early spike. threshold_scale multiplies
     each layer's threshold and floor (one value per layer; missing layers 1.0), as a chip-side correction.
