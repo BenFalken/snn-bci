@@ -53,6 +53,33 @@ def median_seed(subject, run, pred_file):
     return pick
 
 
+def median_of(subject, paths_by_seed):
+    """The seed whose median per-word band r on test is the middle one, from {seed: predictions file}."""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "audio" / "speck"))
+    import fine_timing_summary as fs
+    y, spans = fs.words(subject, "test")
+    sc = {s: fs.per_word(y, spans, np.load(f)) for s, f in paths_by_seed.items() if Path(f).is_file()}
+    pick = sorted(sc, key=sc.get)[(len(sc) - 1) // 2]
+    print(f"  {subject}: " + ", ".join(f"{k} {v:.3f}" for k, v in sc.items()) + f" -> {pick}")
+    return pick
+
+
+def cohort_final(subject):
+    """The paper's final audio decoders: GRU, LSTM, the LSNN on 4 ms spikes (LS1) and the Speck SNN on 4 ms spikes on
+    the real chip (FT1, readout refitted, devkit run results_deploy_fine), each spiking one at its median seed."""
+    paths = PipelinePaths(str(va.AUDITORY_DATA), subject, "aSTG", DATASET)
+    y = np.load(paths.pipeline / "window_targets_test.npy")
+    preds = {n: np.load(paths.pipeline / f"{dec}_predict_test.npy") for n, dec in (("gru", "gru_rnn"), ("lstm", "lstm_rnn"))}
+    F, C = WORKSPACE / "final_results" / "audio_fine", WORKSPACE / "results_deploy_fine" / "audio"
+    lf = {s: F / f"{subject}_LS1_fine_{s}" / "preds" / "test.npy" for s in ("s1337", "s11", "s99")}
+    cf = {s: C / f"preds_{subject}_FT1_{s}" / subject / "chip_refit.npy" for s in ("s1337", "s11", "s99")}
+    seeds = {"lsnn": median_of(subject, lf), "speck": median_of(subject, cf)}
+    preds["lsnn"], preds["speck"] = np.load(lf[seeds["lsnn"]]), np.load(cf[seeds["speck"]])
+    SEEDS_SHOWN[subject] = seeds
+    assert all(len(p) == len(y) for p in preds.values())
+    return paths, y, preds
+
+
 def cohort(subject, fine=False, speck4=None, fine_seed=None):
     paths = PipelinePaths(str(va.AUDITORY_DATA), subject, "aSTG", DATASET)
     y = np.load(paths.pipeline / "window_targets_test.npy")
@@ -75,18 +102,22 @@ def main():
     pa = argparse.ArgumentParser()
     pa.add_argument("--output", default=None)
     pa.add_argument("--fine", action="store_true", help="add the 4 ms LSNN and Speck lanes (the selection is unchanged)")
+    pa.add_argument("--final", action="store_true", help="the paper's final decoders: GRU, LSTM, and the LSNN and Speck "
+                    "(chip) on 4 ms spikes; each word's best utterance chosen by these four "
+                    "(-> figures/video_audio_showcase_final.mp4)")
     pa.add_argument("--speck4-preds", default=None, help="the 4 ms Speck lane's test predictions, with {subject} "
                     "and {seed} (default: its chip model)")
     pa.add_argument("--fine-seed", default=None, choices=["s1337", "s11", "s99"],
                     help="one seed for both 4 ms lanes (default: each network's median seed per monkey)")
     a = pa.parse_args()
-    a.output = a.output or ("figures/video_audio_showcase_4ms.mp4" if a.fine else "figures/video_audio_showcase.mp4")
+    a.output = a.output or ("figures/video_audio_showcase_final.mp4" if a.final else
+                            "figures/video_audio_showcase_4ms.mp4" if a.fine else "figures/video_audio_showcase.mp4")
     a.output = str(Path(a.output) if Path(a.output).is_absolute() else START / a.output)
     style.apply()
     style.LABEL.update(speck="Speck", gru="GRU", lstm="LSTM", lsnn="LSNN", lsnn4="LSNN\n4 ms",
                        speck4="Speck\n4 ms" + ("" if a.speck4_preds else "\n(chip model)"))
     style.COLOR.update(lsnn4="#8B2E00", speck4="#A86F00")
-    data = {m: cohort(m, a.fine, a.speck4_preds, a.fine_seed) for m in ("Neil", "Gomez")}
+    data = {m: (cohort_final(m) if a.final else cohort(m, a.fine, a.speck4_preds, a.fine_seed)) for m in ("Neil", "Gomez")}
     order_lanes = [n for n, _ in LANES]
     if a.fine:                                         # each 4 ms lane right after its 40 ms counterpart
         order_lanes = ["gru", "lstm", "lsnn", "lsnn4", "speck", "speck4"]
@@ -120,7 +151,9 @@ def main():
         title = (f"Heard word: ‘{word}’   (monkey {m[0]}, day {date.replace('_', '/')}"
                  + (", a novel word" if novel else "") + "; the best-decoded utterance of this word"
                  + (f"; 4 ms lanes: LSNN {SEEDS_SHOWN[m]['lsnn4']}, Speck {SEEDS_SHOWN[m]['speck4']}, the median seeds"
-                    if a.fine else "") + ")")
+                    if a.fine else "")
+                 + (f"; LSNN and Speck (chip) on 4 ms spikes, median seeds {SEEDS_SHOWN[m]['lsnn']} / {SEEDS_SHOWN[m]['speck']}"
+                    if a.final else "") + ")")
         clips += va.render_word(word, {n: v[:k] for n, v in mels.items()}, truth_mel[:k], audios, tmp, i, title,
                                 scores=sc, score_label="spectral match within the word's sound")
     va.assemble(clips, a.output, tmp)
