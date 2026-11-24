@@ -180,7 +180,7 @@ def main():
                  + (f"; 4 ms lanes: LSNN {SEEDS_SHOWN[m]['lsnn4']}, Speck {SEEDS_SHOWN[m]['speck4']}, the median seeds"
                     if a.fine else "")
                  + (f"; LSNN and Speck (chip) on 4 ms spikes, median seeds {SEEDS_SHOWN[m]['lsnn']} / {SEEDS_SHOWN[m]['speck']}"
-                    if a.final else "") + ")")
+                    if a.final and not a.plain_titles else "") + ")")
         clips += va.render_word(word, {n: v[:k] for n, v in mels.items()}, truth_mel[:k], audios, tmp, i, title,
                                 scores=sc, score_label="spectral match within the word's sound")
     va.assemble(clips, a.output, tmp)
