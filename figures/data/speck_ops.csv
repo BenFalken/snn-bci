@@ -1,5 +1,5 @@
 experiment,accs,macs,energy_uj,n,note
-motor,6966.916015625,144.0,0.11431636661291122,36,"indy, 20 training trials per session (test trials are on the Speck laptop); per 4 ms output = per chip step"
-motor2,32804.65234375,144.0,0.5251362919807434,4,"jenkins_m1, 20 training trials per session (test trials are on the Speck laptop); per 4 ms output = per chip step"
+motor,7032.9453125,144.0,0.11536622792482376,36,"indy, 20 training trials per session (test trials are on the Speck laptop); per 4 ms output = per chip step"
+motor2,33388.21484375,144.0,0.5344150066375732,4,"jenkins_m1, 20 training trials per session (test trials are on the Speck laptop); per 4 ms output = per chip step"
 audio,442597.1302083333,35328.0,7.906363170312499,6,"FT1 (real 4 ms spikes) on the expanded cohorts, monkeys N and G x 3 seeds, test stream; per 40 ms output = 10 chip steps"
 speech,209649.734375,1071432.0,29.690656661987305,19,"round 20 V2+C (three networks on one chip: V2 + C, top 64 features x 0/300/600/1200 ms), trained network's spikes on the 680 test sentences; per 80 ms output = 4 bins"

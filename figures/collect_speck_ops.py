@@ -53,9 +53,11 @@ def synaptic_adds(model, events):
 def motor(exp="motor", subject="bmi/indy"):
     """exp 'motor' = indy (Motor I); 'motor2' = Jenkins's M1 array (subject 'hkm/jenkins_m1', Motor II)."""
     scalers = MOTOR / "main/snn_training/velocity_scalers.json"
-    ck = MOTOR / f"data/snn_checkpoints/{subject}/per_session_delay_binarized"
+    # the validation-selected networks (2026-11-24): monkeys I and L in one folder (motor_val), monkey J's apart
+    ck = (WORKSPACE / "motor_val_jenkins/per_session_delay_binarized_val" if "jenkins" in subject
+          else WORKSPACE / "motor_val/per_session_delay_binarized_val")
     rows = []
-    for sess in sorted(os.listdir(ck)):
+    for sess in sorted(s for s in os.listdir(ck) if "jenkins" in subject or s.startswith(subject.split("/")[-1])):
         sdir = MOTOR / f"data/snn_datasets/{subject}/mua" / sess
         if not (ck / sess / "best_model_weights.pth").is_file() or not sdir.is_dir():
             continue

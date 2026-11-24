@@ -146,7 +146,8 @@ def efficiency():
     chips = {}
     for subj, exp in (("indy", "motor"), ("loco", "motor_loco"), ("jenkins", "motor_jenkins"),
                       ("jenkins_m1", "motor2")):
-        e = json.load(open(MOTOR / subj / "efficiency_summary.json"))["laptop"]["speck"]
+        val = DL / "results_snn_bci_laptop_final/motor/final_v3" / subj / "efficiency_summary.json"   # validation-selected
+        e = json.load(open(val if val.is_file() else MOTOR / subj / "efficiency_summary.json"))["laptop"]["speck"]
         chips[exp] = (1e3 * e["latency_s"], 1e6 * e["energy_j"], 1e3 * e["power_w"])
     # 2026-11-23: the audio Speck SNN on real 4 ms spikes (FT1) on the devkit, both monkeys, 3 seeds each
     a = [v for f in sorted((DL / "results_deploy_fine/audio").glob("*_FT1_*.json")) for v in json.load(open(f)).values()]
