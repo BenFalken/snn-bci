@@ -1,5 +1,5 @@
 #!/bin/bash
-# Round 21 on Oscar, from speech/scripts:  bash submit_r21.sh   (soft-reset V2C, 3 runs; see configs/speck_r21.txt)
+# Round 21 on Oscar, from speech/scripts:  bash submit_r21.sh   (soft reset and host-loop recurrence on V2C, 6 runs; ARRAY=3-5 submits only R0-R2)
 # Writes configs/speck_r20_V2C.json (the three chains) from round 17's ranking, then submits V2C (1 GPU).
 source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
@@ -23,5 +23,5 @@ json.dump(spec, open('configs/speck_r20_V2C.json', 'w'))
 print('wrote configs/speck_r20_V2C.json: chains of', [len(g['channels']) * len(g['delays']) for g in spec], 'inputs')
 PY
 R=$(sbatch --parsable --export=ALL,BASE_DIR=$B,RUNS=configs/speck_r21.txt,PACK=1,SESSIONS=all,EPOCHS=96 \
-    --array=0-2 run_snn_configs.sbatch)
-echo "round 21 job $R (logs snn_logs/SNN_RUN_${R}_{0,1,2}.out); checkpoints $B/derived/snns/speck_r21/"
+    --array=${ARRAY:-0-5} run_snn_configs.sbatch)
+echo "round 21 job $R (logs snn_logs/SNN_RUN_${R}_<task>.out); checkpoints $B/derived/snns/speck_r21/"

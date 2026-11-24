@@ -302,7 +302,7 @@ class SNN_Native(nn.Module):
         every hidden layer (widths g['dims']), and its layer 1 reads only its channels at its delays."""
         import torch.nn.utils.parametrize as P
         G = self.branch_groups
-        if self.recurrent_any() or self.feedback is not None or self.syn_delay_in or self.in_mult > 1:
+        if self.recurrent_any() or self.syn_delay_in or self.in_mult > 1:
             raise ValueError('branch groups are for the feedforward chip network')
         if any(len(g['dims']) != len(hidden_dims) for g in G) or \
                 [sum(g['dims'][i] for g in G) for i in range(len(hidden_dims))] != list(hidden_dims):
@@ -333,6 +333,19 @@ class SNN_Native(nn.Module):
             with torch.no_grad():                 # keep each neuron's initial drive: scale by its fan-in share
                 w.mul_(torch.sqrt(w.shape[1] / mask.sum(1).clamp(min=1))[:, None])
             P.register_parametrization(layer.ff, 'weight', _Mask(mask))
+        if self.feedback is not None:
+            # host-loop recurrence on Speck: the host writes a chain's last-layer spikes back into the ring buffer and
+            # sends them, one 20 ms bin later, as binary input lines of the same chain's layer 1 (each line one
+            # last-layer neuron; it costs layer 1's core one weight row per line, like any input line). Only chains
+            # with 'feedback': true get it; the chains stay independent on the chip
+            rows = torch.repeat_interleave(torch.arange(len(G)), torch.tensor(self.branch_widths[0]))
+            cols = torch.repeat_interleave(torch.arange(len(G)), torch.tensor(self.branch_widths[-1]))
+            fb = torch.tensor([bool(g.get('feedback', False)) for g in G])
+            mask = ((rows[:, None] == cols[None, :]) & fb[rows][:, None]).float()
+            with torch.no_grad():
+                self.feedback.weight.mul_(torch.sqrt(mask.shape[1] / mask.sum(1).clamp(min=1))[:, None])
+            P.register_parametrization(self.feedback, 'weight', _Mask(mask))
+            self.feedback_binary = True
 
     def recurrent_any(self) -> bool:
         return any(getattr(l, 'rec', None) is not None for l in self.layers)
@@ -412,7 +425,10 @@ class SNN_Native(nn.Module):
             if li == 0:
                 cur = drive0
                 if self.feedback is not None:
-                    cur = cur + self.feedback(states[-1]['s'])     # top-down: last layer, previous step
+                    fb = states[-1]['s']
+                    if getattr(self, 'feedback_binary', False):      # chip input lines: one event or none
+                        fb = fb.clamp(max=1.0)
+                    cur = cur + self.feedback(fb)     # top-down: last layer, previous step
             else:
                 cur = layer.delayed_drive(h, st) if layer.ff_syn_delay else layer.drive(h)
             h = layer.step(cur, st)
