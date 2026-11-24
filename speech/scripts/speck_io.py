@@ -14,6 +14,11 @@ counted per neuron. Latency is wall time per step of that loop (wait included); 
 over the same loop, so energy per step = power x latency. samna is imported only by Devkit.
 """
 
+import os as _os
+import sys as _sys
+_ROOT = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))   # the repo root: snndec
+if _ROOT not in _sys.path:
+    _sys.path.append(_ROOT)
 import time
 from collections import defaultdict
 
@@ -111,6 +116,9 @@ def run_events(network, events: np.ndarray, threshold_scale=(1.0,)) -> np.ndarra
     before firing, so dense input loses the charge above threshold at every early spike. threshold_scale multiplies
     each layer's threshold and floor (one value per layer; missing layers 1.0), as a chip-side correction.
     Returns the last layer's spikes (T, n)."""
+    from snndec import chip as _chip
+    if _chip.specksim_backend():
+        return _chip.run_specksim(network, events, threshold_scale)
     seq = quantized_layers(network)
     W = [m.weight.detach().numpy()[:, :, 0, 0] for m in seq if hasattr(m, 'weight')]
     neurons = [m for m in seq if not hasattr(m, 'weight')]
@@ -132,7 +140,7 @@ def run_events(network, events: np.ndarray, threshold_scale=(1.0,)) -> np.ndarra
                 np.maximum(v[li], floor[li], out=v[li])
             incoming = fired
         np.add.at(out[t], incoming, 1)
-    return out
+    return _chip.verified(network, events, threshold_scale, out)
 
 
 def power_from_events(events, loop_s):

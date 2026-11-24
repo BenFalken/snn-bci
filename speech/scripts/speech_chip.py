@@ -123,7 +123,11 @@ def run_events(network, events, threshold_scale=1.0, all_layers=False):
     """The chip's event-by-event dynamics: within a step the input events (address order) reach layer 1 one at a
     time; each adds its 8-bit weights; with soft reset every neuron at or above threshold fires once per threshold it
     holds and subtracts it, with hard reset it fires once and goes to zero; the membrane is floored, and the spikes
-    reach the next layer in firing order."""
+    reach the next layer in firing order. With SNNBCI_CHIP_SIM=specksim it runs in SynSense's specksim
+    (snndec.chip.run_specksim: identical spikes)."""
+    from snndec import chip as _chip
+    if _chip.specksim_backend():
+        return _chip.run_specksim(network, events, threshold_scale, all_layers)
     import sinabs.activation as sa
     seq = speck_io.quantized_layers(network)
     W = [m.weight.detach().numpy()[:, :, 0, 0] for m in seq if hasattr(m, 'weight')]
@@ -154,7 +158,8 @@ def run_events(network, events, threshold_scale=1.0, all_layers=False):
                 np.maximum(v[li], floor[li], out=v[li])
             incoming = fired
             np.add.at(out[t], np.asarray(fired, dtype=int) + offsets[li], 1)
-    return out if all_layers else out[:, offsets[-2]:]
+    out = out if all_layers else out[:, offsets[-2]:]
+    return _chip.verified(network, events, threshold_scale, out, all_layers)
 
 
 def assemble(model, per_chain, all_layers):

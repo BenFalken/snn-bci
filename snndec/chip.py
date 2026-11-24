@@ -41,6 +41,100 @@ def chip_events(model, input_events) -> np.ndarray:
     return (np.asarray(input_events) > 0).astype(np.float32)
 
 
+def run_specksim(network, events: np.ndarray, threshold_scale=(1.0,), all_layers: bool = False) -> np.ndarray:
+    """The chip's event-by-event dynamics in SynSense's own simulator, specksim (samna.specksim, through sinabs): its
+    convolution and integrate-and-fire layers do every weight sum and threshold test. specksim's neuron only subtracts
+    the threshold and emits at most one spike per event, so the reset the chip is configured with is imposed from
+    outside after each input spike (in these fully connected layers each input spike reaches each neuron once):
+    reset to zero for a hard-reset layer, and for a soft-reset layer one spike per threshold held, each subtracted (as
+    the chip does). Within a step the input events go in address order and each layer's spikes are passed on in
+    neuron order, as run_events; with whole-number weights and thresholds (the quantized network) the two give
+    identical spike trains (chip/specksim_hard.py). threshold_scale multiplies each layer's threshold and floor, as in
+    run_events. Returns the last layer's spikes (T, n), or with all_layers every layer's side by side."""
+    import sinabs.activation as sa
+    from samna.specksim.events import Spike
+    from sinabs.backend.dynapcnn import specksim as sim
+    seq = quantized_layers(network)
+    if np.isscalar(threshold_scale):
+        threshold_scale = (threshold_scale,)
+    scale = list(threshold_scale) + [1.0] * len(seq)
+    nodes, pairs, shape, li = [], [], (events.shape[1], 1, 1), 0
+    for m in seq:
+        if hasattr(m, 'weight'):
+            conv, shape = sim.convert_convolutional_layer(m, shape)
+            nodes.append(conv)
+        else:
+            iaf, shape = sim.convert_iaf_layer(m, shape)
+            thr = float(m.spike_threshold) * scale[li]
+            floor = float(m.min_v_mem) * scale[li] if m.min_v_mem is not None else -1e30
+            iaf.get_layer().set_spike_threshold(thr)
+            iaf.get_layer().set_min_v_mem(floor)
+            soft = isinstance(getattr(m, 'reset_fn', None), sa.MembraneSubtract)
+            nodes.append(iaf)                              # keep the nodes alive: their layers are views into them
+            pairs.append((nodes[-2].get_layer(), iaf.get_layer(), thr, soft))
+            li += 1
+    widths = [len(iaf.get_v_mem()) for _, iaf, _, _ in pairs]
+    offsets = np.cumsum([0] + widths)
+    out = np.zeros((len(events), offsets[-1] if all_layers else widths[-1]))
+    for t, row in enumerate(events):
+        spikes = [Spike(int(c), 0, 0, t) for c in np.flatnonzero(row)]
+        for li, (conv, iaf, thr, soft) in enumerate(pairs):
+            passed = []
+            for sp in spikes:
+                fired = iaf.forward(conv.forward_single(sp))
+                if not fired:
+                    continue
+                v = iaf.get_v_mem()
+                ids = sorted(f.feature for f in fired)
+                for h in ids:
+                    if soft:                               # one spike per threshold held (specksim gave the first)
+                        extra = int(np.floor(max(v[h][0][0], 0.0) / thr))
+                        v[h][0][0] -= extra * thr
+                        passed.extend([h] * (1 + extra))
+                    else:                                  # reset to zero
+                        v[h][0][0] = 0.0
+                        passed.append(h)
+                iaf.set_v_mem(v)
+            spikes = [Spike(int(h), 0, 0, t) for h in passed]
+            if all_layers:
+                np.add.at(out[t], np.asarray(passed, dtype=int) + offsets[li], 1)
+        if not all_layers:
+            np.add.at(out[t], [sp.feature for sp in spikes], 1)
+    return out
+
+
+def specksim_backend() -> bool:
+    """True when SNNBCI_CHIP_SIM=specksim: run_events (and so simulate, every sweep and refit) then runs the chip's
+    dynamics in SynSense's specksim (run_specksim) instead of NumPy. Both give identical spikes on our networks
+    (chip/specksim_verify.sh); specksim is ~25x slower."""
+    return chip_sim() == 'specksim'
+
+
+def chip_sim() -> str:
+    """SNNBCI_CHIP_SIM: 'numpy' (default), 'specksim' (SynSense's simulator, run_specksim) or 'verify' (both on every
+    call; stops at the first spike that differs)."""
+    import os
+    return os.environ.get('SNNBCI_CHIP_SIM', 'numpy').lower()
+
+
+VERIFIED = {'calls': 0, 'steps': 0, 'spikes': 0}
+
+
+def verified(network, events, threshold_scale, ours, all_layers=False):
+    """Under SNNBCI_CHIP_SIM=verify: specksim on the same call must give exactly ours (raises otherwise)."""
+    if chip_sim() != 'verify':
+        return ours
+    theirs = run_specksim(network, events, threshold_scale, all_layers)
+    if not np.array_equal(np.asarray(ours), theirs):
+        bad = np.flatnonzero(np.any(np.asarray(ours) != theirs, axis=1))
+        raise AssertionError(f'specksim differs from run_events at {len(bad)} of {len(events)} steps (first {bad[0]})')
+    VERIFIED['calls'] += 1; VERIFIED['steps'] += len(events); VERIFIED['spikes'] += int(theirs.sum())
+    if VERIFIED['calls'] % 25 == 1:
+        print(f"[specksim verify] {VERIFIED['calls']} calls, {VERIFIED['steps']} steps, {VERIFIED['spikes']} spikes "
+              f"identical", flush=True)
+    return ours
+
+
 def linear_stack(model, layer1_scale: float = 1.0) -> nn.Sequential:
     """The model's spiking layers as nn.Sequential(Linear, IAFSqueeze, ...), weights copied, the input gain folded
     into the first layer (so the chip takes plain 0/1 events). layer1_scale multiplies layer 1's threshold and floor:
@@ -109,7 +203,9 @@ def run_events(network, events: np.ndarray, threshold_scale=(1.0,)) -> np.ndarra
     the next layer in the order they fired. Unlike run_software (and training), a step's input is never summed
     before firing, so dense input loses the charge above threshold at every early spike. threshold_scale multiplies
     each layer's threshold and floor (one value per layer; missing layers 1.0), as a chip-side correction.
-    Returns the last layer's spikes (T, n)."""
+    Returns the last layer's spikes (T, n). With SNNBCI_CHIP_SIM=specksim it runs in specksim (run_specksim)."""
+    if specksim_backend():
+        return run_specksim(network, events, threshold_scale)
     seq = quantized_layers(network)
     W = [m.weight.detach().numpy()[:, :, 0, 0] for m in seq if hasattr(m, 'weight')]
     neurons = [m for m in seq if not hasattr(m, 'weight')]
@@ -140,7 +236,7 @@ def run_events(network, events: np.ndarray, threshold_scale=(1.0,)) -> np.ndarra
                 np.maximum(v[li], floor[li], out=v[li])
             incoming = fired
         np.add.at(out[t], incoming, 1)
-    return out
+    return verified(network, events, threshold_scale, out)
 
 
 def power_from_events(events, loop_s):
@@ -263,12 +359,14 @@ def branch_stacks(model, layer1_scale: float = 1.0):
 
 def simulate(model, events: np.ndarray, layer1_scale: float = 1.0, mode: str = 'events') -> np.ndarray:
     """The last layer's spikes (T, width) of the model on the chip, in software: each network quantized and run on its
-    own (as each is deployed), mode 'events' (run_events, the chip's event-by-event firing) or 'software'
-    (run_software, a step's input summed); the networks' last layers side by side in the model's neuron order."""
+    own (as each is deployed), mode 'events' (run_events, the chip's event-by-event firing), 'specksim' (the same
+    dynamics in SynSense's specksim, run_specksim: identical spikes, ~25x slower) or 'software' (run_software, a
+    step's input summed); the networks' last layers side by side in the model's neuron order."""
+    run = {'events': run_events, 'specksim': run_specksim, 'software': run_software}[mode]
     out = np.zeros((len(events), model.layers[-1].width))
     for seq, lines, last in branch_stacks(model, layer1_scale):
         net = discretized(seq, len(lines))
-        out[:, last] = (run_events if mode == 'events' else run_software)(net, events[:, lines])
+        out[:, last] = run(net, events[:, lines])
     return out
 
 
