@@ -76,3 +76,18 @@ Notes:
   `as-assembled` (`git checkout as-assembled -- oscar/`).
 - Evaluation on another machine matches the stored results to about 0.1% (PyTorch builds differ), not digit for
   digit; the figures are built from the stored results.
+
+## 5. The chip model: SynSense's specksim
+
+The chip model that chooses both calibrations is SynSense's simulator, specksim (samna 0.48, through sinabs), run on
+the network exactly as quantized for the devkit, with the chip's reset imposed after each input event (specksim's
+neuron only subtracts its threshold and fires at most once per event): `snndec.chip.run_specksim`. The sweeps and
+refits ran a NumPy version (`snndec.chip.run_events`) that gives identical spikes. Choose the engine with
+
+    SNNBCI_CHIP_SIM=numpy      # default, ~25x faster as specksim is called from Python
+    SNNBCI_CHIP_SIM=specksim   # every chip-model call in specksim
+    SNNBCI_CHIP_SIM=verify     # both on every call; stops at the first spike that differs
+
+`OUT=dir bash chip/specksim_verify.sh` runs each experiment's own calibration script in verify mode on a deployed
+network (motor I, monkey J, the whole audio validation split, every speech session): all identical.
+`chip/specksim_compare.py` and `chip/specksim_hard.py` show specksim as shipped (+18% spikes) and with the reset.
