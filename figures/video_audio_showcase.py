@@ -110,6 +110,9 @@ def main():
     pa.add_argument("--fine-seed", default=None, choices=["s1337", "s11", "s99"],
                     help="one seed for both 4 ms lanes (default: each network's median seed per monkey)")
     pa.add_argument("--no-novel", action="store_true", help="leave out the novel words (bloop, pop, goop)")
+    pa.add_argument("--multi-first", type=int, default=0, metavar="N",
+                    help="open with N clips of multi-syllable words (2+ syllables), the utterances the Speck lane decodes "
+                         "best (at most 2 per word; longest words first), then every one-syllable word's best utterance")
     pa.add_argument("--speck-first", action="store_true", help="order the words by how far the Speck lane is ahead of "
                     "the other lanes' mean on the clip (its strongest first) instead of by syllables")
     a = pa.parse_args()
@@ -125,6 +128,7 @@ def main():
     if a.fine:                                         # each 4 ms lane right after its 40 ms counterpart
         order_lanes = ["gru", "lstm", "lsnn", "lsnn4", "speck", "speck4"]
     best = {}                                          # word -> (mean score, subject, date, s, e, mask, scores)
+    cands = []                                         # every scored utterance, (word, entry)
     for m, (paths, y, preds) in data.items():
         for word, date, wa, wb in vw.test_words(paths, 0, every=True):
             if a.no_novel and word in ("bloop", "pop", "goop"):
@@ -135,6 +139,7 @@ def main():
             sc = {n: cf.spectral_r(y[s:e][mask], preds[n][s:e][mask]) for n, _ in LANES}
             mean = float(np.mean(list(sc.values())))   # the selection: the original four decoders only
             sc = {n: sc[n] if n in sc else cf.spectral_r(y[s:e][mask], preds[n][s:e][mask]) for n in order_lanes}
+            cands.append((word, (mean, m, date, s, e, mask, sc)))
             if word not in best or mean > best[word][0]:
                 best[word] = (mean, m, date, s, e, mask, sc)
     tag = "4ms" if a.fine else ""                  # the intermediate files apart from the original's
@@ -143,11 +148,22 @@ def main():
         order = sorted(best, key=lambda w: -lead[w])
     else:
         order = sorted(best, key=lambda w: (vw.SYLLABLES.get(w, 9), w))
-    print(f"{len(order)} words, one utterance each:")
+    plan = [(w, best[w], "the best-decoded utterance of this word") for w in order]
+    if a.multi_first:                                  # multi-syllable words first, Speck's best utterances of them
+        syl = lambda w: vw.SYLLABLES.get(w, 9)
+        multi, per_word = [], {}
+        for w, ent in sorted(((w, ent) for w, ent in cands if syl(w) >= 2), key=lambda c: -c[1][6]["speck"]):
+            if per_word.get(w, 0) < 2 and len(multi) < a.multi_first:
+                multi.append((w, ent)); per_word[w] = per_word.get(w, 0) + 1
+        multi.sort(key=lambda c: (-syl(c[0]), -c[1][6]["speck"]))
+        mono = sorted((w for w in best if syl(w) == 1), key=lambda w: w)
+        plan = ([(w, ent, "one of the Speck SNN's best-decoded utterances of this word") for w, ent in multi]
+                + [(w, best[w], "the best-decoded utterance of this word") for w in mono])
+    print(f"{len(plan)} clips:")
     tmp = tempfile.mkdtemp(prefix="paper_audio_showcase_")
     clips = []
-    for i, word in enumerate(order):
-        mean, m, date, s, e, mask, sc = best[word]
+    for i, (word, entry, why) in enumerate(plan):
+        mean, m, date, s, e, mask, sc = entry
         paths, y, preds = data[m]
         print(f"  {word:12s} monkey {m[0]}, {date}, rows {s}:{e}, mean {mean:.2f} | "
               + "  ".join(f"{n} {v:.2f}" for n, v in sc.items()))
@@ -158,7 +174,7 @@ def main():
         k = min(len(truth_mel), *[len(v) for v in mels.values()])
         novel = word in ("bloop", "pop", "goop")
         title = (f"Heard word: ‘{word}’   (monkey {m[0]}, day {date.replace('_', '/')}"
-                 + (", a novel word" if novel else "") + "; the best-decoded utterance of this word"
+                 + (", a novel word" if novel else "") + f"; {why}"
                  + (f"; 4 ms lanes: LSNN {SEEDS_SHOWN[m]['lsnn4']}, Speck {SEEDS_SHOWN[m]['speck4']}, the median seeds"
                     if a.fine else "")
                  + (f"; LSNN and Speck (chip) on 4 ms spikes, median seeds {SEEDS_SHOWN[m]['lsnn']} / {SEEDS_SHOWN[m]['speck']}"
