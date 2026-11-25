@@ -40,8 +40,18 @@ if __name__ == '__main__':
 
     rnnDir = args.rnnDir or os.path.join(args.baseDir, 'derived', 'rnns', 'baselineRelease')
     snnDataDir = args.snnDataDir or os.path.join(args.baseDir, 'derived', 'snnData')
-    rnnArgs = OmegaConf.load(os.path.join(rnnDir, 'args.yaml'))
-    evalSessions = [rnnArgs['dataset']['sessions'][i] for i in range(4, 19)]
+    #the RNN's evaluation sessions (its sessions 4-18); without the RNN's folder, the same 15 written out
+    EVAL_SESSIONS = ['t12.2022.05.24', 't12.2022.05.26', 't12.2022.06.02', 't12.2022.06.07', 't12.2022.06.14',
+                     't12.2022.06.16', 't12.2022.06.21', 't12.2022.06.28', 't12.2022.07.05', 't12.2022.07.14',
+                     't12.2022.07.21', 't12.2022.07.27', 't12.2022.08.02', 't12.2022.08.11', 't12.2022.08.13']
+    if os.path.isfile(os.path.join(rnnDir, 'args.yaml')):
+        rnnArgs = OmegaConf.load(os.path.join(rnnDir, 'args.yaml'))
+        evalSessions = [rnnArgs['dataset']['sessions'][i] for i in range(4, 19)]
+        assert evalSessions == EVAL_SESSIONS, 'the RNN\'s evaluation sessions differ from the paper\'s 15'
+    elif args.noRNN:
+        evalSessions = EVAL_SESSIONS
+    else:
+        raise SystemExit(f'no RNN at {rnnDir} (args.yaml): pass --rnnDir, or --noRNN to skip it')
 
     #the reference trial order: every test trial of the evaluation sessions, as decodeSavedLogits.py
     keys, sessions, true, labels = [], [], [], []

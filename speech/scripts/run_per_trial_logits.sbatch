@@ -12,7 +12,8 @@
 # already on the Mac). Its scores must reproduce perTrialPER_final.json (RNN 0.1689, GRU 0.1910, LSTM 0.1871, LSNN
 # 0.2228); that file is not touched. Submit from here:
 #   sbatch --export=ALL,BASE_DIR=$SNNBCI_OSCAR_SCRATCH run_per_trial_logits.sbatch
-# RNN_DIR=<folder holding the paper RNN's args.yaml> if it is not $BASE_DIR/derived/rnns/baselineRelease.
+# RNN_DIR=<folder holding the paper RNN's args.yaml> if it is not $BASE_DIR/derived/rnns/baselineRelease;
+# NO_RNN=1 skips the paper RNN (TensorFlow) and saves the LSNN, GRU and LSTM only.
 source "${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../snnbci_env.sh"   # paths.yaml -> $SNNBCI_*
 set -eo pipefail
 source ./snn_config.sh
@@ -26,4 +27,4 @@ cd ../analysis
     --snn LSNN="$D/snns/nodelay96/01_C_lsnn_nodelay96/final_model_speech_iaf_soft.pth" \
     --gru GRU96="$D/snns/controls/gru_1024_out80_full96.json" \
     --gru LSTM96="$D/snns/controls/lstm_1024_out80_full96.json" \
-    ${RNN_DIR:+--rnnDir "$RNN_DIR"} --saveLogits "$LOGITS" --out "$OUT"
+    ${RNN_DIR:+--rnnDir "$RNN_DIR"} ${NO_RNN:+--noRNN} --saveLogits "$LOGITS" --out "$OUT"
