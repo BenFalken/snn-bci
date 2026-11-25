@@ -23,8 +23,12 @@ OUT=${OUT:-$D/decoderComparison/perTrialPER_logits.json}; LOGITS=${LOGITS:-$D/de
 mkdir -p "$(dirname "$OUT")"
 export PYTHONPATH="$(cd .. && pwd):$(cd ../../external/willett_speechBCI/NeuralDecoder && pwd):$(cd ../analysis && pwd):${PYTHONPATH:-}"
 cd ../analysis
-"$PYTHON" perTrialPER.py --baseDir "$BASE_DIR" \
-    --snn LSNN="$D/snns/nodelay96/01_C_lsnn_nodelay96/final_model_speech_iaf_soft.pth" \
-    --gru GRU96="$D/snns/controls/gru_1024_out80_full96.json" \
-    --gru LSTM96="$D/snns/controls/lstm_1024_out80_full96.json" \
+# each decoder only if its checkpoint (and, once saved, not its logits again) is there: scratch may have lost some
+ARGS=()
+add() { [ -f "$LOGITS/${2}_logits.npz" ] && { echo "[have] $2"; return; }
+        [ -f "$3" ] && ARGS+=("$1" "$2=$3") || echo "[missing] $2: $3"; }
+add --snn LSNN "$D/snns/nodelay96/01_C_lsnn_nodelay96/final_model_speech_iaf_soft.pth"
+add --gru GRU96 "$D/snns/controls/gru_1024_out80_full96.json"
+add --gru LSTM96 "$D/snns/controls/lstm_1024_out80_full96.json"
+"$PYTHON" perTrialPER.py --baseDir "$BASE_DIR" "${ARGS[@]}" \
     ${RNN_DIR:+--rnnDir "$RNN_DIR"} ${NO_RNN:+--noRNN} --saveLogits "$LOGITS" --out "$OUT"
