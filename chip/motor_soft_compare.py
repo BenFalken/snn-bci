@@ -82,9 +82,13 @@ def one(job):
     os.makedirs(os.path.join(out, subject, 'l1'), exist_ok=True)
     sw = os.path.join(out, subject, 'l1', f'{session}.json')
     if not os.path.isfile(sw):
-        subprocess.run([sys.executable, '-W', 'ignore', os.path.join(ROOT, 'chip/motor_l1_sweep.py'), session_dir, soft_ckpt,
-                        '--scalers', SCALERS, '--scales', *SCALES, '--trials', '20', '--out', sw],
-                       check=True, stdout=subprocess.DEVNULL)
+        p = subprocess.run([sys.executable, '-W', 'ignore', os.path.join(ROOT, 'chip/motor_l1_sweep.py'), session_dir,
+                            soft_ckpt, '--scalers', SCALERS, '--scales', *SCALES, '--trials', '20', '--out', sw],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+        if p.returncode:                       # one session's failure is reported, not fatal to the others
+            err = p.stderr.strip().splitlines()[-1] if p.stderr.strip() else f'exit {p.returncode}'
+            print(f'{session}: FACTOR SWEEP FAILED: {err}\n{p.stderr[-2000:]}', flush=True)
+            return None
     k_soft = float(json.load(open(sw))['chosen_scale'])
     k_hard = hard_factor(subject, session, hard_root)
     res = {'subject': subject, 'session': session, 'factor_hard': k_hard, 'factor_soft': k_soft,
@@ -140,7 +144,10 @@ def main():
     print(f'{a.subject}: {len(jobs)} sessions with both networks')
     torch.set_num_threads(1)
     with get_context('fork').Pool(a.jobs) as pool:
-        pool.map(one, jobs)
+        done = pool.map(one, jobs)
+    failed = [j[1] for j, r in zip(jobs, done) if r is None]
+    if failed:
+        print(f'{a.subject}: {len(failed)} session(s) failed and are left out: {failed}')
     summary(a.out)
 
 
