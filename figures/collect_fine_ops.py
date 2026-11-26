@@ -35,7 +35,7 @@ from snndec.convert import load  # noqa: E402
 from snndec.evaluate import recording_file  # noqa: E402
 from collect_speck_ops import synaptic_adds  # noqa: E402
 
-RUNS = {"P5": ("audio_novel", "P5_centre_ema1_deriv"), "FT1": ("audio_fine", "FT1_spikes"),
+RUNS = {"P5": ("audio_novel", "P5_centre_ema1_deriv"), "FT1": ("audio_fine", "FT1_spikes"), "FS3": ("audio_fine", "FS3_soft_floor3"),
         "LS0": ("audio_fine", "LS0_stream40"), "LS1": ("audio_fine", "LS1_fine")}
 SEEDS = ("s1337", "s11", "s99")
 

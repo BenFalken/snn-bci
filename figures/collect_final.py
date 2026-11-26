@@ -49,6 +49,12 @@ SPEECH = DL / "speechBCI-main/figures/inference_final/decoderComparison_final.js
 BENCH = DL / "results_final_batch/final_bench.json"
 SPEECH_S3 = DL / "final_results/speech_v2c"         # round 19 V2 (two networks, one chip, readout refitted): the final speech Speck SNN
 SPEECH_CHIP = SPEECH_S3 / "chip.json"
+# 2026-11-26: the audio Speck SNN is FS3 (FT1's recipe with soft reset and a membrane floor of -3; audio/speck/
+# runs_fine_soft.txt), which beat FT1 on validation for both monkeys (fine_soft_summary.py); devkit run of
+# speck_deploy_fine_soft.zip. FT1 (hard reset; results_deploy_fine, FT1_spikes) was the audio Speck SNN until then.
+AUDIO_SPECK_CHIP = DL / "results_fine_soft" / "audio"   # devkit results: <monkey>_<TAG>_<seed>.json, preds_<monkey>_<TAG>_<seed>/
+AUDIO_SPECK_TAG = "FS3"
+AUDIO_SPECK_RUN = "FS3_soft_floor3"                     # training run / calibration folder name (audio_fine_<monkey>/<RUN>_<seed>)
 
 MOTOR_NAMES = {"kf": "kf", "wf": "wf", "lstm": "lstm", "qrnn": "qrnn", "snn": "lsnn", "speck": "speck"}
 AUDIO_NAMES = {"kalman_filter": "kf", "wiener_filter": "wf", "lstm_rnn": "lstm", "lsnn": "lsnn", "gru_rnn": "gru",
@@ -149,8 +155,8 @@ def efficiency():
         val = DL / "results_snn_bci_laptop_final/motor/final_v3" / subj / "efficiency_summary.json"   # validation-selected
         e = json.load(open(val if val.is_file() else MOTOR / subj / "efficiency_summary.json"))["laptop"]["speck"]
         chips[exp] = (1e3 * e["latency_s"], 1e6 * e["energy_j"], 1e3 * e["power_w"])
-    # 2026-11-23: the audio Speck SNN on real 4 ms spikes (FT1) on the devkit, both monkeys, 3 seeds each
-    a = [v for f in sorted((DL / "results_deploy_fine/audio").glob("*_FT1_*.json")) for v in json.load(open(f)).values()]
+    # the audio Speck SNN (AUDIO_SPECK_TAG, real 4 ms spikes) on the devkit, both monkeys, 3 seeds each
+    a = [v for f in sorted(AUDIO_SPECK_CHIP.glob(f"*_{AUDIO_SPECK_TAG}_*.json")) for v in json.load(open(f)).values()]
     chips["audio"] = (np.mean([v["latency_output_ms"] for v in a]), np.mean([v["energy_output_uj"] for v in a]),
                       np.mean([v["power_mw"] for v in a]))
     # 2026-11-23: Motor (II)'s validation-selected Speck SNNs on the devkit (results_deploy_jenkins_val): the chip loop's

@@ -12,6 +12,8 @@ the real chip (real 4 ms spikes, no per-day normalization; readout refitted to t
 speck_deploy_fine.zip -> results_deploy_fine), speck_float / speck_chip_trained its software network / trained readout.
 The 40 ms versions stay as the comparison: lsnn_40 (the pipeline's windowed LSNN, as before), lsnn_40stream (LS0, the
 same streaming LSNN at 40 ms, the 4 ms run's control), speck_40 / speck_40_float (P5 on the chip / in software).
+2026-11-26: speck = FS3 (FT1 with soft reset and a membrane floor of -3; collect_final.AUDIO_SPECK_*), devkit run of
+speck_deploy_fine_soft.zip -> results_fine_soft.
     python collect_audio_novel.py   -> data/audio_novel_fidelity.csv
 """
 from repo_paths import WORKSPACE, AUDITORY_DATA  # noqa: E402  (the repository's paths.yaml)
@@ -21,13 +23,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from collect_final import AUDIO_NAMES, SAMPLES_BEFORE
+from collect_final import AUDIO_NAMES, AUDIO_SPECK_CHIP, AUDIO_SPECK_TAG, SAMPLES_BEFORE
 from collect_fidelity import align_raw, fisher_mean_r, sound_frames, spectral_r
 
 HERE = Path(__file__).parent
 AD = AUDITORY_DATA
 CHIP = WORKSPACE / "results_audio_novel"           # P5 (40 ms counts) on the devkit
-CHIP4 = WORKSPACE / "results_deploy_fine" / "audio"  # FT1 (real 4 ms spikes) on the devkit
+CHIP4 = AUDIO_SPECK_CHIP                             # the audio Speck SNN (FS3 since 2026-11-26; FT1 before) on the devkit
 FINE = WORKSPACE / "final_results" / "audio_fine"    # the pilot's LSNN predictions (snndec.evaluate, streaming)
 SEEDS = ("s11", "s1337", "s99")
 NOVEL = {"bloop", "pop", "goop"}
@@ -48,7 +50,7 @@ def rows_for(monkey):
     if "lsnn" in preds:                              # the pipeline's windowed LSNN at 40 ms: now the comparison
         preds["lsnn_40"] = preds.pop("lsnn")
     for kind, (new, old) in KINDS.items():
-        preds[new] = [np.load(CHIP4 / f"preds_{monkey}_FT1_{s}/{monkey}/{kind}.npy") for s in SEEDS]
+        preds[new] = [np.load(CHIP4 / f"preds_{monkey}_{AUDIO_SPECK_TAG}_{s}/{monkey}/{kind}.npy") for s in SEEDS]
         if old:
             preds[old] = [np.load(CHIP / f"preds_{monkey}_{s}/{monkey}_P5_{s}/{kind}.npy") for s in SEEDS]
     preds["lsnn"] = [np.load(FINE / f"{monkey}_LS1_fine_{s}/preds/test.npy") for s in SEEDS]

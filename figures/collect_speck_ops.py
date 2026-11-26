@@ -27,6 +27,7 @@ import pandas as pd
 import torch
 
 from collect_efficiency import energy_uj
+from collect_final import AUDIO_SPECK_RUN  # noqa: E402  (the audio Speck SNN in use)
 
 HERE = Path(__file__).parent
 SNNDEC = ROOT
@@ -88,8 +89,8 @@ def audio():
     AD = AUDITORY_DATA
     SD = SNN_RUNS
     for monkey, seed in [(m, s) for m in ("Neil", "Gomez") for s in ("s11", "s1337", "s99")]:
-        # 2026-11-23: the audio Speck SNN on real 4 ms spikes (FT1; audio/speck/runs_fine_timing.txt)
-        model, info = load(str(SD / f"audio_fine_{monkey}/FT1_spikes_{seed}/best.pt"))
+        # the audio Speck SNN on real 4 ms spikes (FS3 since 2026-11-26: collect_final.AUDIO_SPECK_RUN; FT1 before)
+        model, info = load(str(SD / f"audio_fine_{monkey}/{AUDIO_SPECK_RUN}_{seed}/best.pt"))
         model.eval()
         pipe = AD / monkey / "aSTG/ALLWORDS_NOVEL_DAYNORM/pipeline"
         rec, W, n = data.audio_recording(str(pipe), recording_file(info))
@@ -106,7 +107,7 @@ def audio():
               f"spikes {np.round(r, 1)}")
     a, m = np.mean(rows, 0)
     return dict(experiment="audio", accs=a, macs=m, energy_uj=energy_uj(m, a), n=len(rows),
-                note="FT1 (real 4 ms spikes) on the expanded cohorts, monkeys N and G x 3 seeds, test stream; per 40 ms output = 10 chip steps")
+                note=f"{AUDIO_SPECK_RUN} (real 4 ms spikes) on the expanded cohorts, monkeys N and G x 3 seeds, test stream; per 40 ms output = 10 chip steps")
 
 
 def speech():
