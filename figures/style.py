@@ -28,6 +28,10 @@ COLOR = {"kf": "#56B4E9", "wf": "#009E73", "lstm": "#0072B2", "lsnn": "#D55E00",
          "gru": "#7A9CC6", "aegru": "#5f86b8", "qrnn": "#9C89B8", "paper_rnn": "#4D4D4D", "delaynet": "#C49A6C",
          "dense_nn": "#A0A0A0", "simple_rnn": "#8DB3A3", "wiener_cascade": "#B8B8B8"}
 HIGHLIGHT = {"lsnn", "speck"}
+# speech: the same decoders with the phoneme 5-gram (collect_speech_lm.py), drawn beside each, filled in its colour
+for _d in ("paper_rnn", "lsnn", "speck"):
+    LABEL[_d + "_lm"], SHORT[_d + "_lm"], COLOR[_d + "_lm"] = LABEL[_d] + " + 5-gram", "+ 5-gram", COLOR[_d]
+HIGHLIGHT |= {"lsnn_lm", "speck_lm"}
 
 INK = "#1a1a1a"
 MUTED = "#6b6b6b"

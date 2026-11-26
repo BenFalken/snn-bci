@@ -35,7 +35,7 @@ SPEC = {
     "audio": (["kf", "wf", "wiener_cascade", "dense_nn", "simple_rnn", "gru", "lstm", "lsnn", "speck"],
               ["kf", "wf", "gru", "lstm", "lsnn", "speck"], "band_r", "mel-band correlation (paper's metric)", True,
               {"neil": "o", "gomez": "s"}, "audio"),
-    "speech": (["paper_rnn", "lsnn", "speck"], ["paper_rnn", "lsnn", "speck"], "per",
+    "speech": (["paper_rnn", "paper_rnn_lm", "lsnn", "lsnn_lm", "speck", "speck_lm"], ["paper_rnn", "lsnn", "speck"], "per",
                "phoneme error rate", False, {"sentence": "o", "session": "o"}, "speech"),
 }
 fig_final.GROUP_NAME.update({"jenkins_m1": "monkey J", "neil": "monkey N", "gomez": "monkey G"})

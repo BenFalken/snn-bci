@@ -130,6 +130,9 @@ def speech_sentence_rows():
         if k in t:
             for key, e, ni in zip(t["keys"], t[k]["edits"], n):
                 rows.append(("speech", "sentence", key, d, "per", e / ni))
+    lm = HERE / "data" / "speech_lm_sentences.csv"          # the same sentences with the phoneme 5-gram
+    if lm.is_file():
+        rows += [tuple(r) for r in pd.read_csv(lm).itertuples(index=False)]
     return rows
 
 

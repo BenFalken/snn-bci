@@ -15,6 +15,7 @@ The final results figures, from data/final_fidelity.csv and data/final_efficienc
 
 from pathlib import Path
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -61,8 +62,10 @@ def fidelity(ax, exp, fid, big):
         hl = d in style.HIGHLIGHT
         apart = d in SET_APART
         ls = (0, (3, 2)) if apart else "-"
+        lmx = d.endswith("_lm")                         # a decoder with the language model: filled box, beside it
         ax.boxplot(v, positions=[i], widths=0.6, showfliers=False, patch_artist=True,
-                   boxprops=dict(facecolor="none", edgecolor=style.COLOR[d], linewidth=lw if hl else lw * 0.55,
+                   boxprops=dict(facecolor=matplotlib.colors.to_rgba(style.COLOR[d], 0.22) if lmx else "none",
+                                 edgecolor=style.COLOR[d], linewidth=lw if hl else lw * 0.55,
                                  linestyle=ls),
                    medianprops=dict(color=style.COLOR[d], linewidth=lw * 1.2),
                    whiskerprops=dict(color=style.COLOR[d], linewidth=lw * 0.55, linestyle=ls),
@@ -82,6 +85,8 @@ def fidelity(ax, exp, fid, big):
             if len(sw):
                 ax.scatter(i + 0.42, np.median(sw), marker="D", s=s_dot * 2.6, facecolor="white",
                            edgecolor=style.COLOR[d], linewidths=lw * 0.7, zorder=4)
+                if i + 1 < len(decs) and decs[i + 1].endswith("_lm"):     # its 5-gram box sits there: the caption
+                    continue                                                # names the diamond
                 ax.annotate("software", (i + 0.42, np.median(sw)), xytext=(4 if big else 2, 0),
                             textcoords="offset points", va="center", fontsize=fs * 0.85, color=style.MUTED)
     ax.set_xticks(range(len(decs)))
