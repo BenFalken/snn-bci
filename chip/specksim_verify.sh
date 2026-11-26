@@ -7,8 +7,9 @@
 #   motor I  indy_20160426_01 x1.5 (2 trials)          Jenkins 20090912 x3 (2 trials)
 #   audio    Neil FT1 s11 x3, whole validation split: 52,890 steps, 2,678,163 spikes; agreement 0.9324 as before
 #   speech   V2+C x2.5, 1 sentence per session, 3 chains, every layer (hard reset); agreement 0.976 as before
-# Every deployed network is hard reset; the soft-reset path (one spike per threshold held) was checked only on a test
-# network (identical at integer and half-integer factors).
+# (2026-11-26: audio and speech are now soft reset with a membrane floor of -3; the soft-reset path was verified on
+# speech S3 x2.5, 1 training sentence per session: 17,358 steps identical, and on audio FS3, see the header of
+# make_deploy_bundle_fine_soft.sh. Motor stays hard reset.)
 V=${OUT:?set OUT}; mkdir -p $V; : > $V/done
 MD=$SNNBCI_MOTOR_DATA/snn_datasets; SC=motor/snn_training/velocity_scalers.json
 AD=$SNNBCI_AUDITORY_DATA; J=sub-Jenkins_ses-20090912_behavior+ecephys

@@ -47,7 +47,9 @@ MOTOR = DL / "final_v2"
 FINAL = DL / "final_results"
 SPEECH = DL / "speechBCI-main/figures/inference_final/decoderComparison_final.json"
 BENCH = DL / "results_final_batch/final_bench.json"
-SPEECH_S3 = DL / "final_results/speech_v2c"         # round 19 V2 (two networks, one chip, readout refitted): the final speech Speck SNN
+# 2026-11-26: the final speech Speck SNN is round 21 S3 (V2+C's three networks on one chip, soft reset, membrane floor
+# -3; final_speech_r21s3.py). Round 20 V2+C (hard reset; final_results/speech_v2c, final_speech_v2c.py) was until then.
+SPEECH_S3 = DL / "final_results/speech_r21s3"
 SPEECH_CHIP = SPEECH_S3 / "chip.json"
 # 2026-11-26: the audio Speck SNN is FS3 (FT1's recipe with soft reset and a membrane floor of -3; audio/speck/
 # runs_fine_soft.txt), which beat FT1 on validation for both monkeys (fine_soft_summary.py); devkit run of

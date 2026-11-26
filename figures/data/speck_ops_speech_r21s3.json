@@ -1,0 +1,8 @@
+{
+ "experiment": "speech",
+ "accs": 215579.234375,
+ "macs": 1071432.0,
+ "energy_uj": 29.784934997558594,
+ "n": 19,
+ "note": "round 21 S3 (V2+C's three networks on one chip, soft reset, floor -3), trained network's spikes on the 680 test sentences; per 80 ms output = 4 bins"
+}

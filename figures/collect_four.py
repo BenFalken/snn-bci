@@ -26,9 +26,9 @@ from collect_fidelity import align_raw, fisher_mean_r, sound_frames, spectral_r
 from collect_final import (AUDIO, AUDIO_NAMES, AUDIO_SEEDS, FINAL, HERE, MOTOR, MOTOR_NAMES, SAMPLES_BEFORE, WORDS,
                            speech_rows)
 
-PER_TRIAL = FINAL / "perTrialPER_final_v2c.json"  # perTrialPER_final.json + V2+C (final, round 20) on the same 600 sentences
-PER_TRIAL_NAMES = {"RNN": "paper_rnn", "GRU96": "gru", "LSTM96": "lstm", "LSNN": "lsnn", "SpeckV2C": "speck_float",
-                   "SpeckChipV2C": "speck"}
+PER_TRIAL = FINAL / "perTrialPER_final_r21s3.json"  # perTrialPER_final.json + round 21 S3 (final since 2026-11-26) on the same 600 sentences
+PER_TRIAL_NAMES = {"RNN": "paper_rnn", "GRU96": "gru", "LSTM96": "lstm", "LSNN": "lsnn", "SpeckR21S3": "speck_float",
+                   "SpeckChipR21S3": "speck"}
 JENKINS_REFIT = FINAL / "jenkins_refit"         # the Jenkins Speck SNN's readout refitted in software (jenkins_refit.py)
 JENKINS_VAL = FINAL.parent / "results_deploy_jenkins_val"   # the validation-selected Jenkins Speck SNNs on the devkit
 SPECK_VAL = FINAL.parent / "results_snn_bci_laptop_final" / "motor" / "final_v3"   # Motor (I) Speck, validation-selected

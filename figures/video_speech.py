@@ -279,7 +279,7 @@ def main():
     pa = argparse.ArgumentParser()
     pa.add_argument("--trials", default=str(WORKSPACE / "viewer_final"))
     pa.add_argument("--output", default=str(HERE / "figures" / "video_speech.mp4"))
-    pa.add_argument("--chip-logits", default=str(WORKSPACE / "final_results/speech_v2c/chip_refit_logits.npz"),
+    pa.add_argument("--chip-logits", default=str(WORKSPACE / "final_results/speech_r21s3/chip_refit_logits.npz"),
                     help="the speech Speck SNN's logits from the devkit (speech_chip.py --mode chip): its lane is "
                          "added after the LSNN's when the file exists")
     pa.add_argument("--s3-logits", default=None, help="round 21 S3 (soft reset) test logits in the chip model "
@@ -289,6 +289,11 @@ def main():
     pa.add_argument("--lsnn-logits", default=None, help="the LSNN's test logits (perTrialPER --saveLogits): with "
                     "--lsnn-ngram, adds LSNN + the phoneme n-gram")
     pa.add_argument("--lsnn-ngram", default=None, help="ngram_lm.py result json for the LSNN's logits")
+    pa.add_argument("--rnn-logits", default=None, help="the paper RNN's test logits (perTrialPER --saveLogits): with "
+                    "--rnn-ngram, adds RNN + the phoneme n-gram (first of the n-gram lanes)")
+    pa.add_argument("--rnn-ngram", default=None, help="ngram_lm.py result json for the RNN's logits")
+    pa.add_argument("--s3-label", default=None, help="label of the S3 + n-gram lane (e.g. when --s3-logits are the "
+                    "real chip's)")
     pa.add_argument("--lm-only", action="store_true", help="only the n-gram lanes (no RNN, greedy LSNN or chip lanes)")
     pa.add_argument("--data-dir", default=str(WORKSPACE / "speech_rebuild/derived/snnData"))
     a = pa.parse_args()
@@ -296,28 +301,34 @@ def main():
     s3 = np.load(a.s3_logits) if a.s3_logits else None
     lsnn = np.load(a.lsnn_logits) if a.lsnn_logits and a.lsnn_ngram else None
     lsnnj = json.load(open(a.lsnn_ngram)) if lsnn is not None else None
+    rnn = np.load(a.rnn_logits) if a.rnn_logits and a.rnn_ngram else None
+    rnnj = json.load(open(a.rnn_ngram)) if rnn is not None else None
     if a.lm_only:
         LANES[:] = []
     lm, lmj = None, None
-    if a.ngram or lsnn is not None:
+    if a.ngram or lsnn is not None or rnn is not None:
         import sys
         sys.path[:0] = [str(HERE.parent / "speech"), str(HERE.parent / "speech" / "scripts")]
         from snnDecoder.dataset import load_partitions
         from ngram_lm import KneserNey
-        lmj = json.load(open(a.ngram)) if a.ngram else lsnnj
+        lmj = json.load(open(a.ngram)) if a.ngram else (lsnnj or rnnj)
         ss = sorted(x for x in os.listdir(a.data_dir) if x.startswith("t12"))
         test = {tuple(int(v) for v in t) for p in load_partitions(a.data_dir, ss, "test") for t in p.labels}
         lm = KneserNey([t for p in load_partitions(a.data_dir, ss, "train") for t in p.labels
                         if tuple(int(v) for v in t) not in test], lmj["order"])     # as ngram_lm.py: scored left out
     style.COLOR.update(speck_s3="#B07A00", speck_lm="#7A4E00" if not a.lm_only else style.COLOR["speck"],
-                       lsnn_lm=style.COLOR["lsnn"])
+                       lsnn_lm=style.COLOR["lsnn"], rnn_lm=style.COLOR.get("paper_rnn", "#444444"))
     style.LABEL.update(speck_s3="Speck, soft reset\n(chip model)", speck_lm="Speck, soft reset\n+ phoneme 5-gram" if not a.lm_only else "Speck (chip model)\n+ phoneme 5-gram",
-                       lsnn_lm="LSNN\n+ phoneme 5-gram")
+                       lsnn_lm="LSNN\n+ phoneme 5-gram", rnn_lm="Paper RNN\n+ phoneme 5-gram")
+    if a.s3_label:
+        style.LABEL["speck_lm"] = a.s3_label.replace("\\n", "\n")
     style.HIGHLIGHT = set(style.HIGHLIGHT) | {"speck_s3", "speck_lm", "lsnn_lm"}
     if chip is not None and ("speck", "SpeckChip") not in LANES:
         LANES.append(("speck", "SpeckChip"))
     style.apply()
     style.LABEL["speck"] = "Speck" if s3 is None else "Speck\n(on the chip)"
+    if rnn is not None and ("rnn_lm", "RNNLM") not in LANES:
+        LANES.append(("rnn_lm", "RNNLM"))
     if lsnn is not None and ("lsnn_lm", "LSNNLM") not in LANES:
         LANES.append(("lsnn_lm", "LSNNLM"))
     if s3 is not None and not a.lm_only and ("speck_s3", "SpeckS3") not in LANES:
@@ -340,6 +351,9 @@ def main():
         key = f"{d['session']}/{d['trial']}"
         truth = [p for p, _, _ in d["truth"]["phonemes"]]
         extra = []
+        if rnn is not None:
+            al, be = rnnj["chosen"][f"half{int(d['trial']) % 2}"]
+            extra.append(lm_decoder(rnn[key], d["classNames"], lm, al, be, "RNNLM", rnnj.get("beam", 32)))
         if lsnn is not None:
             al, be = lsnnj["chosen"][f"half{int(d['trial']) % 2}"]
             extra.append(lm_decoder(lsnn[key], d["classNames"], lm, al, be, "LSNNLM", lsnnj.get("beam", 32)))

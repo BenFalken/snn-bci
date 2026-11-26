@@ -62,10 +62,14 @@ fetch from one, set `oscar_user` in `paths.local.yaml`.
 | Paper figures and tables, from stored results | `cd figures && python3 collect_four.py && python3 collect_final.py && python3 collect_speck_ops.py && python3 fig_results.py` |
 | Motor: train every decoder (Slurm) | `bash motor/sbatch_scripts/train_all.sh` |
 | Motor: evaluate, software and chip | `bash motor/final_all.sh indy loco` and `bash motor/jenkins_m1_final.sh` |
-| Audio: reference decoders, LSNN and Speck SNN; calibration | `bash audio/speck/run_novel.sh`, then `bash audio/speck/calibrate_novel.sh` |
+| Audio: reference decoders, LSNN and Speck SNN on 40 ms counts; calibration | `bash audio/speck/run_novel.sh`, then `bash audio/speck/calibrate_novel.sh` |
+| Audio: 4 ms LSNN and hard-reset Speck SNN (FT1) | `bash audio/speck/fine_timing.sh` |
+| Audio: final Speck SNN FS3 (soft reset, membrane floor -3), training and calibration; devkit bundle | `bash audio/speck/fine_soft.sh`, `python3 audio/speck/fine_soft_summary.py`; `bash chip/make_deploy_bundle_fine_soft.sh` |
 | Speech: LSNN (Slurm) | `speech/scripts/configs/final_lsnn.txt` (command in its header) |
-| Speech: Speck SNN V2+C (Slurm) | `cd speech/scripts && bash submit_r20.sh` |
-| Speech: chip run, readout refit, scoring | `speech/scripts/speech_chip.py`, `refit_readout.py`, then `figures/final_speech_v2c.py` |
+| Speech: Speck SNN V2+C, hard reset (Slurm) | `cd speech/scripts && bash submit_r20.sh` |
+| Speech: final Speck SNN S3 (V2+C with soft reset, membrane floor -3; Slurm) | `cd speech/scripts && bash submit_r21.sh` (config `speck_r21.txt`, S3_soft_floor3) |
+| Speech: chip run, readout refit, scoring | `speech/scripts/speech_chip.py`, `refit_readout.py`; devkit bundle `bash chip/make_deploy_bundle_speech_s3.sh`; then `figures/final_speech_r21s3.py` (V2+C: `final_speech_v2c.py`) |
+| Speech: phoneme 5-gram on saved logits (comparison only) | `python3 speech/scripts/ngram_lm.py --logits X_logits.npz --data-dir snnData --keys perTrialPER_final_v2c.json --order 5 --beam 32 --out X.json` |
 | Speech: comparison with the paper RNN | `speech/analysis/run_compare.sbatch` (`LM_DIR=none`: no language model needed) |
 | Every Speck network on a devkit | `bash chip/make_deploy_bundle.sh` (a self-contained bundle) |
 | Parity check | `python3 tests/test_parity.py` |

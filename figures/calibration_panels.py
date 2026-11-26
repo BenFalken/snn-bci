@@ -20,7 +20,8 @@ HERE = Path(__file__).parent
 DL = WORKSPACE
 L1 = DL / "final_results/l1_final"
 R19 = DL / "speck_r19/results"
-R20 = DL / "speck_r20/results"          # round 20 V2+C, the final speech network
+R20 = DL / "speck_r20/results"          # round 20 V2+C (hard reset), the final speech network until 2026-11-26
+R21 = DL / "speck_r21/S3_results"       # round 21 S3 (soft reset, floor -3), the final speech network
 C_MOTOR, C_AUDIO, C_SPEECH = style.COLOR["speck"], style.COLOR["lstm"], style.COLOR["lsnn"]
 INK, MUTED, FAINT = style.INK, style.MUTED, "#9a9ea8"
 STEP1, STEP2 = "#6a5acd", "#2a7f62"
@@ -96,8 +97,8 @@ def sweeps():
         r = {float(k): v for k, v in d["results"].items()}
         out.append(("audio", C_AUDIO, "-", float(d["chosen_scale"]),
                     {k: v["agreement_r"] for k, v in r.items()}, {k: v["r"] / d["r_float"] for k, v in r.items()}))
-    ev = json.load(open(R20 / "l1/00_V2C_1chip_3chains_events.json"))["results"]
-    sw = json.load(open(R20 / "l1/00_V2C_1chip_3chains_torch.json"))["results"]["1"]["per"]
+    ev = json.load(open(R21 / "l1/02_S3_soft_floor3_events.json"))["results"]
+    sw = json.load(open(R21 / "l1/02_S3_soft_floor3_torch.json"))["results"]["1"]["per"]
     r = {float(k): v for k, v in ev.items()}
     agree = {k: v["logit_corr_vs_trained"] for k, v in r.items()}
     out.append(("speech", C_SPEECH, "-", max(agree, key=agree.get), agree,
@@ -227,7 +228,9 @@ def panel_example(axes, z, meta):
 def panel_gains(ax):
     W1 = json.load(open(R19 / "W1/refit.json"))
     rows = [
-        ("speech\n(real chip, 680 sentences)", (1 - 0.4952) / (1 - 0.4435), (1 - 0.4396) / (1 - 0.4435), C_SPEECH, True),
+        # 2026-11-26, round 21 S3 (results_s3_full): real chip, trained readout 0.4166 (its counts read by the trained
+        # readout) and refitted 0.4044, against 0.3959 in software, 680 sentences (V2+C until then: 0.4952 / 0.4396 / 0.4435)
+        ("speech\n(real chip, 680 sentences)", (1 - 0.4166) / (1 - 0.3959), (1 - 0.4044) / (1 - 0.3959), C_SPEECH, True),
         # 2026-11-26, real 4 ms spikes (FS3, collect_audio_novel.py): mean within-word spectral match, 3 seeds, real chip,
         # trained and refitted readout over the software network's (speck_chip_trained / speck / speck_float)
         # (FT1 until then: N 0.6292 / 0.6457 / 0.6461, G 0.6389 / 0.6683 / 0.6585)
@@ -253,8 +256,9 @@ def panel_gains(ax):
     ax.set_xlabel("chip accuracy, share of software (%)")
     ax.grid(axis="x")
     ax.set_title("What it gains", loc="left")
-    ax.text(0.0, -0.3, "open: trained readout · filled: refitted.\nThe same refit on software spikes gains\n"
-            f"speech only {100 * ((1 - 0.4779) / (1 - 0.4872) - 1):.0f}%: the gain is the chip's.",
+    # (the note that the same refit on software spikes gained speech only 2% was round 19's V2; with S3 the chip's own
+    # gain is that small, so it no longer separates the two)
+    ax.text(0.0, -0.3, "open: trained readout · filled: refitted.",
             transform=ax.transAxes, fontsize=4.8, color=MUTED, va="top")
 
 

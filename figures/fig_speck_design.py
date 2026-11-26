@@ -266,7 +266,7 @@ SPECK_COLS = [
          cores={5: ("L1", use(432, 128, 5), C1), 3: ("L2", use(128, 256, 3), C1), 6: ("L3", use(256, 256, 6), C1)},
          ctxt="three layers on three cores; the graded\noutput is decoded on the host",
          rtxt="Hidden 3 smoothed once, mapped\nlinearly to 128 bands", rn=2,
-         cal="× 2 to 3", cal2="", cal3="readout refit", extra=(3, "no per-day normalization")),
+         cal="× 1.5", cal2="", cal3="readout refit", extra=(3, "no per-day normalization")),
     dict(btitle="All 256 features × 4 taps as two\nnetworks, + the top 64 to 1.2 s", bn=2,
          bars=[(128, 4, C1, "A: top 128"), (128, 4, C2, "B: other 128"), (64, 4, C3, "C: top 64, long taps")],
          frac=0.26, etxt="per-day gain, event if z ≥ 0.5\n~330 per step (26%), the densest", en=2,
@@ -278,7 +278,7 @@ SPECK_COLS = [
                 2: ("C1", use(256, 64, 2), C3), 7: ("C2", use(64, 256, 7), C3), 8: ("C3", use(256, 64, 8), C3)},
          ctxt="three networks side by side, meeting only\nin the host readout; all nine cores", read="all",
          rtxt="every layer of all three networks with\ntraces → 41 classes every 80 ms → CTC", rn=1,
-         cal="× 2.5", cal2="", cal3="readout refit", extra=(3, "a learned gain per channel and day")),
+         cal="× 1.5", cal2="", cal3="readout refit", extra=(3, "a learned gain per channel and day")),
 ]
 
 

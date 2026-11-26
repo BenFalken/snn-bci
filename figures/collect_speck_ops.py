@@ -112,7 +112,7 @@ def audio():
 
 def speech():
     """Round 19 V2, counted by final_speech_v2.py (its two networks fan out only within themselves)."""
-    return json.load(open(HERE / "data" / "speck_ops_speech_v2c.json"))   # round 20 V2+C (final)
+    return json.load(open(HERE / "data" / "speck_ops_speech_r21s3.json"))   # round 21 S3 (final; V2+C: speck_ops_speech_v2c.json)
 
 
 if __name__ == "__main__":
