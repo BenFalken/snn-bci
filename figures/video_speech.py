@@ -286,29 +286,41 @@ def main():
                     "(S3_results/test_logits.npz): adds its lane, greedy as the others")
     pa.add_argument("--ngram", default=None, help="ngram_lm.py result json for those logits: adds S3 + the phoneme "
                     "n-gram (its order; each sentence at the alpha, beta chosen on the other half of the sentences)")
+    pa.add_argument("--lsnn-logits", default=None, help="the LSNN's test logits (perTrialPER --saveLogits): with "
+                    "--lsnn-ngram, adds LSNN + the phoneme n-gram")
+    pa.add_argument("--lsnn-ngram", default=None, help="ngram_lm.py result json for the LSNN's logits")
+    pa.add_argument("--lm-only", action="store_true", help="only the n-gram lanes (no RNN, greedy LSNN or chip lanes)")
     pa.add_argument("--data-dir", default=str(WORKSPACE / "speech_rebuild/derived/snnData"))
     a = pa.parse_args()
-    chip = np.load(a.chip_logits) if os.path.isfile(a.chip_logits) else None
+    chip = np.load(a.chip_logits) if os.path.isfile(a.chip_logits) and not a.lm_only else None
     s3 = np.load(a.s3_logits) if a.s3_logits else None
+    lsnn = np.load(a.lsnn_logits) if a.lsnn_logits and a.lsnn_ngram else None
+    lsnnj = json.load(open(a.lsnn_ngram)) if lsnn is not None else None
+    if a.lm_only:
+        LANES[:] = []
     lm, lmj = None, None
-    if a.ngram:
+    if a.ngram or lsnn is not None:
         import sys
         sys.path[:0] = [str(HERE.parent / "speech"), str(HERE.parent / "speech" / "scripts")]
         from snnDecoder.dataset import load_partitions
         from ngram_lm import KneserNey
-        lmj = json.load(open(a.ngram))
+        lmj = json.load(open(a.ngram)) if a.ngram else lsnnj
         ss = sorted(x for x in os.listdir(a.data_dir) if x.startswith("t12"))
         test = {tuple(int(v) for v in t) for p in load_partitions(a.data_dir, ss, "test") for t in p.labels}
         lm = KneserNey([t for p in load_partitions(a.data_dir, ss, "train") for t in p.labels
                         if tuple(int(v) for v in t) not in test], lmj["order"])     # as ngram_lm.py: scored left out
-    style.COLOR.update(speck_s3="#B07A00", speck_lm="#7A4E00")
-    style.LABEL.update(speck_s3="Speck, soft reset\n(chip model)", speck_lm="Speck, soft reset\n+ phoneme 5-gram")
-    style.HIGHLIGHT = set(style.HIGHLIGHT) | {"speck_s3", "speck_lm"}
+    style.COLOR.update(speck_s3="#B07A00", speck_lm="#7A4E00" if not a.lm_only else style.COLOR["speck"],
+                       lsnn_lm=style.COLOR["lsnn"])
+    style.LABEL.update(speck_s3="Speck, soft reset\n(chip model)", speck_lm="Speck, soft reset\n+ phoneme 5-gram" if not a.lm_only else "Speck (chip model)\n+ phoneme 5-gram",
+                       lsnn_lm="LSNN\n+ phoneme 5-gram")
+    style.HIGHLIGHT = set(style.HIGHLIGHT) | {"speck_s3", "speck_lm", "lsnn_lm"}
     if chip is not None and ("speck", "SpeckChip") not in LANES:
         LANES.append(("speck", "SpeckChip"))
     style.apply()
     style.LABEL["speck"] = "Speck" if s3 is None else "Speck\n(on the chip)"
-    if s3 is not None and ("speck_s3", "SpeckS3") not in LANES:
+    if lsnn is not None and ("lsnn_lm", "LSNNLM") not in LANES:
+        LANES.append(("lsnn_lm", "LSNNLM"))
+    if s3 is not None and not a.lm_only and ("speck_s3", "SpeckS3") not in LANES:
         LANES.append(("speck_s3", "SpeckS3"))
     if lm is not None and ("speck_lm", "SpeckS3LM") not in LANES:
         LANES.append(("speck_lm", "SpeckS3LM"))
@@ -328,9 +340,12 @@ def main():
         key = f"{d['session']}/{d['trial']}"
         truth = [p for p, _, _ in d["truth"]["phonemes"]]
         extra = []
-        if s3 is not None:
+        if lsnn is not None:
+            al, be = lsnnj["chosen"][f"half{int(d['trial']) % 2}"]
+            extra.append(lm_decoder(lsnn[key], d["classNames"], lm, al, be, "LSNNLM", lsnnj.get("beam", 32)))
+        if s3 is not None and not a.lm_only:
             extra.append(dict(chip_decoder(s3[key], d["classNames"]), name="SpeckS3"))
-        if lm is not None:
+        if a.ngram and s3 is not None:
             al, be = lmj["chosen"][f"half{int(d['trial']) % 2}"]
             extra.append(lm_decoder(s3[key], d["classNames"], lm, al, be, "SpeckS3LM", lmj.get("beam", 32)))
         for x in extra:
