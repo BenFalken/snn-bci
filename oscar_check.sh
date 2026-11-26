@@ -44,3 +44,13 @@ if [ "$n" -gt 0 ]; then
 else
   echo "R2: no epochs yet"
 fi
+echo; echo "== speech round 23 (graded input) vs S3, test PER at the same epoch (bar: below ~0.385 at the end)"
+for t in 0 1 2; do
+  name=$(echo "C3 counts0-3|C2 counts0-2|OO onset/offset" | cut -d'|' -f$((t + 1)))
+  f="$L/SNN_RUN_${R23_JOB:-9650136}_$t.out"; n=$(per "$f" | wc -l)
+  if [ "$n" -gt 0 ]; then
+    echo "$name: epoch $n PER $(per "$f" | tail -1) | S3 at epoch $n: $(per "$L/SNN_RUN_9583732_2.out" | sed -n "${n}p")"
+  else
+    echo "$name: no epochs yet"
+  fi
+done
