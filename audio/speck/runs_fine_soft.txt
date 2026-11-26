@@ -1,0 +1,12 @@
+# EXPLORATORY (2026-11-25), not a final model: soft reset for the 4 ms audio Speck SNN (FT1). The speech network gained
+# 0.04 phoneme error from soft reset and kept it on the devkit (round 21 S3). The audio soft-reset network of 2026-11-09
+# lost ~0.05 on the chip, but its calibration used a chip model that could only simulate hard reset; the chip model now
+# simulates soft reset (checked against specksim). FT1's recipe exactly, one change per variant:
+#   FS1  soft reset                        FS3  soft reset + membrane floor -3 (speech's S3)
+# name | config | --set overrides
+FS1_soft_s1337 | audio_speck | model.input.n_delays=0 model.input.delays=[0,4,6,7,8,9,10,12,16] model.readout.stages=1 train.deriv_weight=1.0 data.features=features_4ms_counts.npy model.input.encoding=fine model.layers.reset=soft train.seed=1337
+FS1_soft_s11 | audio_speck | model.input.n_delays=0 model.input.delays=[0,4,6,7,8,9,10,12,16] model.readout.stages=1 train.deriv_weight=1.0 data.features=features_4ms_counts.npy model.input.encoding=fine model.layers.reset=soft train.seed=11
+FS1_soft_s99 | audio_speck | model.input.n_delays=0 model.input.delays=[0,4,6,7,8,9,10,12,16] model.readout.stages=1 train.deriv_weight=1.0 data.features=features_4ms_counts.npy model.input.encoding=fine model.layers.reset=soft train.seed=99
+FS3_soft_floor3_s1337 | audio_speck | model.input.n_delays=0 model.input.delays=[0,4,6,7,8,9,10,12,16] model.readout.stages=1 train.deriv_weight=1.0 data.features=features_4ms_counts.npy model.input.encoding=fine model.layers.reset=soft model.layers.min_vmem=-3 train.seed=1337
+FS3_soft_floor3_s11 | audio_speck | model.input.n_delays=0 model.input.delays=[0,4,6,7,8,9,10,12,16] model.readout.stages=1 train.deriv_weight=1.0 data.features=features_4ms_counts.npy model.input.encoding=fine model.layers.reset=soft model.layers.min_vmem=-3 train.seed=11
+FS3_soft_floor3_s99 | audio_speck | model.input.n_delays=0 model.input.delays=[0,4,6,7,8,9,10,12,16] model.readout.stages=1 train.deriv_weight=1.0 data.features=features_4ms_counts.npy model.input.encoding=fine model.layers.reset=soft model.layers.min_vmem=-3 train.seed=99
