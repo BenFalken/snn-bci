@@ -289,6 +289,9 @@ def main():
     pa.add_argument("--lsnn-logits", default=None, help="the LSNN's test logits (perTrialPER --saveLogits): with "
                     "--lsnn-ngram, adds LSNN + the phoneme n-gram")
     pa.add_argument("--lsnn-ngram", default=None, help="ngram_lm.py result json for the LSNN's logits")
+    pa.add_argument("--greedy-logits", nargs="*", default=[], metavar="NAME=FILE",
+                    help="greedy lanes from saved logits for sentence files that carry no decoder outputs "
+                         "(speech_trials_local.py): RNN=RNN_logits.npz SNN=LSNN_logits.npz (the default lanes' names)")
     pa.add_argument("--rnn-logits", default=None, help="the paper RNN's test logits (perTrialPER --saveLogits): with "
                     "--rnn-ngram, adds RNN + the phoneme n-gram (first of the n-gram lanes)")
     pa.add_argument("--rnn-ngram", default=None, help="ngram_lm.py result json for the RNN's logits")
@@ -298,6 +301,7 @@ def main():
     pa.add_argument("--data-dir", default=str(WORKSPACE / "speech_rebuild/derived/snnData"))
     a = pa.parse_args()
     chip = np.load(a.chip_logits) if os.path.isfile(a.chip_logits) and not a.lm_only else None
+    greedy = {g.split("=", 1)[0]: np.load(g.split("=", 1)[1]) for g in a.greedy_logits}
     s3 = np.load(a.s3_logits) if a.s3_logits else None
     lsnn = np.load(a.lsnn_logits) if a.lsnn_logits and a.lsnn_ngram else None
     lsnnj = json.load(open(a.lsnn_ngram)) if lsnn is not None else None
@@ -340,6 +344,14 @@ def main():
     clips = []
     for i, f in enumerate(sorted(glob.glob(os.path.join(a.trials, "trial_*.json")))):
         d = json.load(open(f))
+        have = {x["name"] for x in d["decoders"]}
+        for nm, gl in greedy.items():
+            if nm not in have:
+                k_ = f"{d['session']}/{d['trial']}"
+                x = dict(chip_decoder(gl[k_], d["classNames"]), name=nm)
+                tr_ = [p for p, _, _ in d["truth"]["phonemes"]]
+                x["per"] = edit_distance([p for p, _, _ in x["segments"]], tr_) / len(tr_)
+                d["decoders"].append(x)
         if chip is not None:
             key = f"{d['session']}/{d['trial']}"
             if key not in chip.files:
