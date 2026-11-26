@@ -47,13 +47,17 @@ from snnDecoder.inference import load_snn_model  # noqa: E402
 from snnDecoder.utils import edit_distance, greedy_decode  # noqa: E402
 
 import speck_io  # noqa: E402  (snn-decoders snndec/chip.py: discretized, run_software, Devkit)
+_event_order = speck_io._chip.event_order   # a step's input events as sent: by address, repeats back to back
 
 
 @torch.no_grad()
 def host_events(model, x, day_idx):
     """One trial's features (T, C) -> the chip's input: 0/1 events (T, n_in x delays), delayed copies side by side."""
     u = model.encoder(model._input(torch.as_tensor(x, dtype=torch.float32)[None], day_idx))
-    return (model.memory.delay(u)[0].numpy() > 0).astype(np.float32)
+    d = model.memory.delay(u)[0].numpy()
+    if model.encoder.mode in ('counts', 'onoff'):             # graded: whole events per line per step (repeats)
+        return np.clip(np.rint(d), 0, None).astype(np.float32)
+    return (d > 0).astype(np.float32)
 
 
 def chains(model):
@@ -140,7 +144,7 @@ def run_events(network, events, threshold_scale=1.0, all_layers=False):
     offsets = np.cumsum([0] + [w.shape[0] for w in W])
     out = np.zeros((len(events), offsets[-1]))
     for t, row in enumerate(events):
-        incoming = np.flatnonzero(row).tolist()
+        incoming = _event_order(row).tolist()
         for li, w in enumerate(W):
             fired = []
             for i in incoming:

@@ -157,7 +157,7 @@ def parse_arguments(argv=None):
     model.add_argument("--input-layer", type=str, default="linear", choices=["linear", "gain"],
                        help="rsnn: per-session input layer, the RNN's Linear + softsign, or one gain per channel")
     model.add_argument("--input-encoding", type=str, default="none",
-                       choices=["none", "ternary", "delta", "sigma_delta", "binary", "levels"],
+                       choices=["none", "ternary", "delta", "sigma_delta", "binary", "levels", "counts", "onoff"],
                        help="rsnn: turn each bin's features into signed event counts (frontend.py), so the first "
                             "layer adds a weight per event instead of multiplying every input")
     model.add_argument("--encoding-threshold", type=float, default=0.25,

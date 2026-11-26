@@ -36,6 +36,13 @@ def input_gain(model) -> torch.Tensor:
     return scale.repeat(len(h.delays))
 
 
+def event_order(row) -> np.ndarray:
+    """One step's input row (counts per line) -> the input events in the order the host sends them: by address,
+    each line's events back to back (a line with count k sends k events). 0/1 rows: the lines that are on."""
+    idx = np.flatnonzero(row)
+    return np.repeat(idx, np.rint(np.asarray(row)[idx]).astype(int))
+
+
 def chip_events(model, input_events) -> np.ndarray:
     """What the host sends the chip: model.input_events (event x input gain) as 0/1 events."""
     return (np.asarray(input_events) > 0).astype(np.float32)
@@ -77,7 +84,7 @@ def run_specksim(network, events: np.ndarray, threshold_scale=(1.0,), all_layers
     offsets = np.cumsum([0] + widths)
     out = np.zeros((len(events), offsets[-1] if all_layers else widths[-1]))
     for t, row in enumerate(events):
-        spikes = [Spike(int(c), 0, 0, t) for c in np.flatnonzero(row)]
+        spikes = [Spike(int(c), 0, 0, t) for c in event_order(row)]
         for li, (conv, iaf, thr, soft) in enumerate(pairs):
             passed = []
             for sp in spikes:
@@ -217,7 +224,7 @@ def run_events(network, events: np.ndarray, threshold_scale=(1.0,)) -> np.ndarra
     v = [np.zeros(w.shape[0]) for w in W]
     out = np.zeros((len(events), W[-1].shape[0]))
     for t, row in enumerate(events):
-        incoming = np.flatnonzero(row)
+        incoming = event_order(row)
         for li, w in enumerate(W):
             fired = []
             for i in incoming:
@@ -247,6 +254,21 @@ def power_from_events(events, loop_s):
         return float('nan'), False
     expected = loop_s * POWER_SAMPLE_RATE_HZ * len(by_channel)
     return float(sum(np.mean(v) for v in by_channel.values())), abs(len(events) - expected) <= 0.2 * expected
+
+
+def _step_events(dev, frame, layer):
+    """One step's frame (1, C, 1, 1) -> the devkit's input Spike events. 0/1 frames: sinabs' raster_to_events, as
+    every deployed network has run; frames with counts above 1: built here in event_order (sinabs would send them
+    grouped by count, a different order within the step than the chip model's)."""
+    if float(frame.max()) <= 1:
+        return dev.chip_factory.raster_to_events(frame, layer, dt=dev.raster_dt)
+    Spike = dev.samna.speck2f.event.Spike
+    out = []
+    for c in event_order(frame.reshape(-1).numpy()):
+        ev = Spike()
+        ev.layer, ev.x, ev.y, ev.feature, ev.timestamp = layer, 0, 0, int(c), 0
+        out.append(ev)
+    return out
 
 
 class Devkit:
@@ -298,6 +320,9 @@ class Devkit:
             graph.stop()
         self.power_sink.get_events()
 
+    def _events(self, frame, layer):
+        return _step_events(self, frame, layer)
+
     def run(self, events: np.ndarray, n_out: int):
         """events (T, n_inputs) of 0/1, one row per model step -> (last layer's spike counts (T, n_out), loop
         seconds, mean power in W, input events sent)."""
@@ -309,8 +334,8 @@ class Devkit:
         self.power_monitor.start_auto_power_measurement(POWER_SAMPLE_RATE_HZ)
         start = time.perf_counter()
         for t, frame in enumerate(frames):
-            if frame.sum() >= 1:                                            # 0/1 events (chip_events)
-                evs = self.chip_factory.raster_to_events(frame, self.cores[0], dt=self.raster_dt)
+            if frame.sum() >= 1:                                            # 0/1 events (chip_events), or counts
+                evs = self._events(frame, self.cores[0])
                 n_events += len(evs)
                 self.input_source.write(evs)
             time.sleep(self.wait_time)
@@ -467,6 +492,9 @@ class MultiDevkit:
             graph.stop()
         self.power_sink.get_events()
 
+    def _events(self, frame, layer):
+        return _step_events(self, frame, layer)
+
     def run(self, events_per_network):
         """One (T, n_inputs_k) 0/1 array per network -> (one (T, last width) count array per network, loop seconds,
         mean power in W, input events sent)."""
@@ -482,7 +510,7 @@ class MultiDevkit:
             evs = []
             for f, cores in zip(frames, self.cores):
                 if f[t].sum() >= 1:
-                    evs += self.chip_factory.raster_to_events(f[t], cores[0], dt=self.raster_dt)
+                    evs += self._events(f[t], cores[0])
             if evs:
                 n_events += len(evs)
                 self.input_source.write(evs)

@@ -26,6 +26,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from snndec import chip as _chip  # noqa: E402  (event_order, _step_events, the specksim engines)
+
 POWER_SAMPLE_RATE_HZ = 100
 RESET_SETTLE_S = 1.0
 RESET_USED_ONLY = False      # True: reset only each core's used neurons (its layer width), not its whole neuron
@@ -128,7 +130,7 @@ def run_events(network, events: np.ndarray, threshold_scale=(1.0,)) -> np.ndarra
     v = [np.zeros(w.shape[0]) for w in W]
     out = np.zeros((len(events), W[-1].shape[0]))
     for t, row in enumerate(events):
-        incoming = np.flatnonzero(row)
+        incoming = _chip.event_order(row)
         for li, w in enumerate(W):
             fired = []
             for i in incoming:
@@ -221,7 +223,7 @@ class Devkit:
         start = time.perf_counter()
         for t, frame in enumerate(frames):
             if frame.sum() >= 1:                                            # 0/1 events (chip_events)
-                evs = self.chip_factory.raster_to_events(frame, self.cores[0], dt=self.raster_dt)
+                evs = _chip._step_events(self, frame, self.cores[0])
                 n_events += len(evs)
                 self.input_source.write(evs)
             time.sleep(self.wait_time)
@@ -358,7 +360,7 @@ class MultiDevkit:
             evs = []
             for f, cores in zip(frames, self.cores):
                 if f[t].sum() >= 1:
-                    evs += self.chip_factory.raster_to_events(f[t], cores[0], dt=self.raster_dt)
+                    evs += _chip._step_events(self, f[t], cores[0])
             if evs:
                 n_events += len(evs)
                 self.input_source.write(evs)

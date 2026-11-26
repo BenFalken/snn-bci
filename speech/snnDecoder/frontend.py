@@ -11,6 +11,12 @@ layer adds a weight per event instead of multiplying every input -- an addition 
                  carry changes, not levels.
     sigma_delta  the residual (value minus what was sent) is carried to the next bin, so the events'
                  running sum follows the value with an error below one threshold (a sigma-delta modulator).
+    counts       (2026-11-26, for Speck, which takes no negative events) n = min(floor(max(x, 0) / threshold),
+                 max_events) events on the channel's one line: graded input as repeated events in a step. Under
+                 soft reset the chip keeps what each repeat adds; under hard reset the excess was lost at a spike.
+    onoff        (2026-11-26) send-on-delta split into two positive lines per channel: 'rise' events when the value
+                 has risen by a threshold since the last event, 'fall' when it has fallen (at most max_events each);
+                 the slope of the feature, laid out as two levels (all rise lines, then all fall lines).
 Training passes gradients straight through (d events / dx = 1 / threshold), as quantization-aware training does.
 
 InputMemory, on the stacked frames (one frame = input_window bins, every input_stride bins):
@@ -34,7 +40,7 @@ from typing import List, Optional
 import torch
 import torch.nn as nn
 
-ENCODINGS = ('none', 'ternary', 'delta', 'sigma_delta', 'binary', 'levels')
+ENCODINGS = ('none', 'ternary', 'delta', 'sigma_delta', 'binary', 'levels', 'counts', 'onoff')
 
 
 class EventEncoder(nn.Module):
@@ -56,7 +62,7 @@ class EventEncoder(nn.Module):
     @property
     def n_lines(self) -> int:
         """Input lines per channel: one, or one per level."""
-        return len(self.levels) if self.levels else 1
+        return len(self.levels) if self.levels else 2 if self.mode == 'onoff' else 1
 
     @property
     def active(self) -> bool:
@@ -86,6 +92,15 @@ class EventEncoder(nn.Module):
         if self.mode == 'ternary':
             q = self._quantize(u.detach())
             return u + (q - u).detach(), state
+        if self.mode == 'counts':                              # positive whole events, at most max_events
+            q = torch.clamp(torch.floor(u.detach()), 0, self.max_events)
+            return u + (q - u).detach(), state
+        if self.mode == 'onoff':                               # send-on-delta, rises and falls on separate lines
+            d = u - state
+            q = self._quantize(d.detach())
+            up, dn = torch.relu(d), torch.relu(-d)
+            on, off = torch.clamp(q, min=0), torch.clamp(-q, min=0)
+            return torch.cat([up + (on - up).detach(), dn + (off - dn).detach()], -1), state + q
         if self.mode == 'delta':
             d = u - state                                      # the change since the last sent level
             q = self._quantize(d.detach())
@@ -98,7 +113,7 @@ class EventEncoder(nn.Module):
         """(N, T, C) -> signed event counts (N, T, C)."""
         if not self.active:
             return x
-        if self.mode in ('ternary', 'binary', 'levels'):
+        if self.mode in ('ternary', 'binary', 'levels', 'counts'):
             return self.step(x, None)[0]
         state = self.init_state(x.shape[0], x.shape[2], x.device)
         out = []
