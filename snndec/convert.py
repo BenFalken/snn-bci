@@ -70,8 +70,8 @@ def from_motor_speck(path):
     for opt in ('input_delays_random', 'input_mix', 'learn_input_delays', 'input_plan_dir', 'recurrent'):
         if a.get(opt):
             raise NotImplementedError(f'motor Speck SNN option {opt} is not part of the unified model')
-    if a.get('tau_syn') or a.get('neuron_type', 'iaf') != 'iaf' or a.get('reset_type', 'hard') != 'hard':
-        raise NotImplementedError('only the chip configuration (IAF, hard reset, no synaptic filters) converts')
+    if a.get('tau_syn') or a.get('neuron_type', 'iaf') != 'iaf' or a.get('final_layer_reset_type') not in (None, a.get('reset_type', 'hard')):
+        raise NotImplementedError('only the chip configuration (IAF, one reset for every layer, no synaptic filters) converts')
     lin = sorted(int(k.split('.')[1]) for k in sd if k.startswith('layers.') and k.endswith('.weight')
                  and sd[k].dim() == 2)
     hidden = [sd[f'layers.{i}.weight'].shape[0] for i in lin]
@@ -80,7 +80,7 @@ def from_motor_speck(path):
     n_ch = sd[f'layers.{lin[0]}.weight'].shape[1] // len(delays)
     spec = dict(kind='speck', step_ms=4.0, n_channels=n_ch, n_outputs=2, out_every=1,
                 input=dict(encoding='clip' if a.get('binarize_input', True) else 'none', delays=delays),
-                layers=dict(hidden=hidden, reset='hard', thresholds=thr, max_spikes=None,
+                layers=dict(hidden=hidden, reset=a.get('reset_type', 'hard'), thresholds=thr, max_spikes=None,
                             min_vmem=a.get('min_vmem'), surrogate=a.get('surrogate_grad', 'periodic_exponential')),
                 readout=dict(type='ema', read='last', decay=0.8, stages=a.get('temporal_decay_stages', 1),
                              head='population', normalize=False, neutral=float(sd['neutral_scaled_pred'])))

@@ -117,7 +117,7 @@ select_model() {
                 echo "ERROR: speck_delay4 is bmi only" >&2; exit 1
             fi
             EPOCHS=50; PATIENCE=10; SCHEDULER_PATIENCE=5; CHECKPOINT_INTERVAL=10 ;;
-        speck_delay|speck_delay2|speck_delay_pretrain|speck_delay_long|speck_delay_xlong|speck_delay_random|speck_delay_shift|speck_plan_prune5|speck_plan_tuned|speck_delay_learn|speck_delay_learn_shared)
+        speck_delay|speck_delay_soft|speck_delay2|speck_delay_pretrain|speck_delay_long|speck_delay_xlong|speck_delay_random|speck_delay_shift|speck_plan_prune5|speck_plan_tuned|speck_delay_learn|speck_delay_learn_shared)
             # the Speck SNN with the off-chip input delay bank (models/model_bmi.py delay_bank()): every
             # channel also sent with 3 delays, 384 chip inputs -> 128 -> 256 -> 256 -> 36, the largest that
             # maps onto Speck2f with 4 delays (snn_training/compare_speck_delays.py delay4_wide). Delays:
@@ -138,6 +138,8 @@ select_model() {
             # MODEL=speck_delay on run_snn_pooled_pretrain.sbatch / run_snn_pooled_finetune_array.sbatch:
             # the same network pretrained leave-one-session-out (speck_delay_pretrain) and fine-tuned per
             # session, both hard reset (as on the chip), into speckdelay_<loso>_{pretrained,finetuned}_binarized
+            #   speck_delay_soft   speck_delay with soft reset and a membrane floor of -3 (2026-11-26, as the final
+            #                      audio and speech Speck SNNs; the chip fires once per threshold held, as MultiSpike)
             HIDDEN_DIMS=(128 256 256); THRESHOLDS=(1.0 1.0 1.0 1.0); TAU_SYN=()
             RESET_TYPE=hard
             case "$1" in
@@ -152,9 +154,10 @@ select_model() {
                 speck_delay_learn_shared) EXTRA_ARGS=(--input-delays 0 10 25 50 --learn-input-delays shared --input-delay-max 75) ;;
                 *)                  EXTRA_ARGS=(--input-delays 0 10 25 50) ;;
             esac
+            [ "$1" = speck_delay_soft ] && { RESET_TYPE=soft; EXTRA_ARGS+=(--min-vmem -3); }   # after --min-vmem -1: last wins
             PER_SESSION_ROOT="${CHECKPOINT_BASE}/per_session_${1#speck_}_binarized"
             if [ "$EXPERIMENT" = "hkm" ]; then     # model_hkm.py has the shared delay bank only; epochs as per_session
-                case "$1" in speck_delay|speck_delay2|speck_delay_pretrain) ;; *) echo "ERROR: $1 is bmi only (hkm: speck_delay2; speck_delay's 768 inputs do not map onto Speck2f)" >&2; exit 1 ;; esac
+                case "$1" in speck_delay|speck_delay_soft|speck_delay2|speck_delay_pretrain) ;; *) echo "ERROR: $1 is bmi only (hkm: speck_delay2; speck_delay's 768 inputs do not map onto Speck2f)" >&2; exit 1 ;; esac
                 EPOCHS=20; PATIENCE=5; SCHEDULER_PATIENCE=5; CHECKPOINT_INTERVAL=1
             else
                 EPOCHS=50; PATIENCE=10; SCHEDULER_PATIENCE=5; CHECKPOINT_INTERVAL=10
