@@ -2,8 +2,8 @@
 A phoneme n-gram language model for CTC phoneme decoders, applied to saved logits by prefix beam search.
 
 The n-gram (interpolated Kneser-Ney, word boundaries included as a phoneme) is fitted on the TRAINING sentences'
-phoneme labels only, leaving out any training sentence identical to a scored one (2.8% of test sentences repeat a
-training sentence). Decoding adds alpha * log P_lm per emitted phoneme and beta per phoneme (a length bonus) to the
+phoneme labels only, of every session in the data whichever sessions the logits cover (one LM for every decoder),
+leaving out any training sentence identical to any test sentence (2.8% of test sentences repeat a training sentence). Decoding adds alpha * log P_lm per emitted phoneme and beta per phoneme (a length bonus) to the
 CTC prefix score. alpha and beta are chosen by two-fold cross-tuning on the scored sentences (alternate sentences of
 each session): each half is decoded with the setting that was best on the other half, so no sentence is scored with a
 setting tuned on itself. alpha = 0, beta = 0 is the beam search without a language model (close to greedy).
@@ -149,11 +149,14 @@ def main():
     z = np.load(a.logits)
     logits = {k: z[k].astype(np.float64) for k in z.keys()}
     sessions = sorted({k.split('/')[0] for k in logits})
-    train = load_partitions(a.data_dir, sessions, 'train')
+    # one LM for every decoder: the training sentences of EVERY session in the data, whichever sessions the logits
+    # cover, leaving out any sentence identical to a test sentence of any session (so no scored sentence is in it)
+    all_sessions = sorted(x for x in os.listdir(a.data_dir) if os.path.isfile(os.path.join(a.data_dir, x, 'train.npz')))
+    train = load_partitions(a.data_dir, all_sessions, 'train')
     test = load_partitions(a.data_dir, sessions, a.partition)
     target = {f'{part.session}/{i}': list(part.labels[i]) for part in test for i in range(len(part))}
-    # never fit the LM on a sentence that is scored: training sentences identical to any scored sentence are left out
-    scored = {tuple(int(x) for x in t) for t in target.values()}
+    scored = {tuple(int(x) for x in t) for part in load_partitions(a.data_dir, all_sessions, a.partition)
+              for t in part.labels}
     corpus = [s for part in train for s in part.labels]
     kept = [s for s in corpus if tuple(int(x) for x in s) not in scored]
     lm = KneserNey(kept, a.order)
