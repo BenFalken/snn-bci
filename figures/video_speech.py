@@ -131,6 +131,52 @@ def chip_decoder(logits, names, blank=40):
     return {"name": "SpeckChip", "segments": segs}
 
 
+def ctc_align(logits, seq, blank=40):
+    """Frame spans of a phoneme sequence in CTC logits (Viterbi forced alignment): [(class, first, last frame)]."""
+    x = logits - logits.max(1, keepdims=True)
+    lp = x - np.log(np.exp(x).sum(1, keepdims=True))
+    ext = [blank]
+    for c in seq:
+        ext += [c, blank]
+    T, S = len(lp), len(ext)
+    dp = np.full((T, S), -np.inf)
+    bp = np.zeros((T, S), int)
+    dp[0, 0] = lp[0, ext[0]]
+    if S > 1:
+        dp[0, 1] = lp[0, ext[1]]
+    for t in range(1, T):
+        for s_ in range(S):
+            cands = [(dp[t - 1, s_], s_)]
+            if s_ >= 1:
+                cands.append((dp[t - 1, s_ - 1], s_ - 1))
+            if s_ >= 2 and ext[s_] != blank and ext[s_] != ext[s_ - 2]:
+                cands.append((dp[t - 1, s_ - 2], s_ - 2))
+            v, b = max(cands)
+            dp[t, s_], bp[t, s_] = v + lp[t, ext[s_]], b
+    s_ = S - 1 if S == 1 or dp[-1, S - 1] >= dp[-1, S - 2] else S - 2
+    path = [s_]
+    for t in range(T - 1, 0, -1):
+        s_ = bp[t, s_]
+        path.append(s_)
+    path = path[::-1]
+    spans = {}
+    for t, s_ in enumerate(path):
+        if ext[s_] != blank:
+            k = (s_ - 1) // 2
+            a, _ = spans.get(k, (t, t))
+            spans[k] = (a, t)
+    return [(seq[k], spans[k][0], spans[k][1]) for k in sorted(spans)]
+
+
+def lm_decoder(logits, names, lm, alpha, beta, name, beam=32, blank=40):
+    """A lane from beam search with the phoneme n-gram (ngram_lm.py): the decoded phonemes, timed by forced alignment
+    to the same logits (the search itself outputs no timing)."""
+    from ngram_lm import beam_decode
+    seq = beam_decode(logits.astype(np.float64), lm, alpha, beta, beam)
+    segs = [[names[c], 80.0 * a, 80.0 * (b + 1)] for c, a, b in ctc_align(logits, seq, blank)]
+    return {"name": name, "segments": segs}
+
+
 def edit_distance(a, b):
     D = np.arange(len(b) + 1)
     for i, x in enumerate(a, 1):
@@ -176,7 +222,7 @@ def render(d, path, playing, audio_s):
     fig.text(0.15, 0.94, f"Attempted sentence: ‘{d['sentence']}’", fontsize=19, fontweight="bold")
     key_p, col_p = lanes[playing][0], lanes[playing][1]
     fig.text(0.15, 0.905, "now playing: " + ("the sentence T12 attempted (synthetic voice)" if playing == 0 else
-                                            f"what the {style.LABEL[key_p]} decoded (synthetic voice)"),
+                                            f"what the {style.LABEL[key_p].replace(chr(10), ' ')} decoded (synthetic voice)"),
              fontsize=12, color=col_p)
     fig.text(0.97, 0.905, f"T12, session {d['session'].split('.', 1)[1]}, test sentence {d['trial']}", fontsize=11,
              color=style.MUTED, ha="right")
@@ -236,12 +282,36 @@ def main():
     pa.add_argument("--chip-logits", default=str(WORKSPACE / "final_results/speech_v2c/chip_refit_logits.npz"),
                     help="the speech Speck SNN's logits from the devkit (speech_chip.py --mode chip): its lane is "
                          "added after the LSNN's when the file exists")
+    pa.add_argument("--s3-logits", default=None, help="round 21 S3 (soft reset) test logits in the chip model "
+                    "(S3_results/test_logits.npz): adds its lane, greedy as the others")
+    pa.add_argument("--ngram", default=None, help="ngram_lm.py result json for those logits: adds S3 + the phoneme "
+                    "n-gram (its order; each sentence at the alpha, beta chosen on the other half of the sentences)")
+    pa.add_argument("--data-dir", default=str(WORKSPACE / "speech_rebuild/derived/snnData"))
     a = pa.parse_args()
     chip = np.load(a.chip_logits) if os.path.isfile(a.chip_logits) else None
+    s3 = np.load(a.s3_logits) if a.s3_logits else None
+    lm, lmj = None, None
+    if a.ngram:
+        import sys
+        sys.path[:0] = [str(HERE.parent / "speech"), str(HERE.parent / "speech" / "scripts")]
+        from snnDecoder.dataset import load_partitions
+        from ngram_lm import KneserNey
+        lmj = json.load(open(a.ngram))
+        ss = sorted(x for x in os.listdir(a.data_dir) if x.startswith("t12"))
+        test = {tuple(int(v) for v in t) for p in load_partitions(a.data_dir, ss, "test") for t in p.labels}
+        lm = KneserNey([t for p in load_partitions(a.data_dir, ss, "train") for t in p.labels
+                        if tuple(int(v) for v in t) not in test], lmj["order"])     # as ngram_lm.py: scored left out
+    style.COLOR.update(speck_s3="#B07A00", speck_lm="#7A4E00")
+    style.LABEL.update(speck_s3="Speck, soft reset\n(chip model)", speck_lm="Speck, soft reset\n+ phoneme 5-gram")
+    style.HIGHLIGHT = set(style.HIGHLIGHT) | {"speck_s3", "speck_lm"}
     if chip is not None and ("speck", "SpeckChip") not in LANES:
         LANES.append(("speck", "SpeckChip"))
     style.apply()
-    style.LABEL["speck"] = "Speck"
+    style.LABEL["speck"] = "Speck" if s3 is None else "Speck\n(on the chip)"
+    if s3 is not None and ("speck_s3", "SpeckS3") not in LANES:
+        LANES.append(("speck_s3", "SpeckS3"))
+    if lm is not None and ("speck_lm", "SpeckS3LM") not in LANES:
+        LANES.append(("speck_lm", "SpeckS3LM"))
     style.LABEL["lsnn"] = "LSNN"
     tmp = Path(tempfile.mkdtemp(prefix="paper_speech_video_"))
     clips = []
@@ -255,7 +325,18 @@ def main():
             truth = [p for p, _, _ in d["truth"]["phonemes"]]
             x["per"] = edit_distance([p for p, _, _ in x["segments"]], truth) / len(truth)
             d["decoders"].append(x)
-        print(f"{os.path.basename(f)}: '{d['sentence']}'")
+        key = f"{d['session']}/{d['trial']}"
+        truth = [p for p, _, _ in d["truth"]["phonemes"]]
+        extra = []
+        if s3 is not None:
+            extra.append(dict(chip_decoder(s3[key], d["classNames"]), name="SpeckS3"))
+        if lm is not None:
+            al, be = lmj["chosen"][f"half{int(d['trial']) % 2}"]
+            extra.append(lm_decoder(s3[key], d["classNames"], lm, al, be, "SpeckS3LM", lmj.get("beam", 32)))
+        for x in extra:
+            x["per"] = edit_distance([p for p, _, _ in x["segments"]], truth) / len(truth)
+            d["decoders"].append(x)
+        print(f"{os.path.basename(f)}: '{d['sentence']}'" + "".join(f" | {x['name']} {x['per']:.0%}" for x in extra))
         for p in range(1 + len(LANES)):
             x = {x["name"]: x for x in d["decoders"]}
             segs = d["truth"]["phonemes"] if p == 0 else x[LANES[p - 1][1]]["segments"]
