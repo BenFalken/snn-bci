@@ -45,10 +45,12 @@ else
   echo "R2: no epochs yet"
 fi
 echo; echo "== speech round 23 (graded input) vs S3, test PER at the same epoch (bar: below ~0.385 at the end)"
-for t in 0 1 2; do
-  name=$(echo "C3 counts0-3|C2 counts0-2|OO onset/offset" | cut -d'|' -f$((t + 1)))
+for t in 0 1 2 3; do
+  name=$(echo "C3 counts0-3|C2 counts0-2|OO onset/offset|CU uncapped" | cut -d'|' -f$((t + 1)))
   f="$L/SNN_RUN_${R23_JOB:-9650136}_$t.out"
   [ "$t" = 0 ] && f="$L/SNN_RUN_${R23_C3_JOB:-9669505}_0.out"     # C3 resubmitted off gpu3101 (5-10x slow there)
+  [ "$t" = 3 ] && f=$(ls -t $(grep -l "speck_r23/CU_uncapped" "$L"/SNN_RUN_*_3.out 2>/dev/null) 2>/dev/null | head -1)   # CU, its own job
+  [ -n "$f" ] || f=/dev/null
   n=$(per "$f" | wc -l)
   if [ "$n" -gt 0 ]; then
     sec=$(grep -o "Epoch [0-9]*/96 ([0-9.]*s)" "$f" | tail -1 | grep -o "([0-9.]*" | tr -d '(')
