@@ -1,7 +1,8 @@
 """
 Video: hand reaching decoded from motor cortex, in real time, by four tracks: the true hand, the source paper's best
 decoder (QRNN, Ahmadi et al. 2021), the LSNN and Speck (the Speck SNN as it ran on the chip; Jenkins with its readout
-refitted in software).
+refitted in software). The networks are the paper's final ones: validation-selected checkpoints, and for monkeys I and L
+the soft-reset Speck SNN.
 
     left    the 2D workspace: each track's position, integrated from its velocity (the true one from the true
             velocity), every decoder re-anchored to the true hand at the start of each reach so that drift does not
@@ -9,9 +10,14 @@ refitted in software).
     right   x and y velocity, the last 3 s scrolling, the same four colours; each decoder's correlation with the true
             velocity so far in the legend
 
-Data: final_v2/<subject>/sessions/<session>_arrays.npz (the final laptop run's test segment, 4 ms steps: y_true =
-velocity in mm/s, y_pos = hand position in mm, pred_qrnn, pred_snn = the LSNN, pred_speck = the chip); for
-jenkins_m1, Speck = final_results/jenkins_refit/<session>_pred.npy.
+Data: final_v3/<subject>/sessions/<session>_arrays.npz (the validation-selected laptop run's test segment, 4 ms steps:
+y_true = velocity in mm/s, y_pos = hand position in mm, pred_qrnn, pred_snn = the LSNN); the Speck lane:
+  indy, loco   results_motor_soft/motor/final_v3_soft/<subject>/sessions/<session>_arrays.npz pred_speck (the soft-reset
+               networks on the devkit; that run's segment starts 14 steps earlier, so it is aligned on its end and its
+               y_true checked against final_v3's)
+  jenkins_m1   --speck-pred NPY (the chip's predictions on the same segment). The validation-selected devkit run saved
+               scores only, so until it is rerun with predictions the default is final_results/jenkins_refit/
+               <session>_pred.npy, the EARLIER test-selected network, and the video says so.
 
     python3 video_motor.py --subject indy --session indy_20161013_03 --seconds 45 --output figures/video_motor1.mp4
     python3 video_motor.py --subject jenkins_m1 --session sub-Jenkins_ses-20090916_behavior+ecephys \
@@ -74,13 +80,22 @@ def main():
     ap.add_argument("--seconds", type=float, default=45.0)
     ap.add_argument("--start", type=float, default=None, help="s into the test segment (default: the most active)")
     ap.add_argument("--output", default=None)
+    ap.add_argument("--speck-pred", default=None, help="the Speck lane's predictions (npy, the test segment's steps)")
     a = ap.parse_args()
-    z = np.load(DL / f"final_v2/{a.subject}/sessions/{a.session}_arrays.npz")
-    v = {"truth": z["y_true"].astype(float), "qrnn": z["pred_qrnn"].astype(float), "lsnn": z["pred_snn"].astype(float),
-         "speck": z["pred_speck"].astype(float)}
-    refit = DL / f"final_results/jenkins_refit/{a.session}_pred.npy"
-    if a.subject == "jenkins_m1" and refit.is_file():
-        v["speck"] = np.load(refit).astype(float)
+    z = np.load(DL / f"final_v3/{a.subject}/sessions/{a.session}_arrays.npz")
+    v = {"truth": z["y_true"].astype(float), "qrnn": z["pred_qrnn"].astype(float), "lsnn": z["pred_snn"].astype(float)}
+    n_all, provisional = len(v["truth"]), False
+    if a.speck_pred:
+        v["speck"] = np.load(a.speck_pred).astype(float)
+    elif a.subject in ("indy", "loco"):
+        s = np.load(DL / f"results_motor_soft/motor/final_v3_soft/{a.subject}/sessions/{a.session}_arrays.npz")
+        assert np.allclose(s["y_true"][-n_all:], z["y_true"]), "the soft-reset run's test segment does not match"
+        v["speck"] = s["pred_speck"][-n_all:].astype(float)
+    else:
+        v["speck"] = np.load(DL / f"final_results/jenkins_refit/{a.session}_pred.npy").astype(float)
+        provisional = True
+        print("WARNING: Speck lane = the earlier test-selected Jenkins network (no predictions from the final run yet)")
+    assert len(v["speck"]) == n_all, (len(v["speck"]), n_all)
     pos_true = z["y_pos"].astype(float)
     n = int(a.seconds / DT)
     if a.start is None:                              # the most active stretch
@@ -127,8 +142,10 @@ def main():
     axv[1].set_xlabel("time (s), now at 0", fontsize=12)
     title = {"indy": "Motor (I): monkey I, NeuroBench reaching", "jenkins_m1": "Motor (II): monkey J, M1 array"}
     fig.text(0.04, 0.95, title.get(a.subject, a.subject), fontsize=20, fontweight="bold")
-    fig.text(0.04, 0.915, f"{a.session}, held-out test segment, decoded in real time (4 ms steps)", fontsize=12,
-             color=style.MUTED)
+    note = ("Speck: an earlier, test-selected network (provisional)" if provisional else
+            "Speck: soft reset, on the chip" if a.subject in ("indy", "loco") else "Speck: on the chip")
+    fig.text(0.04, 0.915, f"{a.session}, held-out test segment, decoded in real time (4 ms steps). {note}",
+             fontsize=12, color=style.MUTED)
 
     trails, marks, vlines = {}, {}, {}
     for k, lab, col in TRACKS:
