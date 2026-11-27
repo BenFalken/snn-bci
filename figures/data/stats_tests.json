@@ -192,5 +192,38 @@
   "a_better": 160,
   "W": 34298.0,
   "p": 2.3966708990143437e-08
+ },
+ {
+  "experiment": "speech",
+  "metric": "per",
+  "a": "lsnn_lm",
+  "b": "paper_rnn_lm",
+  "n": 600,
+  "median_difference": -0.027027027027027056,
+  "a_better": 155,
+  "W": 30843.5,
+  "p": 8.512301007882392e-16
+ },
+ {
+  "experiment": "speech",
+  "metric": "per",
+  "a": "lsnn_lm",
+  "b": "lsnn",
+  "n": 600,
+  "median_difference": 0.02941176470588236,
+  "a_better": 397,
+  "W": 29264.0,
+  "p": 1.6305466967067116e-27
+ },
+ {
+  "experiment": "speech",
+  "metric": "per",
+  "a": "speck_lm",
+  "b": "speck",
+  "n": 600,
+  "median_difference": 0.08957219251336898,
+  "a_better": 485,
+  "W": 12943.5,
+  "p": 2.633725160991859e-64
  }
 ]

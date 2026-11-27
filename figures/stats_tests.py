@@ -30,10 +30,14 @@ COMPARISONS = [  # (experiment, metric, group or None for all, decoder a, decode
     ("audio", "band_r", None, "lsnn", "lsnn_40stream"), ("audio", "band_r", None, "speck", "speck_40"),   # 4 ms vs 40 ms
     ("speech", "per", None, "lsnn", "paper_rnn"), ("speech", "per", None, "lsnn", "lstm"),
     ("speech", "per", None, "speck", "speck_float"),
+    # with the phoneme 5-gram (collect_speech_lm.py), the speech headline since 2026-11-27
+    ("speech", "per", None, "lsnn_lm", "paper_rnn_lm"), ("speech", "per", None, "lsnn_lm", "lsnn"),
+    ("speech", "per", None, "speck_lm", "speck"),
 ]
 LABEL = {"aegru": "autoencoder GRU (re-impl.)", "lsnn": "LSNN", "qrnn": "QRNN", "lstm": "LSTM", "speck": "Speck (chip)", "wf": "Wiener filter",
          "kf": "Kalman filter", "gru": "GRU", "speck_float": "Speck (software)", "paper_rnn": "paper RNN",
-         "lsnn_40stream": "LSNN at 40 ms", "speck_40": "Speck at 40 ms (chip)"}
+         "lsnn_40stream": "LSNN at 40 ms", "speck_40": "Speck at 40 ms (chip)",
+         "lsnn_lm": "LSNN + 5-gram", "paper_rnn_lm": "paper RNN + 5-gram", "speck_lm": "Speck (chip) + 5-gram"}
 EXP = {"motor1": "Motor (I)", "motor2": "Motor (II)", "audio": "Audio", "speech": "Speech"}
 
 
