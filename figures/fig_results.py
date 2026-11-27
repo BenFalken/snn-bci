@@ -35,7 +35,7 @@ TITLE = {"motor1": "Motor (I): monkeys I and L", "motor2": "Motor (II): monkey J
 
 # each experiment's reference: the best decoder of the paper it comes from (motor (II) has none of its own: its
 # reference set is motor (I)'s), marked in every figure
-SOTA = {"motor1": "qrnn", "motor2": "qrnn", "audio": "lstm", "speech": "paper_rnn"}
+SOTA = {"motor1": "qrnn", "motor2": "qrnn", "audio": "lstm", "speech": "paper_rnn_lm"}   # speech: with its 5-gram
 SOTA_NOTE = ("Shaded, in bold: each experiment's reference, the best decoder of the paper it comes from (QRNN, Ahmadi et "
              "al. 2021; LSTM, Heelan et al. 2019; RNN, Willett et al. 2023). Motor (II) uses the Motor (I) reference.")
 
@@ -45,6 +45,9 @@ def mark_sota(ax, exp):
     reference (drawn as its own text: matplotlib rebuilds tick labels at draw time and drops their weight)."""
     d = SOTA[exp]
     names = {style.SHORT[d], style.SHORT[d].replace("\n", " "), style.LABEL[d]}
+    if d.endswith("_lm"):                                   # cost panels show the decoder without its 5-gram
+        b = d.removesuffix("_lm")
+        names |= {style.SHORT[b], style.SHORT[b].replace("\n", " "), style.LABEL[b]}
     for axis, span, vertical in ((ax.xaxis, ax.axvspan, True), (ax.yaxis, ax.axhspan, False)):
         labs = axis.get_ticklabels()
         texts = [t.get_text() for t in labs]
@@ -118,6 +121,9 @@ def main():
     def with_use(fn, data):
         def draw(ax, exp, _):
             fig_four.use(exp, fid, combined=False)
+            # cost panels: the decoders themselves (speech's 5-gram, a host-side beam search, is not timed or counted)
+            decs = list(dict.fromkeys(d.removesuffix("_lm") for d in fig_final.SETS[exp][0]))
+            fig_final.SETS[exp] = (decs,) + tuple(fig_final.SETS[exp][1:])
             fn(ax, exp, data, False)
         return draw
     def fidelity_with_aegru(ax, exp, _):

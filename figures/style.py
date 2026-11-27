@@ -30,7 +30,8 @@ COLOR = {"kf": "#56B4E9", "wf": "#009E73", "lstm": "#0072B2", "lsnn": "#D55E00",
 HIGHLIGHT = {"lsnn", "speck"}
 # speech: the same decoders with the phoneme 5-gram (collect_speech_lm.py), drawn beside each, filled in its colour
 for _d in ("paper_rnn", "lsnn", "speck"):
-    LABEL[_d + "_lm"], SHORT[_d + "_lm"], COLOR[_d + "_lm"] = LABEL[_d] + " + 5-gram", "+ 5-gram", COLOR[_d]
+    LABEL[_d + "_lm"], COLOR[_d + "_lm"] = LABEL[_d] + " + 5-gram", COLOR[_d]
+    SHORT[_d + "_lm"] = SHORT[_d].replace("\n", " ") + "\n+ 5-gram"         # two lines, kept (fig_final.tick)
 HIGHLIGHT |= {"lsnn_lm", "speck_lm"}
 
 INK = "#1a1a1a"

@@ -44,6 +44,8 @@ def load():
 
 def tick(d, big):
     lab = style.LABEL[d]
+    if d.endswith("_lm"):                                    # "<decoder>" over "+ 5-gram"
+        return style.SHORT[d]
     return lab.replace(" ", "\n", 1) if (big and " " in lab) else style.SHORT[d].replace("\n", " ") if not big else lab
 
 
