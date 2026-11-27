@@ -56,6 +56,9 @@ SPEECH_CHIP = SPEECH_S3 / "chip.json"
 # speck_deploy_fine_soft.zip. FT1 (hard reset; results_deploy_fine, FT1_spikes) was the audio Speck SNN until then.
 AUDIO_SPECK_CHIP = DL / "results_fine_soft" / "audio"   # devkit results: <monkey>_<TAG>_<seed>.json, preds_<monkey>_<TAG>_<seed>/
 AUDIO_SPECK_TAG = "FS3"
+# 2026-11-27: Motor (I)'s Speck SNNs are the soft-reset ones (speck_deploy_motor_soft.zip on the devkit; monkey J's are
+# still hard reset, results_deploy_jenkins_val). The hard-reset run: results_snn_bci_laptop_final/motor/final_v3.
+MOTOR_SPECK = DL / "results_motor_soft/motor/final_v3_soft"
 AUDIO_SPECK_RUN = "FS3_soft_floor3"                     # training run / calibration folder name (audio_fine_<monkey>/<RUN>_<seed>)
 
 MOTOR_NAMES = {"kf": "kf", "wf": "wf", "lstm": "lstm", "qrnn": "qrnn", "snn": "lsnn", "speck": "speck"}
@@ -154,7 +157,7 @@ def efficiency():
     chips = {}
     for subj, exp in (("indy", "motor"), ("loco", "motor_loco"), ("jenkins", "motor_jenkins"),
                       ("jenkins_m1", "motor2")):
-        val = DL / "results_snn_bci_laptop_final/motor/final_v3" / subj / "efficiency_summary.json"   # validation-selected
+        val = MOTOR_SPECK / subj / "efficiency_summary.json"   # validation-selected
         e = json.load(open(val if val.is_file() else MOTOR / subj / "efficiency_summary.json"))["laptop"]["speck"]
         chips[exp] = (1e3 * e["latency_s"], 1e6 * e["energy_j"], 1e3 * e["power_w"])
     # the audio Speck SNN (AUDIO_SPECK_TAG, real 4 ms spikes) on the devkit, both monkeys, 3 seeds each

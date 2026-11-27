@@ -257,7 +257,7 @@ SPECK_COLS = [
                 0: ("out", use(256, 36, 0), C1)},
          ctxt="four layers on four cores; the last holds\n36 output neurons, 18 per axis",
          rtxt="decoded on the chip: a population\nvector per axis, smoothed 2 × 18 ms", rn=2,
-         cal="× 1 to 1.5", cal2="Jenkins × 2 to 3", cal3="readout refit:\nJenkins", extra=(3, "one network per session")),
+         cal="× 0.5 to 1", cal2="Jenkins × 2 to 3", cal3="readout refit:\nJenkins", extra=(3, "one network per session")),
     dict(btitle="48 channels × 9 taps = 432", bn=0, bars=[(48, 9, C1, "")],
          frac=0.10, etxt="real spikes, one event per channel\nper 4 ms step · ~42 per step (10%)", en=2,
          taps=[0.32, 0.16, 0.08, 0.04, 0, -0.04, -0.08, -0.16, -0.32], shade=None, traces=None, ahead=0.32,

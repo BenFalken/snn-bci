@@ -27,10 +27,10 @@
   "a": "speck",
   "b": "lstm",
   "n": 45,
-  "median_difference": -0.020420923269233282,
-  "a_better": 10,
-  "W": 124.0,
-  "p": 1.833954286212247e-06
+  "median_difference": 0.008177806742363791,
+  "a_better": 30,
+  "W": 313.0,
+  "p": 0.020264795226069054
  },
  {
   "experiment": "motor1",
@@ -38,10 +38,10 @@
   "a": "speck",
   "b": "wf",
   "n": 45,
-  "median_difference": 0.07323428852349911,
-  "a_better": 41,
-  "W": 159.0,
-  "p": 1.967516800505109e-05
+  "median_difference": 0.10614572456432003,
+  "a_better": 43,
+  "W": 49.0,
+  "p": 1.586727194080595e-09
  },
  {
   "experiment": "motor1",
@@ -49,10 +49,10 @@
   "a": "speck",
   "b": "kf",
   "n": 45,
-  "median_difference": 0.1064044762463554,
-  "a_better": 41,
-  "W": 97.0,
-  "p": 2.1330163235688815e-07
+  "median_difference": 0.13578198062506996,
+  "a_better": 43,
+  "W": 10.0,
+  "p": 2.4442670110147446e-12
  },
  {
   "experiment": "motor1",

@@ -56,7 +56,7 @@ def motor(exp="motor", subject="bmi/indy"):
     scalers = MOTOR / "main/snn_training/velocity_scalers.json"
     # the validation-selected networks (2026-11-24): monkeys I and L in one folder (motor_val), monkey J's apart
     ck = (WORKSPACE / "motor_val_jenkins/per_session_delay_binarized_val" if "jenkins" in subject
-          else WORKSPACE / "motor_val/per_session_delay_binarized_val")
+          else WORKSPACE / "motor_val_soft/per_session_delay_soft_binarized_val")   # soft reset since 2026-11-27
     rows = []
     for sess in sorted(s for s in os.listdir(ck) if "jenkins" in subject or s.startswith(subject.split("/")[-1])):
         sdir = MOTOR / f"data/snn_datasets/{subject}/mua" / sess

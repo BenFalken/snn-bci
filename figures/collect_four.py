@@ -31,7 +31,10 @@ PER_TRIAL_NAMES = {"RNN": "paper_rnn", "GRU96": "gru", "LSTM96": "lstm", "LSNN":
                    "SpeckChipR21S3": "speck"}
 JENKINS_REFIT = FINAL / "jenkins_refit"         # the Jenkins Speck SNN's readout refitted in software (jenkins_refit.py)
 JENKINS_VAL = FINAL.parent / "results_deploy_jenkins_val"   # the validation-selected Jenkins Speck SNNs on the devkit
-SPECK_VAL = FINAL.parent / "results_snn_bci_laptop_final" / "motor" / "final_v3"   # Motor (I) Speck, validation-selected
+# 2026-11-27: Motor (I)'s Speck SNNs are the soft-reset ones (speck_delay_soft: soft reset, membrane floor -3), which beat
+# the hard-reset ones on validation in the chip model (chip/motor_soft_compare.py: 42 of 45 sessions); devkit run of
+# speck_deploy_motor_soft.zip. The hard-reset run (results_snn_bci_laptop_final/motor/final_v3) was the final until then.
+SPECK_VAL = FINAL.parent / "results_motor_soft" / "motor" / "final_v3_soft"   # Motor (I) Speck, validation-selected
 
 
 VAL = MOTOR.parent / "final_v3"           # validation-selected checkpoints (train_snn.py --val-frac), where scored
