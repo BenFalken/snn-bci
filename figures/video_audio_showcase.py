@@ -29,6 +29,7 @@ import collect_fidelity as cf
 import video_audio as va                              # the repository's audio pipeline (changes directory to the data root)
 import video_audio_words as vw
 from video_audio import g, PipelinePaths, START, style
+from collect_final import AUDIO_SPECK_CHIP, AUDIO_SPECK_TAG
 
 DATASET = "ALLWORDS_NOVEL_DAYNORM"
 LANES = [("gru", "gru_rnn"), ("lstm", "lstm_rnn"), ("lsnn", "lsnn"), ("speck", None)]
@@ -66,13 +67,14 @@ def median_of(subject, paths_by_seed):
 
 def cohort_final(subject):
     """The paper's final audio decoders: GRU, LSTM, the LSNN on 4 ms spikes (LS1) and the Speck SNN on 4 ms spikes on
-    the real chip (FT1, readout refitted, devkit run results_deploy_fine), each spiking one at its median seed."""
+    the real chip (FS3 since 2026-11-26: soft reset, membrane floor -3, readout refitted; devkit run results_fine_soft;
+    FT1, hard reset, before), each spiking one at its median seed."""
     paths = PipelinePaths(str(va.AUDITORY_DATA), subject, "aSTG", DATASET)
     y = np.load(paths.pipeline / "window_targets_test.npy")
     preds = {n: np.load(paths.pipeline / f"{dec}_predict_test.npy") for n, dec in (("gru", "gru_rnn"), ("lstm", "lstm_rnn"))}
-    F, C = WORKSPACE / "final_results" / "audio_fine", WORKSPACE / "results_deploy_fine" / "audio"
+    F, C = WORKSPACE / "final_results" / "audio_fine", AUDIO_SPECK_CHIP
     lf = {s: F / f"{subject}_LS1_fine_{s}" / "preds" / "test.npy" for s in ("s1337", "s11", "s99")}
-    cf = {s: C / f"preds_{subject}_FT1_{s}" / subject / "chip_refit.npy" for s in ("s1337", "s11", "s99")}
+    cf = {s: C / f"preds_{subject}_{AUDIO_SPECK_TAG}_{s}" / subject / "chip_refit.npy" for s in ("s1337", "s11", "s99")}
     seeds = {"lsnn": median_of(subject, lf), "speck": median_of(subject, cf)}
     preds["lsnn"], preds["speck"] = np.load(lf[seeds["lsnn"]]), np.load(cf[seeds["speck"]])
     SEEDS_SHOWN[subject] = seeds
