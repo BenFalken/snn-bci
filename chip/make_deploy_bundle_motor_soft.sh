@@ -19,7 +19,7 @@ mkdir -p "$T/snn-bci" "$T/motor_val/$D" "$T/results"
 git -C "$REPO" archive HEAD | tar -x -C "$T/snn-bci"
 git -C "$REPO" log -1 --format='%h %s' > "$T/VERSION"
 n=0
-for S in $(awk '!/^#/ {print $2}' "$F"); do
+for S in $(awk '!/^#/ && $1 != "jenkins_m1" {print $2}' "$F"); do
   [ -f "$SOFT/$D/$S/best_model_weights.pth" ] || { echo "missing checkpoint: $SOFT/$D/$S"; exit 1; }
   cp -r "$SOFT/$D/$S" "$T/motor_val/$D/"; n=$((n + 1))
 done
@@ -57,5 +57,5 @@ RUN
 chmod +x "$T/run.sh"
 ( cd "$(dirname "$T")" && rm -f "$DL/speck_deploy_motor_soft.zip" && zip -qr "$DL/speck_deploy_motor_soft.zip" speck_deploy_motor_soft )
 du -h "$DL/speck_deploy_motor_soft.zip"; cat "$T/VERSION"
-awk '!/^#/ {print $1, $3}' "$F" | sort | uniq -c
+awk '!/^#/ && $1 != "jenkins_m1" {print $1, $3}' "$F" | sort | uniq -c
 echo "bundle: $T"

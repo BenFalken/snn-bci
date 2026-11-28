@@ -12,7 +12,9 @@ the host, live, two ways:
         --scale 3 [--readout <session>_readout.npz] [--nochip] --out results/<session>.json
 
 --nochip runs the chip model in software (snndec.chip.run_events) instead of the devkit. Scores: RMSE (mm/s, over
-both axes) and the correlation per axis, for each readout; for the chip, mean power and time per step.
+both axes) and the correlation per axis, for each readout; for the chip, mean power and time per step. The step-by-step
+output goes next to the json as <out>_arrays.npz: counts (the output neurons' spikes), y_true (mm/s), pred_trained,
+pred_refit (with --readout) and trial_lens (steps per test trial, in order).
 """
 import argparse
 import json
@@ -68,11 +70,12 @@ def main():
     model.eval()
     scale = data.velocity_scaler(a.session, a.scalers)
     trials = data.motor_split(a.session, 'test', a.scalers)
-    evs, ys = [], []
+    evs, ys, lens = [], [], []
     for t in trials:
         model(torch.as_tensor(t.x)[None])
         evs.append(chip.chip_events(model, model.input_events[0].numpy()))
         ys.append(data.unscale_velocity(t.y, *scale))
+        lens.append(len(t.y))
     ev, y = np.concatenate(evs), np.concatenate(ys)
     seq = chip.linear_stack(model, a.scale)
     res = {'session': os.path.basename(a.session), 'trials': len(trials), 'steps': len(ev), 'scale': a.scale,
@@ -87,14 +90,18 @@ def main():
         counts, loop_s, power_w, n_ev = dev.run(ev, model.layers[-1].width)
         dev.close()
         res.update(ms_per_step=1e3 * loop_s / len(ev), power_mw=1e3 * power_w, input_events_per_step=n_ev / len(ev))
-    res['trained'] = scores(data.unscale_velocity(trained_decode(model, counts), *scale), y)
+    arr = dict(counts=np.asarray(counts), y_true=y, trial_lens=np.array(lens),
+               pred_trained=data.unscale_velocity(trained_decode(model, counts), *scale))
+    res['trained'] = scores(arr['pred_trained'], y)
     if a.readout:
-        res['refitted'] = scores(refit_decode(np.asarray(counts), a.readout), y)
+        arr['pred_refit'] = refit_decode(np.asarray(counts), a.readout)
+        res['refitted'] = scores(arr['pred_refit'], y)
     print(f"{res['session'][:32]} ({res['source']}, {len(trials)} trials, {time.time() - t0:.0f} s): trained readout "
           f"RMSE {res['trained']['rmse']:.1f}" + (f", refitted RMSE {res['refitted']['rmse']:.1f}" if a.readout else '')
           + (f" | {res['power_mw']:.2f} mW, {res['ms_per_step']:.2f} ms per step" if 'power_mw' in res else ''))
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     json.dump(res, open(a.out, 'w'), indent=1)
+    np.savez_compressed(a.out.replace('.json', '') + '_arrays.npz', **arr)
 
 
 if __name__ == '__main__':

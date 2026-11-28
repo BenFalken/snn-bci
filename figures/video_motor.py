@@ -15,9 +15,9 @@ y_true = velocity in mm/s, y_pos = hand position in mm, pred_qrnn, pred_snn = th
   indy, loco   results_motor_soft/motor/final_v3_soft/<subject>/sessions/<session>_arrays.npz pred_speck (the soft-reset
                networks on the devkit; that run's segment starts 14 steps earlier, so it is aligned on its end and its
                y_true checked against final_v3's)
-  jenkins_m1   --speck-pred NPY (the chip's predictions on the same segment). The validation-selected devkit run saved
-               scores only, so until it is rerun with predictions the default is final_results/jenkins_refit/
-               <session>_pred.npy, the EARLIER test-selected network, and the video says so.
+  jenkins_m1   --speck-pred <session>_arrays.npz from the soft-reset devkit run (motor_chip.py; refitted readout, as
+               deployed), aligned trial by trial; without it, final_results/jenkins_refit/<session>_pred.npy, the
+               EARLIER test-selected network, and the video says so.
 
     python3 video_motor.py --subject indy --session indy_20161013_03 --seconds 45 --output figures/video_motor1.mp4
     python3 video_motor.py --subject jenkins_m1 --session sub-Jenkins_ses-20090916_behavior+ecephys \
@@ -73,6 +73,24 @@ def integrate(v, p_true, anchors):
     return p
 
 
+def align_trials(c, z, key):
+    """The chip run's predictions on the final arrays' steps: each test trial's run starts some steps earlier (the
+    final pipeline drops a trial's first steps), found by matching the true velocity trial by trial."""
+    lens = c["trial_lens"]
+    cs = np.r_[0, np.cumsum(lens)]
+    ts = list(z["trial_starts"]) + [len(z["y_true"])]
+    assert len(ts) - 1 == len(lens), (len(ts) - 1, len(lens))
+    out = []
+    for i in range(len(lens)):
+        seg = z["y_true"][ts[i]:ts[i + 1]]
+        n = len(seg)
+        o = next((o for o in range(lens[i] - n + 1)
+                  if np.allclose(c["y_true"][cs[i] + o:cs[i] + o + n], seg, atol=1e-2)), None)
+        assert o is not None, f"trial {i}: no match"
+        out.append(c[key][cs[i] + o:cs[i] + o + n])
+    return np.concatenate(out).astype(float)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--subject", default="indy")
@@ -85,7 +103,9 @@ def main():
     z = np.load(DL / f"final_v3/{a.subject}/sessions/{a.session}_arrays.npz")
     v = {"truth": z["y_true"].astype(float), "qrnn": z["pred_qrnn"].astype(float), "lsnn": z["pred_snn"].astype(float)}
     n_all, provisional = len(v["truth"]), False
-    if a.speck_pred:
+    if a.speck_pred and a.speck_pred.endswith(".npz"):        # motor_chip.py's <session>_arrays.npz: every test step
+        v["speck"] = align_trials(np.load(a.speck_pred), z, "pred_refit" if a.subject == "jenkins_m1" else "pred_trained")
+    elif a.speck_pred:
         v["speck"] = np.load(a.speck_pred).astype(float)
     elif a.subject in ("indy", "loco"):
         s = np.load(DL / f"results_motor_soft/motor/final_v3_soft/{a.subject}/sessions/{a.session}_arrays.npz")
@@ -143,7 +163,7 @@ def main():
     title = {"indy": "Motor (I): monkey I, NeuroBench reaching", "jenkins_m1": "Motor (II): monkey J, M1 array"}
     fig.text(0.04, 0.95, title.get(a.subject, a.subject), fontsize=20, fontweight="bold")
     note = ("Speck: an earlier, test-selected network (provisional)" if provisional else
-            "Speck: soft reset, on the chip" if a.subject in ("indy", "loco") else "Speck: on the chip")
+            "Speck: soft reset, on the chip")
     fig.text(0.04, 0.915, f"{a.session}, held-out test segment, decoded in real time (4 ms steps). {note}",
              fontsize=12, color=style.MUTED)
 

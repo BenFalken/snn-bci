@@ -46,3 +46,7 @@ loco loco_20170227_04 1
 loco loco_20170228_02 1
 loco loco_20170301_05 1
 loco loco_20170302_02 1
+jenkins_m1 sub-Jenkins_ses-20090912_behavior+ecephys 1.5
+jenkins_m1 sub-Jenkins_ses-20090916_behavior+ecephys 1.5
+jenkins_m1 sub-Jenkins_ses-20090918_behavior+ecephys 1
+jenkins_m1 sub-Jenkins_ses-20090923_behavior+ecephys 1.5
