@@ -14,6 +14,10 @@ layer adds a weight per event instead of multiplying every input -- an addition 
     counts       (2026-11-26, for Speck, which takes no negative events) n = min(floor(max(x, 0) / threshold),
                  max_events) events on the channel's one line: graded input as repeated events in a step. Under
                  soft reset the chip keeps what each repeat adds; under hard reset the excess was lost at a spike.
+    offset       (2026-11-27, for Speck) the SIGNED value on one positive line: n = round((x + offset) / threshold),
+                 clipped to 0..max_events. The channel's mean (x = 0) sends offset / threshold events every bin, a
+                 quieter bin fewer and a busier one more, so below-mean activity reaches the chip too; layer 1 sees
+                 w (x + offset) / threshold, the constant part absorbed in training like a bias.
     onoff        (2026-11-26) send-on-delta split into two positive lines per channel: 'rise' events when the value
                  has risen by a threshold since the last event, 'fall' when it has fallen (at most max_events each);
                  the slope of the feature, laid out as two levels (all rise lines, then all fall lines).
@@ -40,18 +44,19 @@ from typing import List, Optional
 import torch
 import torch.nn as nn
 
-ENCODINGS = ('none', 'ternary', 'delta', 'sigma_delta', 'binary', 'levels', 'counts', 'onoff')
+ENCODINGS = ('none', 'ternary', 'delta', 'sigma_delta', 'binary', 'levels', 'counts', 'onoff', 'offset')
 
 
 class EventEncoder(nn.Module):
     def __init__(self, mode: str = 'none', threshold: float = 0.25, max_events: int = 3,
-                 levels: Optional[List[float]] = None):
+                 levels: Optional[List[float]] = None, offset: float = 3.0):
         super().__init__()
         if mode not in ENCODINGS:
             raise ValueError(f'input_encoding must be one of {ENCODINGS}, got {mode!r}')
         if mode != 'none' and threshold <= 0:
             raise ValueError('encoding_threshold must be > 0')
         self.mode, self.threshold, self.max_events = mode, float(threshold), int(max_events)
+        self.offset = float(offset)
         # 'levels': one on/off line per channel and level (a thermometer code): line l is on when the feature is
         # at or above levels[l], so a channel's value reaches the chip as how many of its lines are on, with no
         # sub-steps. The lines are laid out level by level (all channels at levels[0], then levels[1], ...)
@@ -92,6 +97,10 @@ class EventEncoder(nn.Module):
         if self.mode == 'ternary':
             q = self._quantize(u.detach())
             return u + (q - u).detach(), state
+        if self.mode == 'offset':                              # signed value on one line, about a baseline
+            u = (x + self.offset) / self.threshold
+            q = torch.clamp(torch.floor(u.detach() + 0.5), 0, self.max_events)
+            return u + (q - u).detach(), state
         if self.mode == 'counts':                              # positive whole events, at most max_events
             q = torch.clamp(torch.floor(u.detach()), 0, self.max_events)
             return u + (q - u).detach(), state
@@ -113,7 +122,7 @@ class EventEncoder(nn.Module):
         """(N, T, C) -> signed event counts (N, T, C)."""
         if not self.active:
             return x
-        if self.mode in ('ternary', 'binary', 'levels', 'counts'):
+        if self.mode in ('ternary', 'binary', 'levels', 'counts', 'offset'):
             return self.step(x, None)[0]
         state = self.init_state(x.shape[0], x.shape[2], x.device)
         out = []

@@ -91,6 +91,7 @@ class SNN_Native(nn.Module):
         encoding_threshold: float = 0.25,
         encoding_max: int = 3,
         encoding_levels: Optional[List[float]] = None,
+        encoding_offset: float = 3.0,
         input_delays=None,
         input_traces=None,
         output_stride: int = 1,
@@ -159,7 +160,8 @@ class SNN_Native(nn.Module):
                 nn.init.zeros_(layer.bias)
                 self.day_layers.append(layer)
         self.in_dropout = nn.Dropout(input_dropout)
-        self.encoder = EventEncoder(input_encoding, encoding_threshold, encoding_max, encoding_levels)
+        self.encoder = EventEncoder(input_encoding, encoding_threshold, encoding_max, encoding_levels,
+                                    encoding_offset)
         # first-layer memory of past input, in 20 ms steps (frontend.py): synaptic delays, and synaptic currents
         # with several time constants
         self.memory = InputMemory([d * self.input_substeps for d in input_delays] if input_delays else None,

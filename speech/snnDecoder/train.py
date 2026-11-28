@@ -157,12 +157,16 @@ def parse_arguments(argv=None):
     model.add_argument("--input-layer", type=str, default="linear", choices=["linear", "gain"],
                        help="rsnn: per-session input layer, the RNN's Linear + softsign, or one gain per channel")
     model.add_argument("--input-encoding", type=str, default="none",
-                       choices=["none", "ternary", "delta", "sigma_delta", "binary", "levels", "counts", "onoff"],
+                       choices=["none", "ternary", "delta", "sigma_delta", "binary", "levels", "counts", "onoff",
+                                "offset"],
                        help="rsnn: turn each bin's features into signed event counts (frontend.py), so the first "
                             "layer adds a weight per event instead of multiplying every input")
     model.add_argument("--encoding-threshold", type=float, default=0.25,
                        help="rsnn: feature change (delta) or value (ternary, sigma_delta) per event")
     model.add_argument("--encoding-max", type=int, default=3, help="rsnn: most events per channel per bin")
+    model.add_argument("--encoding-offset", type=float, default=3.0,
+                       help="native, --input-encoding offset: added to the z-scored feature before it is counted in "
+                            "units of --encoding-threshold (the channel's mean then sends offset/threshold events)")
     model.add_argument("--encoding-levels", type=float, nargs="+", default=None,
                        help="native, --input-encoding levels: one on/off input line per channel and level, on when "
                             "the feature is at or above it (a thermometer code; the chip's input lines multiply)")
@@ -413,6 +417,7 @@ def model_kwargs(args):
         encoding_threshold=args.get("encoding_threshold", 0.25),
         encoding_max=args.get("encoding_max", 3),
         **({"encoding_levels": args["encoding_levels"]} if args.get("encoding_levels") else {}),
+        **({"encoding_offset": args.get("encoding_offset", 3.0)} if args.get("input_encoding") == "offset" else {}),
         input_delays=args.get("input_delays"),
         input_traces=args.get("input_traces"),
         output_stride=args.get("output_stride", 1),
